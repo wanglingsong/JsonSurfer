@@ -1,16 +1,15 @@
 package org.leo.json;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.Stack;
-
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.ParseException;
 
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.LinkedList;
 
-public class GsonParser {
+public class GsonParser implements JsonLoader{
 
     private enum EntryType {
         OBJECT,
@@ -18,9 +17,15 @@ public class GsonParser {
         PRIMITIVE
     }
 
+    @Override
+    public void load(Reader reader, ValueBinder valueBinder) throws IOException, ParseException {
+        parse(reader, valueBinder.build());
+    }
+
     public void parse(Reader reader, ContentHandler contentHandler) throws IOException, ParseException {
         JsonReader jsonReader = new JsonReader(reader);
-        Stack<EntryType> entryStack = new Stack<>();
+        LinkedList<EntryType> entryStack = new LinkedList<EntryType>();
+        contentHandler.startJSON();
         while (true) {
             JsonToken token = jsonReader.peek();
             switch (token) {
@@ -46,6 +51,9 @@ public class GsonParser {
                     jsonReader.beginObject();
                     if (!contentHandler.startObject()) {
                         return;
+                    }
+                    if (entryStack.isEmpty()) {
+                        entryStack.push(EntryType.OBJECT);
                     }
                     break;
                 case END_OBJECT:
@@ -80,7 +88,7 @@ public class GsonParser {
                     if (!contentHandler.primitive(s)) {
                         return;
                     }
-                    if (entryStack.peek() == EntryType.OBJECT) {
+                    if (entryStack.peek() == EntryType.PRIMITIVE) {
                         if (!contentHandler.endObjectEntry()) {
                             return;
                         }
@@ -92,7 +100,7 @@ public class GsonParser {
                     if (!contentHandler.primitive(Double.parseDouble(n))) {
                         return;
                     }
-                    if (entryStack.peek() == EntryType.OBJECT) {
+                    if (entryStack.peek() == EntryType.PRIMITIVE) {
                         if (!contentHandler.endObjectEntry()) {
                             return;
                         }
@@ -104,7 +112,7 @@ public class GsonParser {
                     if (!contentHandler.primitive(b)) {
                         return;
                     }
-                    if (entryStack.peek() == EntryType.OBJECT) {
+                    if (entryStack.peek() == EntryType.PRIMITIVE) {
                         if (!contentHandler.endObjectEntry()) {
                             return;
                         }
@@ -116,7 +124,7 @@ public class GsonParser {
                     if (!contentHandler.primitive(null)) {
                         return;
                     }
-                    if (entryStack.peek() == EntryType.OBJECT) {
+                    if (entryStack.peek() == EntryType.PRIMITIVE) {
                         if (!contentHandler.endObjectEntry()) {
                             return;
                         }
