@@ -3,10 +3,10 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import org.junit.Test;
 import org.leo.json.GsonParser;
+import org.leo.json.JsonPathBinder;
 import org.leo.json.JsonSimpleParser;
 import org.leo.json.parse.JsonPathListener;
 import org.leo.json.parse.ParsingContext;
-import org.leo.json.JsonPathBinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +35,7 @@ public class PerformanceTest {
         };
         binder.bind(buildPath().child("builders").childWildcard().child("properties"), printListener);
         long start = System.currentTimeMillis();
-        loader.parse(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), binder);
+        loader.parse(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), binder.build());
         LOGGER.info("JPStream-simple processes {} value in {} millisecond", counter.get(), System.currentTimeMillis()
                 - start);
 
@@ -55,7 +55,7 @@ public class PerformanceTest {
         };
         binder.bind(buildPath().child("builders").childWildcard().child("properties"), printListener);
         long start = System.currentTimeMillis();
-        loader.parse(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), binder);
+        loader.parse(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), binder.build());
         LOGGER.info("JPStream-gson processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);
 
     }

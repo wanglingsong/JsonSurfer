@@ -1,10 +1,7 @@
 package org.leo.json.parse;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Map;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.ParseException;
 import org.leo.json.JsonPathBinder;
@@ -13,8 +10,10 @@ import org.leo.json.path.JsonPath;
 import org.leo.json.path.PathOperator;
 import org.leo.json.path.PathOperator.Type;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Map;
 
 public class ParsingContextImpl implements ParsingContext, JsonPathBinder, ContentHandler {
 
@@ -22,6 +21,7 @@ public class ParsingContextImpl implements ParsingContext, JsonPathBinder, Conte
     private JsonPath currentPath;
     private Map<Integer, Map<JsonPath, JsonPathListener[]>> listenerMap = Maps.newHashMap();
     private ParsingObserver observer = new ParsingObserver();
+    private JsonStructureFactory jsonStructureFactory;
 
     private interface CollectorProcessor {
 
@@ -38,34 +38,18 @@ public class ParsingContextImpl implements ParsingContext, JsonPathBinder, Conte
         }
     };
 
-    private CollectorProcessor startObjectProcessor = new CollectorProcessor() {
-
-        @Override
-        public boolean process(JsonNodeCollector collector) throws IOException, ParseException {
-            collector.startJSON();
-            collector.startObject();
-            return true;
-        }
-    };
-
-    private CollectorProcessor startArrayProcessor = new CollectorProcessor() {
-
-        @Override
-        public boolean process(JsonNodeCollector collector) throws IOException, ParseException {
-            collector.startJSON();
-            collector.startArray();
-            return true;
-        }
-    };
+    public ParsingContextImpl(JsonStructureFactory jsonStructureFactory) {
+        this.jsonStructureFactory = jsonStructureFactory;
+    }
 
     @Override
     public void startJSON() throws ParseException, IOException {
         if (stopped) {
             return;
         }
-        observer.startJSON();
         currentPath = JsonPath.buildPath();
-        doMatching(startJsonProcessor);
+        doMatching(null);
+        observer.startJSON();
     }
 
     @Override
@@ -82,12 +66,12 @@ public class ParsingContextImpl implements ParsingContext, JsonPathBinder, Conte
         if (stopped) {
             return false;
         }
-        observer.startObject();
         PathOperator top = currentPath.peek();
         if (top.getType() == Type.ARRAY) {
             ((ArrayIndex) top).increaseArrayIndex();
-            doMatching(startObjectProcessor);
+            doMatching(startJsonProcessor);
         }
+        observer.startObject();
         return true;
     }
 
@@ -109,9 +93,11 @@ public class ParsingContextImpl implements ParsingContext, JsonPathBinder, Conte
         }
         if (listeners != null) {
             JsonNodeCollector collector = new JsonNodeCollector(listeners, this);
-            if (processor.process(collector)) {
-                observer.addObserver(collector);
+            collector.setFactory(jsonStructureFactory);
+            if (processor != null) {
+                processor.process(collector);
             }
+            observer.addObserver(collector);
         }
     }
 
@@ -129,8 +115,8 @@ public class ParsingContextImpl implements ParsingContext, JsonPathBinder, Conte
         if (stopped) {
             return false;
         }
-        observer.startObjectEntry(key);
         currentPath.child(key);
+        observer.startObjectEntry(key);
         doMatching(startJsonProcessor);
         return true;
     }
@@ -140,8 +126,8 @@ public class ParsingContextImpl implements ParsingContext, JsonPathBinder, Conte
         if (stopped) {
             return false;
         }
-        observer.endObjectEntry();
         currentPath.pop();
+        observer.endObjectEntry();
         return true;
     }
 
@@ -150,13 +136,13 @@ public class ParsingContextImpl implements ParsingContext, JsonPathBinder, Conte
         if (stopped) {
             return false;
         }
-        observer.startArray();
         PathOperator top = currentPath.peek();
         if (top.getType() == Type.ARRAY) {
             ((ArrayIndex) top).increaseArrayIndex();
-            doMatching(startArrayProcessor);
+            doMatching(startJsonProcessor);
         }
         currentPath.array();
+        observer.startArray();
         return true;
     }
 
@@ -165,8 +151,8 @@ public class ParsingContextImpl implements ParsingContext, JsonPathBinder, Conte
         if (stopped) {
             return false;
         }
-        observer.endArray();
         currentPath.pop();
+        observer.endArray();
         return true;
     }
 
@@ -175,23 +161,12 @@ public class ParsingContextImpl implements ParsingContext, JsonPathBinder, Conte
         if (stopped) {
             return false;
         }
-        observer.primitive(value);
         PathOperator top = currentPath.peek();
         if (top.getType() == Type.ARRAY) {
             ((ArrayIndex) top).increaseArrayIndex();
-            final ParsingContextImpl self = this;
-            doMatching(new CollectorProcessor() {
-
-                @Override
-                public boolean process(JsonNodeCollector collector) throws IOException, ParseException {
-                    for (JsonPathListener jsonPathListener : collector.getJsonPathListeners()) {
-                        jsonPathListener.onValue(value, self);
-                    }
-                    return false;
-                }
-            });
-
+            doMatching(startJsonProcessor);
         }
+        observer.primitive(value);
         return true;
     }
 

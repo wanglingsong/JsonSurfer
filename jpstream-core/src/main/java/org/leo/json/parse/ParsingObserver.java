@@ -1,11 +1,11 @@
 package org.leo.json.parse;
 
+import org.json.simple.parser.ContentHandler;
+import org.json.simple.parser.ParseException;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
-
-import org.json.simple.parser.ContentHandler;
-import org.json.simple.parser.ParseException;
 
 /**
  * Created by Administrator on 2015/3/21.

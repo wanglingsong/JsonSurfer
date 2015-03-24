@@ -1,21 +1,22 @@
 package org.leo.json.parse;
 
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.ParseException;
+
+import java.io.IOException;
+import java.util.LinkedList;
 
 /**
  * Created by Administrator on 2015/3/21.
  */
 class Transformer implements ContentHandler {
 
+    private JsonStructureFactory factory;
     private LinkedList<Object> valueStack;
+
+    public void setFactory(JsonStructureFactory factory) {
+        this.factory = factory;
+    }
 
     public Object getResult() {
         if (valueStack == null || valueStack.size() == 0)
@@ -38,9 +39,8 @@ class Transformer implements ContentHandler {
 
     public boolean endObjectEntry() throws ParseException, IOException {
         Object value = valueStack.pop();
-        Object key = valueStack.pop();
-        Map parent = (Map) valueStack.peek();
-        parent.put(key, value);
+        String key = valueStack.pop().toString();
+        factory.consumeObjectEntry(valueStack.peek(), key, value);
         return true;
     }
 
@@ -59,9 +59,8 @@ class Transformer implements ContentHandler {
             valueStack.push(value);
         else {
             Object prev = valueStack.peek();
-            if (prev instanceof List) {
-                List array = (List) prev;
-                array.add(value);
+            if (factory.isArray(prev)) {
+                factory.consumeArrayElement(prev, value);
             } else {
                 valueStack.push(value);
             }
@@ -69,12 +68,12 @@ class Transformer implements ContentHandler {
     }
 
     public boolean primitive(Object value) throws ParseException, IOException {
-        consumeValue(value);
+        consumeValue(factory.primitive(value));
         return true;
     }
 
     public boolean startArray() throws ParseException, IOException {
-        List array = new JSONArray();
+        Object array = factory.createArray();
         consumeValue(array);
         valueStack.push(array);
         return true;
@@ -89,7 +88,7 @@ class Transformer implements ContentHandler {
     }
 
     public boolean startObject() throws ParseException, IOException {
-        Map object = new JSONObject();
+        Object object = factory.createObject();
         consumeValue(object);
         valueStack.push(object);
         return true;
@@ -104,7 +103,7 @@ class Transformer implements ContentHandler {
         return this.valueStack.size();
     }
 
-    public void reset() {
+    public void clear() {
         if (valueStack != null) {
             this.valueStack.clear();
         }

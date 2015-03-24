@@ -1,9 +1,9 @@
 package org.leo.json.parse;
 
+import org.json.simple.parser.ParseException;
+
 import java.io.IOException;
 import java.util.Collection;
-
-import org.json.simple.parser.ParseException;
 
 /**
  * Created by Administrator on 2015/3/21.
@@ -27,6 +27,7 @@ public class JsonNodeCollector extends Transformer {
                     jsonPathListener.onValue(getResult(), context);
                 }
             }
+            this.clear();
             return false;
         }
         return true;
@@ -34,7 +35,7 @@ public class JsonNodeCollector extends Transformer {
 
     @Override
     public boolean endArray() throws ParseException, IOException {
-        super.endObject();
+        super.endArray();
         if (getStackSize() == 1) {
             Object result = getResult();
             for (JsonPathListener jsonPathListener : jsonPathListeners) {
@@ -42,6 +43,7 @@ public class JsonNodeCollector extends Transformer {
                     jsonPathListener.onValue(result, context);
                 }
             }
+            this.clear();
             return false;
         }
         return true;
@@ -49,14 +51,6 @@ public class JsonNodeCollector extends Transformer {
 
     @Override
     public boolean primitive(Object value) throws ParseException, IOException {
-        if (getStackSize() == 0) {
-            for (JsonPathListener jsonPathListener : jsonPathListeners) {
-                if (!context.isStopped()) {
-                    jsonPathListener.onValue(value, context);
-                }
-            }
-            return false;
-        }
         super.primitive(value);
         if (getStackSize() == 1) {
             Object result = getResult();
@@ -65,12 +59,18 @@ public class JsonNodeCollector extends Transformer {
                     jsonPathListener.onValue(result, context);
                 }
             }
+            this.clear();
             return false;
         }
         return true;
     }
 
-    public Iterable<JsonPathListener> getJsonPathListeners() {
-        return jsonPathListeners;
+    @Override
+    public void clear() {
+        super.clear();
+        this.context = null;
+        this.jsonPathListeners = null;
     }
+
+
 }
