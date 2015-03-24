@@ -8,7 +8,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.leo.json.parse.ParsingContextImpl;
 
-public class JsonLoaderSimple implements JsonLoader {
+public class JsonSimpleParser implements JsonParser {
 
     @Override
     public JsonPathBinder binder() {
@@ -21,7 +21,7 @@ public class JsonLoaderSimple implements JsonLoader {
     }
 
     @Override
-    public void load(Reader reader, JsonPathBinder jsonPathBinder) throws IOException, ParseException {
+    public void parse(Reader reader, JsonPathBinder jsonPathBinder) throws IOException, ParseException {
         this.load(reader, jsonPathBinder.build());
     }
 

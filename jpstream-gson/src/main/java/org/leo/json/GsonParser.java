@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.LinkedList;
 
-public class GsonParser implements JsonLoader{
+public class GsonParser implements JsonParser {
 
     private enum EntryType {
         OBJECT,
@@ -25,7 +25,7 @@ public class GsonParser implements JsonLoader{
     }
 
     @Override
-    public void load(Reader reader, JsonPathBinder jsonPathBinder) throws IOException, ParseException {
+    public void parse(Reader reader, JsonPathBinder jsonPathBinder) throws IOException, ParseException {
         parse(reader, jsonPathBinder.build());
     }
 

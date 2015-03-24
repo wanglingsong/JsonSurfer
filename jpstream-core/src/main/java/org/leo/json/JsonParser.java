@@ -8,10 +8,10 @@ import org.json.simple.parser.ParseException;
 /**
  * Created by Administrator on 2015/3/23.
  */
-public interface JsonLoader {
+public interface JsonParser {
 
     JsonPathBinder binder();
 
-    void load(Reader reader, JsonPathBinder jsonPathBinder) throws IOException, ParseException;
+    void parse(Reader reader, JsonPathBinder jsonPathBinder) throws IOException, ParseException;
 
 }

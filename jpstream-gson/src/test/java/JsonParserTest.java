@@ -10,8 +10,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.leo.json.GsonParser;
-import org.leo.json.JsonLoader;
-import org.leo.json.JsonLoaderSimple;
+import org.leo.json.JsonParser;
+import org.leo.json.JsonSimpleParser;
 import org.leo.json.parse.JsonPathListener;
 import org.leo.json.parse.ParsingContext;
 import org.leo.json.JsonPathBinder;
@@ -21,14 +21,14 @@ import org.mockito.Mockito;
 import com.google.common.io.Resources;
 
 @RunWith(Parameterized.class)
-public class JsonLoaderTest {
+public class JsonParserTest {
 
     @Parameterized.Parameters
     public static Object[] data() {
-        return new Object[] { new JsonLoaderSimple(), new GsonParser() };
+        return new Object[] { new JsonSimpleParser(), new GsonParser() };
     }
 
-    @Parameterized.Parameter public JsonLoader loader;
+    @Parameterized.Parameter public JsonParser loader;
 
     @Test
     public void testSampleJson() throws Exception {
@@ -38,7 +38,7 @@ public class JsonLoaderTest {
             .bind(buildPath().child("store").child("book").array(0), mockListener)
             .bind(buildPath().child("store").child("car"), mockListener)
             .bind(buildPath().child("store").child("bicycle"), mockListener);
-        loader.load(new InputStreamReader(Resources.getResource("sample.json").openStream()), binder);
+        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), binder);
         Mockito.verify(mockListener).onValue(Matchers.eq("reference"), Matchers.any(ParsingContext.class));
         JSONObject book = new JSONObject();
         book.put("category", "reference");
@@ -79,7 +79,7 @@ public class JsonLoaderTest {
                 }
             }));
 
-        loader.load(new InputStreamReader(Resources.getResource("sample.json").openStream()), binder);
+        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), binder);
         Mockito.verify(mockListener, Mockito.times(1))
             .onValue(Matchers.anyObject(), Matchers.any(ParsingContext.class));
 
@@ -90,7 +90,7 @@ public class JsonLoaderTest {
         JsonPathBinder binder = loader.binder();
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
         binder.bind(buildPath().child("store").childWildcard(), mockListener);
-        loader.load(new InputStreamReader(Resources.getResource("sample.json").openStream()), binder);
+        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), binder);
         Mockito.verify(mockListener, Mockito.times(3))
             .onValue(Matchers.anyObject(), Matchers.any(ParsingContext.class));
     }
@@ -100,7 +100,7 @@ public class JsonLoaderTest {
         JsonPathBinder binder = loader.binder();
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
         binder.bind(buildPath().child("store").child("book").arrayWildcard(), mockListener);
-        loader.load(new InputStreamReader(Resources.getResource("sample.json").openStream()), binder);
+        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), binder);
         Mockito.verify(mockListener, Mockito.times(4))
             .onValue(Matchers.anyObject(), Matchers.any(ParsingContext.class));
     }
@@ -110,7 +110,7 @@ public class JsonLoaderTest {
         JsonPathBinder binder = loader.binder();
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
         binder.bind(buildPath().child("store").child("book").arrayWildcard().childWildcard(), mockListener);
-        loader.load(new InputStreamReader(Resources.getResource("sample.json").openStream()), binder);
+        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), binder);
         Mockito.verify(mockListener, Mockito.times(18)).onValue(Matchers.anyObject(),
             Matchers.any(ParsingContext.class));
     }

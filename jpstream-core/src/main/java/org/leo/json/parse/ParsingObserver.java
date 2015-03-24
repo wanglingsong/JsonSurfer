@@ -19,9 +19,7 @@ public class ParsingObserver implements ContentHandler {
         if (observers.isEmpty()) {
             return;
         }
-        Iterator<ContentHandler> itr = observers.iterator();
-        while (itr.hasNext()) {
-            ContentHandler observer = itr.next();
+        for (ContentHandler observer : observers) {
             observer.startJSON();
         }
     }
@@ -31,9 +29,7 @@ public class ParsingObserver implements ContentHandler {
         if (observers.isEmpty()) {
             return;
         }
-        Iterator<ContentHandler> itr = observers.iterator();
-        while (itr.hasNext()) {
-            ContentHandler observer = itr.next();
+        for (ContentHandler observer : observers) {
             observer.endJSON();
         }
     }
