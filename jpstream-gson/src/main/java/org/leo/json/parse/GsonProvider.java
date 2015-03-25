@@ -8,7 +8,7 @@ import com.google.gson.JsonObject;
 /**
  * Created by Administrator on 2015/3/25.
  */
-public class GsonStructureFactory implements JsonStructureFactory<JsonObject, JsonArray, JsonElement> {
+public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonElement> {
 
     private final static Gson DEFAULT_GSON = new Gson();
 

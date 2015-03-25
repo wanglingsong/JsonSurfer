@@ -7,12 +7,12 @@ import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.leo.json.exception.JsonParseException;
-import org.leo.json.parse.JsonSimpleFactory;
+import org.leo.json.parse.JsonSimpleProvider;
 
 public class JsonSimpleParser implements JsonParser {
 
     public static ContentHandlerBuilder start() {
-        return BuilderFactory.start().setJsonStructureFactory(new JsonSimpleFactory());
+        return BuilderFactory.start().setJsonStructureFactory(new JsonSimpleProvider());
     }
 
     @Override

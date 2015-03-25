@@ -14,7 +14,7 @@ import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.leo.json.path.JsonPath.buildPath;
+import static org.leo.json.path.JsonPath.start;
 
 public class PerformanceTest {
 
@@ -33,7 +33,7 @@ public class PerformanceTest {
                 LOGGER.trace("value: {}", value);
             }
         };
-        binder.bind(buildPath().child("builders").childWildcard().child("properties"), printListener);
+        binder.bind(start().child("builders").childWildcard().child("properties"), printListener);
         long start = System.currentTimeMillis();
         loader.parse(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), binder.build());
         LOGGER.info("JPStream-simple processes {} value in {} millisecond", counter.get(), System.currentTimeMillis()
@@ -53,7 +53,7 @@ public class PerformanceTest {
                 LOGGER.trace("value: {}", value);
             }
         };
-        binder.bind(buildPath().child("builders").childWildcard().child("properties"), printListener);
+        binder.bind(start().child("builders").childWildcard().child("properties"), printListener);
         long start = System.currentTimeMillis();
         loader.parse(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), binder.build());
         LOGGER.info("JPStream-gson processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);

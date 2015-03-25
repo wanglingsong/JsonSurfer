@@ -6,7 +6,7 @@ import org.json.simple.JSONObject;
 /**
  * Created by Administrator on 2015/3/25.
  */
-public class JsonSimpleFactory implements JsonStructureFactory<JSONObject, JSONArray, Object> {
+public class JsonSimpleProvider implements JsonProvider<JSONObject, JSONArray, Object> {
     @Override
     public JSONObject createObject() {
         return new JSONObject();

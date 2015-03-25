@@ -2,7 +2,7 @@ package org.leo.json;
 
 import org.json.simple.parser.ContentHandler;
 import org.leo.json.parse.JsonPathListener;
-import org.leo.json.parse.JsonStructureFactory;
+import org.leo.json.parse.JsonProvider;
 import org.leo.json.path.JsonPath;
 
 /**
@@ -10,7 +10,7 @@ import org.leo.json.path.JsonPath;
  */
 public interface ContentHandlerBuilder {
 
-    ContentHandlerBuilder setJsonStructureFactory(JsonStructureFactory structureFactory);
+    ContentHandlerBuilder setJsonStructureFactory(JsonProvider structureFactory);
 
     ContentHandlerBuilder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners);
 

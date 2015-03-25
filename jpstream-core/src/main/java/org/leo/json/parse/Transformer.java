@@ -12,10 +12,10 @@ import java.util.LinkedList;
  */
 class Transformer implements ContentHandler {
 
-    private JsonStructureFactory factory;
+    private JsonProvider factory;
     private LinkedList<Object> valueStack;
 
-    public void setFactory(JsonStructureFactory factory) {
+    public void setFactory(JsonProvider factory) {
         this.factory = factory;
     }
 

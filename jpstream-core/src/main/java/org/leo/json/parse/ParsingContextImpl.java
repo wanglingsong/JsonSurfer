@@ -20,9 +20,10 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
 
     private boolean stopped = false;
     private JsonPath currentPath;
-    private Map<Integer, Map<JsonPath, JsonPathListener[]>> listenerMap = Maps.newHashMap();
+    private Map<Integer, Map<JsonPath, JsonPathListener[]>> definitePathMap = Maps.newHashMap();
+    private Map<JsonPath, JsonPathListener[]> indefinitePathMap = Maps.newHashMap();
     private ParsingObserver observer = new ParsingObserver();
-    private JsonStructureFactory jsonStructureFactory;
+    private JsonProvider jsonProvider;
 
     private interface CollectorProcessor {
 
@@ -40,8 +41,8 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
     };
 
     @Override
-    public ContentHandlerBuilder setJsonStructureFactory(JsonStructureFactory structureFactory) {
-        this.jsonStructureFactory = structureFactory;
+    public ContentHandlerBuilder setJsonStructureFactory(JsonProvider structureFactory) {
+        this.jsonProvider = structureFactory;
         return this;
     }
 
@@ -50,7 +51,7 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
         if (stopped) {
             return;
         }
-        currentPath = JsonPath.buildPath();
+        currentPath = JsonPath.start();
         doMatching(null);
         observer.startJSON();
     }
@@ -79,24 +80,35 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
     }
 
     private void doMatching(CollectorProcessor processor) throws IOException, ParseException {
-        // TODO support only definite path
-        int semiHashcode = semiHashcode(currentPath);
-        Map<JsonPath, JsonPathListener[]> map = listenerMap.get(semiHashcode);
-        if (map == null) {
-            return;
-        }
         LinkedList<JsonPathListener> listeners = null;
-        for (Map.Entry<JsonPath, JsonPathListener[]> entry : map.entrySet()) {
-            if (entry.getKey().match(currentPath)) {
-                if (listeners == null) {
-                    listeners = Lists.newLinkedList();
+
+        if (!indefinitePathMap.isEmpty()) {
+            for (Map.Entry<JsonPath, JsonPathListener[]> entry : indefinitePathMap.entrySet()) {
+                if (entry.getKey().match(currentPath)) {
+                    if (listeners == null) {
+                        listeners = Lists.newLinkedList();
+                    }
+                    Collections.addAll(listeners, entry.getValue());
                 }
-                Collections.addAll(listeners, entry.getValue());
             }
         }
+
+        int semiHashcode = semiHashcode(currentPath);
+        Map<JsonPath, JsonPathListener[]> map = definitePathMap.get(semiHashcode);
+        if (map != null) {
+            for (Map.Entry<JsonPath, JsonPathListener[]> entry : map.entrySet()) {
+                if (entry.getKey().match(currentPath)) {
+                    if (listeners == null) {
+                        listeners = Lists.newLinkedList();
+                    }
+                    Collections.addAll(listeners, entry.getValue());
+                }
+            }
+        }
+
         if (listeners != null) {
             JsonNodeCollector collector = new JsonNodeCollector(listeners, this);
-            collector.setFactory(jsonStructureFactory);
+            collector.setFactory(jsonProvider);
             if (processor != null) {
                 processor.process(collector);
             }
@@ -180,19 +192,24 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
 
     @Override
     public ContentHandler build() {
-        this.listenerMap = Collections.unmodifiableMap(this.listenerMap);
+        this.definitePathMap = Collections.unmodifiableMap(this.definitePathMap);
+        this.indefinitePathMap = Collections.unmodifiableMap(this.indefinitePathMap);
         return this;
     }
 
     @Override
     public ContentHandlerBuilder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners) {
-        int semiHashcode = semiHashcode(jsonPath);
-        Map<JsonPath, JsonPathListener[]> map = listenerMap.get(semiHashcode);
-        if (map == null) {
-            map = Maps.newHashMap();
-            listenerMap.put(semiHashcode, map);
+        if (!jsonPath.isDefinite()) {
+            indefinitePathMap.put(jsonPath, jsonPathListeners);
+        } else {
+            int semiHashcode = semiHashcode(jsonPath);
+            Map<JsonPath, JsonPathListener[]> map = definitePathMap.get(semiHashcode);
+            if (map == null) {
+                map = Maps.newHashMap();
+                definitePathMap.put(semiHashcode, map);
+            }
+            map.put(jsonPath, jsonPathListeners);
         }
-        map.put(jsonPath, jsonPathListeners);
         return this;
     }
 

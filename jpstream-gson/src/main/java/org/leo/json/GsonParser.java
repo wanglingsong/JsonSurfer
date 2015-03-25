@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.ParseException;
 import org.leo.json.exception.JsonParseException;
-import org.leo.json.parse.GsonStructureFactory;
+import org.leo.json.parse.GsonProvider;
 
 import com.google.common.collect.Lists;
 import com.google.gson.stream.JsonReader;
@@ -23,7 +23,7 @@ public class GsonParser implements JsonParser {
 
     public static ContentHandlerBuilder start() {
         // TODO Implement gson parsing context
-        return BuilderFactory.start().setJsonStructureFactory(new GsonStructureFactory());
+        return BuilderFactory.start().setJsonStructureFactory(new GsonProvider());
     }
 
     @Override
@@ -31,7 +31,7 @@ public class GsonParser implements JsonParser {
         try {
             JsonReader jsonReader = new JsonReader(reader);
             LinkedList<EntryType> entryStack = Lists.newLinkedList();
-            // TODO correct behavior
+            // TODO to correct behavior
 
             contentHandler.startJSON();
             while (true) {

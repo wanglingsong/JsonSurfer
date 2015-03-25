@@ -5,7 +5,9 @@ public class PathOperator {
     public enum Type {
         ROOT,
         OBJECT,
-        ARRAY
+        ARRAY,
+        WILDCARD,
+        DEEP_SCAN
     }
 
     private Type type;
