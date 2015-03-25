@@ -5,7 +5,13 @@ package org.leo.json.path;
  */
 public class ChildWildcard extends PathOperator {
 
-    protected ChildWildcard() {
+    private final static ChildWildcard INSTANCE = new ChildWildcard();
+
+    public static ChildWildcard instance() {
+        return INSTANCE;
+    }
+
+    private ChildWildcard() {
         super(Type.OBJECT);
     }
 

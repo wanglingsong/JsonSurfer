@@ -20,6 +20,10 @@ public class ArrayIndex extends PathOperator {
         return arrayIndex;
     }
 
+    public void setArrayIndex(int arrayIndex) {
+        this.arrayIndex = arrayIndex;
+    }
+
     public void increaseArrayIndex() {
         this.arrayIndex++;
     }

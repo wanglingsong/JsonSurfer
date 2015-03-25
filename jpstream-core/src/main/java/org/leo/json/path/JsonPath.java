@@ -33,7 +33,7 @@ public class JsonPath {
 
     public static JsonPath buildPath() {
         JsonPath newPath = new JsonPath();
-        newPath.path.push(new PathOperator(PathOperator.Type.ROOT));
+        newPath.path.push(Root.instance());
         return newPath;
     }
 
@@ -43,7 +43,7 @@ public class JsonPath {
     }
 
     public JsonPath childWildcard() {
-        path.push(new ChildWildcard());
+        path.push(ChildWildcard.instance());
         return this;
     }
 
@@ -53,7 +53,7 @@ public class JsonPath {
     }
 
     public JsonPath arrayWildcard() {
-        path.push(new ArrayWildcard());
+        path.push(ArrayWildcard.instance());
         return this;
     }
 

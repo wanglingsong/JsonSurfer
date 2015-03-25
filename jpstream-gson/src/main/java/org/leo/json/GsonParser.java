@@ -1,5 +1,6 @@
 package org.leo.json;
 
+import com.google.common.collect.Lists;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import org.json.simple.parser.ContentHandler;
@@ -30,7 +31,7 @@ public class GsonParser implements JsonParser {
     public void parse(Reader reader, ContentHandler contentHandler) {
         try {
             JsonReader jsonReader = new JsonReader(reader);
-            LinkedList<EntryType> entryStack = new LinkedList<EntryType>();
+            LinkedList<EntryType> entryStack = Lists.newLinkedList();
             // TODO correct behavior
 
             contentHandler.startJSON();

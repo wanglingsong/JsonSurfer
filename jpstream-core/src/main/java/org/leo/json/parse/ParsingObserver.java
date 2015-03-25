@@ -1,5 +1,6 @@
 package org.leo.json.parse;
 
+import com.google.common.collect.Lists;
 import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.ParseException;
 
@@ -12,7 +13,7 @@ import java.util.LinkedList;
  */
 public class ParsingObserver implements ContentHandler {
 
-    LinkedList<ContentHandler> observers = new LinkedList<ContentHandler>();
+    LinkedList<ContentHandler> observers = Lists.newLinkedList();
 
     @Override
     public void startJSON() throws ParseException, IOException {

@@ -5,7 +5,13 @@ package org.leo.json.path;
  */
 public class ArrayWildcard extends PathOperator {
 
-    protected ArrayWildcard() {
+    private final static ArrayWildcard INSTANCE = new ArrayWildcard();
+
+    public static ArrayWildcard instance() {
+        return INSTANCE;
+    }
+
+    private ArrayWildcard() {
         super(Type.ARRAY);
     }
 

@@ -22,11 +22,4 @@ public class PathOperator {
         return type == pathOperator.type;
     }
 
-    @Override
-    public String toString() {
-        if (type == Type.ROOT) {
-            return "$";
-        }
-        return type.toString();
-    }
 }
