@@ -4,9 +4,10 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.leo.json.BuilderFactory;
 import org.leo.json.GsonParser;
 import org.leo.json.JsonParser;
-import org.leo.json.JsonPathBinder;
+import org.leo.json.ContentHandlerBuilder;
 import org.leo.json.JsonSimpleParser;
 import org.leo.json.parse.*;
 import org.mockito.Matchers;
@@ -35,13 +36,13 @@ public class JsonParserTest {
 
     @Test
     public void testSampleJson() throws Exception {
-        JsonPathBinder binder = loader.binder();
+        ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(factory);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
-        binder.bind(buildPath().child("store").child("book").array(0).child("category"), mockListener)
+        builder.bind(buildPath().child("store").child("book").array(0).child("category"), mockListener)
                 .bind(buildPath().child("store").child("book").array(0), mockListener)
                 .bind(buildPath().child("store").child("car"), mockListener)
                 .bind(buildPath().child("store").child("bicycle"), mockListener);
-        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), binder.build());
+        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
 
         Object book = factory.createObject();
         factory.consumeObjectEntry(book, "category", factory.primitive("reference"));
@@ -65,7 +66,7 @@ public class JsonParserTest {
 
     @Test
     public void testStoppableParsing() throws Exception {
-        JsonPathBinder binder = loader.binder();
+        ContentHandlerBuilder binder = BuilderFactory.start().setJsonStructureFactory(factory);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
         binder.bind(buildPath().child("store").child("book").array(0), mockListener)
                 .bind(buildPath().child("store").child("book").array(1), mockListener)
@@ -94,7 +95,7 @@ public class JsonParserTest {
 
     @Test
     public void testChildNodeWildcard() throws Exception {
-        JsonPathBinder binder = loader.binder();
+        ContentHandlerBuilder binder = BuilderFactory.start().setJsonStructureFactory(factory);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
         binder.bind(buildPath().child("store").childWildcard(), mockListener);
         loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), binder.build());
@@ -104,7 +105,7 @@ public class JsonParserTest {
 
     @Test
     public void testArrayWildcard() throws Exception {
-        JsonPathBinder binder = loader.binder();
+        ContentHandlerBuilder binder = BuilderFactory.start().setJsonStructureFactory(factory);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
         binder.bind(buildPath().child("store").child("book").arrayWildcard(), mockListener);
         loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), binder.build());
@@ -114,7 +115,7 @@ public class JsonParserTest {
 
     @Test
     public void testWildcardCombination() throws Exception {
-        JsonPathBinder binder = loader.binder();
+        ContentHandlerBuilder binder = BuilderFactory.start().setJsonStructureFactory(factory);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
         binder.bind(buildPath().child("store").child("book").arrayWildcard().childWildcard(), mockListener);
         loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), binder.build());
@@ -124,7 +125,7 @@ public class JsonParserTest {
 
     @Test
     public void testParsingArray() throws Exception {
-        JsonPathBinder binder = loader.binder();
+        ContentHandlerBuilder binder = BuilderFactory.start().setJsonStructureFactory(factory);
         JsonPathListener wholeArray = Mockito.mock(JsonPathListener.class);
         JsonPathListener stringElement = Mockito.mock(JsonPathListener.class);
         JsonPathListener numberElement = Mockito.mock(JsonPathListener.class);

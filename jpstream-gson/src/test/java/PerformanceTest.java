@@ -3,7 +3,7 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import org.junit.Test;
 import org.leo.json.GsonParser;
-import org.leo.json.JsonPathBinder;
+import org.leo.json.ContentHandlerBuilder;
 import org.leo.json.JsonSimpleParser;
 import org.leo.json.parse.JsonPathListener;
 import org.leo.json.parse.ParsingContext;
@@ -23,7 +23,7 @@ public class PerformanceTest {
     @Test
     public void testLargeJsonJPSimple() throws Exception {
         JsonSimpleParser loader = new JsonSimpleParser();
-        JsonPathBinder binder = loader.binder();
+        ContentHandlerBuilder binder = JsonSimpleParser.start();
         final AtomicLong counter = new AtomicLong();
         JsonPathListener printListener = new JsonPathListener() {
 
@@ -44,7 +44,7 @@ public class PerformanceTest {
     @Test
     public void testLargeJsonJPGson() throws Exception {
         GsonParser loader = new GsonParser();
-        JsonPathBinder binder = loader.binder();
+        ContentHandlerBuilder binder = GsonParser.start();
         final AtomicLong counter = new AtomicLong();
         JsonPathListener printListener = new JsonPathListener() {
             @Override

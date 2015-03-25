@@ -9,8 +9,6 @@ import java.io.Reader;
  */
 public interface JsonParser {
 
-    JsonPathBinder binder();
-
     void parse(Reader reader, ContentHandler contentHandler);
 
 }

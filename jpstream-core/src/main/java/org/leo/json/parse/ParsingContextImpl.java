@@ -1,21 +1,22 @@
 package org.leo.json.parse;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import org.json.simple.parser.ContentHandler;
-import org.json.simple.parser.ParseException;
-import org.leo.json.JsonPathBinder;
-import org.leo.json.path.ArrayIndex;
-import org.leo.json.path.JsonPath;
-import org.leo.json.path.PathOperator;
-import org.leo.json.path.PathOperator.Type;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Map;
 
-public class ParsingContextImpl implements ParsingContext, JsonPathBinder, ContentHandler {
+import org.json.simple.parser.ContentHandler;
+import org.json.simple.parser.ParseException;
+import org.leo.json.ContentHandlerBuilder;
+import org.leo.json.path.ArrayIndex;
+import org.leo.json.path.JsonPath;
+import org.leo.json.path.PathOperator;
+import org.leo.json.path.PathOperator.Type;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
+public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder, ContentHandler {
 
     private boolean stopped = false;
     private JsonPath currentPath;
@@ -38,8 +39,10 @@ public class ParsingContextImpl implements ParsingContext, JsonPathBinder, Conte
         }
     };
 
-    public ParsingContextImpl(JsonStructureFactory jsonStructureFactory) {
-        this.jsonStructureFactory = jsonStructureFactory;
+    @Override
+    public ContentHandlerBuilder setJsonStructureFactory(JsonStructureFactory structureFactory) {
+        this.jsonStructureFactory = structureFactory;
+        return this;
     }
 
     @Override
@@ -182,7 +185,7 @@ public class ParsingContextImpl implements ParsingContext, JsonPathBinder, Conte
     }
 
     @Override
-    public JsonPathBinder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners) {
+    public ContentHandlerBuilder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners) {
         int semiHashcode = semiHashcode(jsonPath);
         Map<JsonPath, JsonPathListener[]> map = listenerMap.get(semiHashcode);
         if (map == null) {

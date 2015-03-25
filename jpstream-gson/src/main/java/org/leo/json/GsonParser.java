@@ -1,17 +1,17 @@
 package org.leo.json;
 
-import com.google.common.collect.Lists;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.LinkedList;
+
 import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.ParseException;
 import org.leo.json.exception.JsonParseException;
 import org.leo.json.parse.GsonStructureFactory;
-import org.leo.json.parse.ParsingContextImpl;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.LinkedList;
+import com.google.common.collect.Lists;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 
 public class GsonParser implements JsonParser {
 
@@ -21,10 +21,9 @@ public class GsonParser implements JsonParser {
         PRIMITIVE
     }
 
-    @Override
-    public JsonPathBinder binder() {
+    public static ContentHandlerBuilder start() {
         // TODO Implement gson parsing context
-        return new ParsingContextImpl(new GsonStructureFactory());
+        return BuilderFactory.start().setJsonStructureFactory(new GsonStructureFactory());
     }
 
     @Override
@@ -81,7 +80,7 @@ public class GsonParser implements JsonParser {
                         }
                         JsonToken peek = jsonReader.peek();
                         if (peek == JsonToken.STRING || peek == JsonToken.BOOLEAN || peek == JsonToken.NUMBER
-                                || peek == JsonToken.NULL) {
+                            || peek == JsonToken.NULL) {
                             entryStack.push(EntryType.PRIMITIVE);
                         } else if (peek == JsonToken.BEGIN_OBJECT) {
                             entryStack.push(EntryType.OBJECT);

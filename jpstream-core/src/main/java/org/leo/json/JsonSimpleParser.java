@@ -1,20 +1,18 @@
 package org.leo.json;
 
+import java.io.IOException;
+import java.io.Reader;
+
 import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.leo.json.exception.JsonParseException;
 import org.leo.json.parse.JsonSimpleFactory;
-import org.leo.json.parse.ParsingContextImpl;
-
-import java.io.IOException;
-import java.io.Reader;
 
 public class JsonSimpleParser implements JsonParser {
 
-    @Override
-    public JsonPathBinder binder() {
-        return new ParsingContextImpl(new JsonSimpleFactory());
+    public static ContentHandlerBuilder start() {
+        return BuilderFactory.start().setJsonStructureFactory(new JsonSimpleFactory());
     }
 
     @Override
