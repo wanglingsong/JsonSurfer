@@ -20,25 +20,33 @@
  * THE SOFTWARE.
  */
 
-package org.leo.json.path;
+package org.leo.json;
 
-/**
- * Created by Administrator on 2015/3/25.
- */
-public class DeepScan extends PathOperator {
+import java.io.IOException;
+import java.io.Reader;
 
-    protected DeepScan() {
-        super(Type.DEEP_SCAN);
+import org.json.simple.parser.ContentHandler;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.leo.json.exception.JsonSurfingException;
+import org.leo.json.parse.JsonSimpleProvider;
+
+public class JsonSimpleSurfer implements JsonSurfer {
+
+    public static ContentHandlerBuilder start() {
+        return BuilderFactory.start().setJsonStructureFactory(new JsonSimpleProvider());
     }
 
     @Override
-    public boolean match(PathOperator pathOperator) {
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return ".";
+    public void surf(Reader reader, ContentHandler contentHandler) {
+        JSONParser parser = new JSONParser();
+        try {
+            parser.parse(reader, contentHandler);
+        } catch (ParseException e) {
+            throw new JsonSurfingException(e);
+        } catch (IOException e) {
+            throw new JsonSurfingException(e);
+        }
     }
 
 }

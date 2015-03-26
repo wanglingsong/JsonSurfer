@@ -5,10 +5,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.leo.json.BuilderFactory;
-import org.leo.json.GsonParser;
-import org.leo.json.JsonParser;
+import org.leo.json.GsonSurfer;
+import org.leo.json.JsonSurfer;
 import org.leo.json.ContentHandlerBuilder;
-import org.leo.json.JsonSimpleParser;
+import org.leo.json.JsonSimpleSurfer;
 import org.leo.json.parse.*;
 import org.leo.json.path.JsonPath;
 import org.mockito.Matchers;
@@ -24,15 +24,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @RunWith(Parameterized.class)
-public class JsonParserTest {
+public class JsonSurferTest {
 
     @Parameterized.Parameters
     public static Object[][] data() {
-        return new Object[][]{new Object[]{new JsonSimpleParser(), new JsonSimpleProvider()}, new Object[]{new GsonParser(), new GsonProvider()}};
+        return new Object[][]{new Object[]{new JsonSimpleSurfer(), new JsonSimpleProvider()}, new Object[]{new GsonSurfer(), new GsonProvider()}};
     }
 
     @Parameterized.Parameter(0)
-    public JsonParser loader;
+    public JsonSurfer loader;
 
     @Parameterized.Parameter(1)
     public JsonProvider provider;
@@ -45,7 +45,7 @@ public class JsonParserTest {
                 .bind(start().child("store").child("book").index(0), mockListener)
                 .bind(start().child("store").child("car"), mockListener)
                 .bind(start().child("store").child("bicycle"), mockListener);
-        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
+        loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
 
         Object book = provider.createObject();
         provider.consumeObjectEntry(book, "category", provider.primitive("reference"));
@@ -90,7 +90,7 @@ public class JsonParserTest {
                     }
                 }));
 
-        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
+        loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener, times(1))
                 .onValue(anyObject(), any(ParsingContext.class));
 
@@ -101,7 +101,7 @@ public class JsonParserTest {
         ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
         builder.bind(start().child("store").childWildcard(), mockListener);
-        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
+        loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener, times(3))
                 .onValue(anyObject(), any(ParsingContext.class));
     }
@@ -111,7 +111,7 @@ public class JsonParserTest {
         ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
         builder.bind(start().child("store").child("book").arrayWildcard(), mockListener);
-        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
+        loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener, times(4))
                 .onValue(anyObject(), any(ParsingContext.class));
     }
@@ -121,7 +121,7 @@ public class JsonParserTest {
         ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
         builder.bind(start().child("store").child("book").arrayWildcard().childWildcard(), mockListener);
-        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
+        loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener, times(18)).onValue(anyObject(),
                 any(ParsingContext.class));
     }
@@ -142,7 +142,7 @@ public class JsonParserTest {
         builder.bind(start().index(2), booleanElement);
         builder.bind(start().index(3), nullElement);
         builder.bind(start().index(4), objectElement);
-        loader.parse(new InputStreamReader(Resources.getResource("array.json").openStream()), builder.build());
+        loader.surf(new InputStreamReader(Resources.getResource("array.json").openStream()), builder.build());
         Object object = provider.createObject();
         provider.consumeObjectEntry(object, "key", provider.primitive("value"));
         Object array = provider.createArray();
@@ -165,7 +165,7 @@ public class JsonParserTest {
         ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
         builder.bind(JsonPath.start().scan().child("author"), mockListener);
-        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
+        loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener).onValue(eq(provider.primitive("Nigel Rees")), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive("Evelyn Waugh")), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive("Herman Melville")), any(ParsingContext.class));
@@ -177,7 +177,7 @@ public class JsonParserTest {
         ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
         builder.bind(JsonPath.start().child("store").scan().child("price"), mockListener);
-        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
+        loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener).onValue(eq(provider.primitive(8.95)), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive(12.99)), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive(8.99)), any(ParsingContext.class));
@@ -188,13 +188,13 @@ public class JsonParserTest {
     @Test
     public void testFindEveryThing() throws Exception {
         ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
-        builder.bind(JsonPath.start().scan().childWildcard(), new JsonPathListener() {
+        builder.bind(JsonPath.start().scan().wildcard(), new JsonPathListener() {
             @Override
             public void onValue(Object value, ParsingContext context) {
                 System.out.println(value);
             }
         });
-        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
+        loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
     }
 
     @Test
@@ -202,7 +202,7 @@ public class JsonParserTest {
         ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
         builder.bind(JsonPath.start().scan().child("book").indexes(1,3).children("author", "title"), mockListener);
-        loader.parse(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
+        loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener).onValue(eq(provider.primitive("Evelyn Waugh")), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive("Sword of Honour")), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive("J. R. R. Tolkien")), any(ParsingContext.class));

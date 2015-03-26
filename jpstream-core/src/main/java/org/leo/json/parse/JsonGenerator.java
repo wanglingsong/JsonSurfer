@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2015 WANG Lingsong
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package org.leo.json.parse;
 
 import com.google.common.collect.Lists;
@@ -10,13 +32,13 @@ import java.util.LinkedList;
 /**
  * Created by Administrator on 2015/3/21.
  */
-class Transformer implements ContentHandler {
+class JsonGenerator implements ContentHandler {
 
-    private JsonProvider factory;
+    private JsonProvider provider;
     private LinkedList<Object> valueStack;
 
-    public void setFactory(JsonProvider factory) {
-        this.factory = factory;
+    public void setProvider(JsonProvider provider) {
+        this.provider = provider;
     }
 
     public Object getResult() {
@@ -41,7 +63,7 @@ class Transformer implements ContentHandler {
     public boolean endObjectEntry() throws ParseException, IOException {
         Object value = valueStack.pop();
         String key = valueStack.pop().toString();
-        factory.consumeObjectEntry(valueStack.peek(), key, value);
+        provider.consumeObjectEntry(valueStack.peek(), key, value);
         return true;
     }
 
@@ -60,8 +82,8 @@ class Transformer implements ContentHandler {
             valueStack.push(value);
         else {
             Object prev = valueStack.peek();
-            if (factory.isArray(prev)) {
-                factory.consumeArrayElement(prev, value);
+            if (provider.isArray(prev)) {
+                provider.consumeArrayElement(prev, value);
             } else {
                 valueStack.push(value);
             }
@@ -69,12 +91,12 @@ class Transformer implements ContentHandler {
     }
 
     public boolean primitive(Object value) throws ParseException, IOException {
-        consumeValue(factory.primitive(value));
+        consumeValue(provider.primitive(value));
         return true;
     }
 
     public boolean startArray() throws ParseException, IOException {
-        Object array = factory.createArray();
+        Object array = provider.createArray();
         consumeValue(array);
         valueStack.push(array);
         return true;
@@ -89,7 +111,7 @@ class Transformer implements ContentHandler {
     }
 
     public boolean startObject() throws ParseException, IOException {
-        Object object = factory.createObject();
+        Object object = provider.createObject();
         consumeValue(object);
         valueStack.push(object);
         return true;

@@ -20,25 +20,17 @@
  * THE SOFTWARE.
  */
 
-package org.leo.json.path;
+package org.leo.json;
+
+import org.json.simple.parser.ContentHandler;
+
+import java.io.Reader;
 
 /**
- * Created by Administrator on 2015/3/25.
+ * Created by Administrator on 2015/3/23.
  */
-public class DeepScan extends PathOperator {
+public interface JsonSurfer {
 
-    protected DeepScan() {
-        super(Type.DEEP_SCAN);
-    }
-
-    @Override
-    public boolean match(PathOperator pathOperator) {
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return ".";
-    }
+    void surf(Reader reader, ContentHandler contentHandler);
 
 }

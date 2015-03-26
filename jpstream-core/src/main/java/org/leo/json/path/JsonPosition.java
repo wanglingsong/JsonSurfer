@@ -23,22 +23,28 @@
 package org.leo.json.path;
 
 /**
- * Created by Administrator on 2015/3/25.
+ * Created by Leo on 2015/3/27.
  */
-public class DeepScan extends PathOperator {
+public class JsonPosition extends JsonPath {
 
-    protected DeepScan() {
-        super(Type.DEEP_SCAN);
+    public static JsonPosition start() {
+        JsonPosition newPath = new JsonPosition();
+        newPath.path.push(Root.instance());
+        return newPath;
     }
 
-    @Override
-    public boolean match(PathOperator pathOperator) {
-        return true;
+    public PathOperator pop() {
+        return path.pop();
     }
 
-    @Override
-    public String toString() {
-        return ".";
+    public JsonPath array() {
+        path.push(new ArrayIndex());
+        return this;
+    }
+
+    public void clear() {
+        path.clear();
+        path = null;
     }
 
 }

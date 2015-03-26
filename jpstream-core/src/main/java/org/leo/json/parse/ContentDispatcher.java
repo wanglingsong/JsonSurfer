@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2015 WANG Lingsong
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package org.leo.json.parse;
 
 import com.google.common.collect.Lists;
@@ -11,36 +33,40 @@ import java.util.LinkedList;
 /**
  * Created by Administrator on 2015/3/21.
  */
-public class ParsingObserver implements ContentHandler {
+public class ContentDispatcher implements ContentHandler {
 
-    LinkedList<ContentHandler> observers = Lists.newLinkedList();
+    LinkedList<ContentHandler> receiver = Lists.newLinkedList();
+
+    public boolean isEmpty() {
+        return this.receiver.isEmpty();
+    }
 
     @Override
     public void startJSON() throws ParseException, IOException {
-        if (observers.isEmpty()) {
+        if (receiver.isEmpty()) {
             return;
         }
-        for (ContentHandler observer : observers) {
+        for (ContentHandler observer : receiver) {
             observer.startJSON();
         }
     }
 
     @Override
     public void endJSON() throws ParseException, IOException {
-        if (observers.isEmpty()) {
+        if (receiver.isEmpty()) {
             return;
         }
-        for (ContentHandler observer : observers) {
+        for (ContentHandler observer : receiver) {
             observer.endJSON();
         }
     }
 
     @Override
     public boolean startObject() throws ParseException, IOException {
-        if (observers.isEmpty()) {
+        if (receiver.isEmpty()) {
             return true;
         }
-        Iterator<ContentHandler> itr = observers.iterator();
+        Iterator<ContentHandler> itr = receiver.iterator();
         while (itr.hasNext()) {
             ContentHandler observer = itr.next();
             if (!observer.startObject()) {
@@ -52,10 +78,10 @@ public class ParsingObserver implements ContentHandler {
 
     @Override
     public boolean endObject() throws ParseException, IOException {
-        if (observers.isEmpty()) {
+        if (receiver.isEmpty()) {
             return true;
         }
-        Iterator<ContentHandler> itr = observers.iterator();
+        Iterator<ContentHandler> itr = receiver.iterator();
         while (itr.hasNext()) {
             ContentHandler observer = itr.next();
             if (!observer.endObject()) {
@@ -67,10 +93,10 @@ public class ParsingObserver implements ContentHandler {
 
     @Override
     public boolean startObjectEntry(String key) throws ParseException, IOException {
-        if (observers.isEmpty()) {
+        if (receiver.isEmpty()) {
             return true;
         }
-        Iterator<ContentHandler> itr = observers.iterator();
+        Iterator<ContentHandler> itr = receiver.iterator();
         while (itr.hasNext()) {
             ContentHandler observer = itr.next();
             if (!observer.startObjectEntry(key)) {
@@ -82,10 +108,10 @@ public class ParsingObserver implements ContentHandler {
 
     @Override
     public boolean endObjectEntry() throws ParseException, IOException {
-        if (observers.isEmpty()) {
+        if (receiver.isEmpty()) {
             return true;
         }
-        Iterator<ContentHandler> itr = observers.iterator();
+        Iterator<ContentHandler> itr = receiver.iterator();
         while (itr.hasNext()) {
             ContentHandler observer = itr.next();
             if (!observer.endObjectEntry()) {
@@ -97,10 +123,10 @@ public class ParsingObserver implements ContentHandler {
 
     @Override
     public boolean startArray() throws ParseException, IOException {
-        if (observers.isEmpty()) {
+        if (receiver.isEmpty()) {
             return true;
         }
-        Iterator<ContentHandler> itr = observers.iterator();
+        Iterator<ContentHandler> itr = receiver.iterator();
         while (itr.hasNext()) {
             ContentHandler observer = itr.next();
             if (!observer.startArray()) {
@@ -112,10 +138,10 @@ public class ParsingObserver implements ContentHandler {
 
     @Override
     public boolean endArray() throws ParseException, IOException {
-        if (observers.isEmpty()) {
+        if (receiver.isEmpty()) {
             return true;
         }
-        Iterator<ContentHandler> itr = observers.iterator();
+        Iterator<ContentHandler> itr = receiver.iterator();
         while (itr.hasNext()) {
             ContentHandler observer = itr.next();
             if (!observer.endArray()) {
@@ -127,10 +153,10 @@ public class ParsingObserver implements ContentHandler {
 
     @Override
     public boolean primitive(Object value) throws ParseException, IOException {
-        if (observers.isEmpty()) {
+        if (receiver.isEmpty()) {
             return true;
         }
-        Iterator<ContentHandler> itr = observers.iterator();
+        Iterator<ContentHandler> itr = receiver.iterator();
         while (itr.hasNext()) {
             ContentHandler observer = itr.next();
             if (!observer.primitive(value)) {
@@ -140,7 +166,7 @@ public class ParsingObserver implements ContentHandler {
         return true;
     }
 
-    public void addObserver(ContentHandler contentHandler) {
-        observers.add(contentHandler);
+    public void addReceiver(ContentHandler contentHandler) {
+        receiver.add(contentHandler);
     }
 }

@@ -2,9 +2,9 @@ import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import org.junit.Test;
-import org.leo.json.GsonParser;
+import org.leo.json.GsonSurfer;
 import org.leo.json.ContentHandlerBuilder;
-import org.leo.json.JsonSimpleParser;
+import org.leo.json.JsonSimpleSurfer;
 import org.leo.json.parse.JsonPathListener;
 import org.leo.json.parse.ParsingContext;
 import org.slf4j.Logger;
@@ -22,8 +22,8 @@ public class PerformanceTest {
 
     @Test
     public void testLargeJsonJPSimple() throws Exception {
-        JsonSimpleParser loader = new JsonSimpleParser();
-        ContentHandlerBuilder binder = JsonSimpleParser.start();
+        JsonSimpleSurfer loader = new JsonSimpleSurfer();
+        ContentHandlerBuilder binder = JsonSimpleSurfer.start();
         final AtomicLong counter = new AtomicLong();
         JsonPathListener printListener = new JsonPathListener() {
 
@@ -33,9 +33,9 @@ public class PerformanceTest {
                 LOGGER.trace("value: {}", value);
             }
         };
-        binder.bind(start().child("builders").childWildcard().child("properties"), printListener);
+        binder.bind(start().child("builders").childWildcard().child("properties"), printListener).skipOverlappedPath();
         long start = System.currentTimeMillis();
-        loader.parse(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), binder.build());
+        loader.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), binder.build());
         LOGGER.info("JPStream-simple processes {} value in {} millisecond", counter.get(), System.currentTimeMillis()
                 - start);
 
@@ -43,8 +43,8 @@ public class PerformanceTest {
 
     @Test
     public void testLargeJsonJPGson() throws Exception {
-        GsonParser loader = new GsonParser();
-        ContentHandlerBuilder binder = GsonParser.start();
+        GsonSurfer loader = new GsonSurfer();
+        ContentHandlerBuilder binder = GsonSurfer.start();
         final AtomicLong counter = new AtomicLong();
         JsonPathListener printListener = new JsonPathListener() {
             @Override
@@ -53,9 +53,9 @@ public class PerformanceTest {
                 LOGGER.trace("value: {}", value);
             }
         };
-        binder.bind(start().child("builders").childWildcard().child("properties"), printListener);
+        binder.bind(start().child("builders").childWildcard().child("properties"), printListener).skipOverlappedPath();
         long start = System.currentTimeMillis();
-        loader.parse(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), binder.build());
+        loader.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), binder.build());
         LOGGER.info("JPStream-gson processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);
 
     }

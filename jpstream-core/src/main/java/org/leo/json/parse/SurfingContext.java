@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2015 WANG Lingsong
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package org.leo.json.parse;
 
 import java.io.IOException;
@@ -10,35 +32,44 @@ import org.json.simple.parser.ParseException;
 import org.leo.json.ContentHandlerBuilder;
 import org.leo.json.path.ArrayIndex;
 import org.leo.json.path.JsonPath;
+import org.leo.json.path.JsonPosition;
 import org.leo.json.path.PathOperator;
 import org.leo.json.path.PathOperator.Type;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder, ContentHandler {
+public class SurfingContext implements ParsingContext, ContentHandlerBuilder, ContentHandler {
 
+    private boolean built = false;
     private boolean stopped = false;
-    private JsonPath currentPath;
+    private boolean skipOverlappedPath = false;
+    private JsonPosition currentPath;
     private Map<Integer, Map<JsonPath, JsonPathListener[]>> definitePathMap = Maps.newHashMap();
     private Map<JsonPath, JsonPathListener[]> indefinitePathMap = Maps.newHashMap();
-    private ParsingObserver observer = new ParsingObserver();
+    private ContentDispatcher dispatcher = new ContentDispatcher();
     private JsonProvider jsonProvider;
 
     private interface CollectorProcessor {
 
-        boolean process(JsonNodeCollector collector) throws IOException, ParseException;
+        boolean process(JsonCollector collector) throws IOException, ParseException;
 
     }
 
     private CollectorProcessor startJsonProcessor = new CollectorProcessor() {
 
         @Override
-        public boolean process(JsonNodeCollector collector) throws IOException, ParseException {
+        public boolean process(JsonCollector collector) throws IOException, ParseException {
             collector.startJSON();
             return true;
         }
     };
+
+    @Override
+    public ContentHandlerBuilder skipOverlappedPath() {
+        this.skipOverlappedPath = true;
+        return this;
+    }
 
     @Override
     public ContentHandlerBuilder setJsonStructureFactory(JsonProvider structureFactory) {
@@ -51,9 +82,9 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
         if (stopped) {
             return;
         }
-        currentPath = JsonPath.start();
+        currentPath = JsonPosition.start();
         doMatching(null);
-        observer.startJSON();
+        dispatcher.startJSON();
     }
 
     @Override
@@ -61,8 +92,12 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
         if (stopped) {
             return;
         }
-        observer.endJSON();
+        dispatcher.endJSON();
+        // clear resources
         currentPath.clear();
+        currentPath = null;
+        indefinitePathMap = null;
+        definitePathMap = null;
     }
 
     @Override
@@ -75,11 +110,15 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
             ((ArrayIndex) top).increaseArrayIndex();
             doMatching(startJsonProcessor);
         }
-        observer.startObject();
+        dispatcher.startObject();
         return true;
     }
 
     private void doMatching(CollectorProcessor processor) throws IOException, ParseException {
+        // skip matching if "skipOverlappedPath" is enable
+        if (skipOverlappedPath && !this.dispatcher.isEmpty()) {
+            return;
+        }
         LinkedList<JsonPathListener> listeners = null;
 
         if (!indefinitePathMap.isEmpty()) {
@@ -107,12 +146,12 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
         }
 
         if (listeners != null) {
-            JsonNodeCollector collector = new JsonNodeCollector(listeners, this);
-            collector.setFactory(jsonProvider);
+            JsonCollector collector = new JsonCollector(listeners, this);
+            collector.setProvider(jsonProvider);
             if (processor != null) {
                 processor.process(collector);
             }
-            observer.addObserver(collector);
+            dispatcher.addReceiver(collector);
         }
     }
 
@@ -121,7 +160,7 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
         if (stopped) {
             return false;
         }
-        observer.endObject();
+        dispatcher.endObject();
         return true;
     }
 
@@ -131,7 +170,7 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
             return false;
         }
         currentPath.child(key);
-        observer.startObjectEntry(key);
+        dispatcher.startObjectEntry(key);
         doMatching(startJsonProcessor);
         return true;
     }
@@ -142,7 +181,7 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
             return false;
         }
         currentPath.pop();
-        observer.endObjectEntry();
+        dispatcher.endObjectEntry();
         return true;
     }
 
@@ -157,7 +196,7 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
             doMatching(startJsonProcessor);
         }
         currentPath.array();
-        observer.startArray();
+        dispatcher.startArray();
         return true;
     }
 
@@ -167,7 +206,7 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
             return false;
         }
         currentPath.pop();
-        observer.endArray();
+        dispatcher.endArray();
         return true;
     }
 
@@ -181,7 +220,7 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
             ((ArrayIndex) top).increaseArrayIndex();
             doMatching(startJsonProcessor);
         }
-        observer.primitive(value);
+        dispatcher.primitive(value);
         return true;
     }
 
@@ -192,13 +231,15 @@ public class ParsingContextImpl implements ParsingContext, ContentHandlerBuilder
 
     @Override
     public ContentHandler build() {
-        this.definitePathMap = Collections.unmodifiableMap(this.definitePathMap);
-        this.indefinitePathMap = Collections.unmodifiableMap(this.indefinitePathMap);
+        this.built = true;
         return this;
     }
 
     @Override
     public ContentHandlerBuilder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners) {
+        if (built) {
+            throw new IllegalStateException("The JsonSurfer is already built");
+        }
         if (!jsonPath.isDefinite()) {
             indefinitePathMap.put(jsonPath, jsonPathListeners);
         } else {

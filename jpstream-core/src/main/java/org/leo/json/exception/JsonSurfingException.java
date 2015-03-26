@@ -20,25 +20,19 @@
  * THE SOFTWARE.
  */
 
-package org.leo.json.path;
+package org.leo.json.exception;
 
 /**
  * Created by Administrator on 2015/3/25.
  */
-public class DeepScan extends PathOperator {
+public class JsonSurfingException extends RuntimeException {
 
-    protected DeepScan() {
-        super(Type.DEEP_SCAN);
+    public JsonSurfingException(Throwable cause) {
+        super(cause);
     }
 
-    @Override
-    public boolean match(PathOperator pathOperator) {
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return ".";
+    public JsonSurfingException(String message, Throwable cause) {
+        super(message, cause);
     }
 
 }
