@@ -14,7 +14,7 @@ Two approaches:
 
     But what if the json object is complicated (i.e. desired value nested deeply)?
 
-    Luckily, most of popular json library like Gson and Jackson provide powerful streaming API, however, they are not convenient enough in this case, um.. at least for me.
+    Luckily, most of popular json library like Gson and Jackson provide powerful streaming API, however, they are still not convenient enough in this case, um.. at least for me.
 
 ## Getting started
 [JsonPath](http://goessner.net/articles/JsonPath/)
