@@ -10,9 +10,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>jpstream-core</module>
-        <module>jpstream-gson</module>
-        <module>jpstream-jackson</module>
+        <module>jsurfer-core</module>
+        <module>jsurfer-gson</module>
+        <module>jsurfer-jackson</module>
     </modules>
 
     <build>
