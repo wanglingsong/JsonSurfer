@@ -30,15 +30,15 @@ import org.leo.json.path.JsonPath;
 /**
  * Created by Administrator on 2015/3/22.
  */
-public interface ContentHandlerBuilder {
+public interface HandlerBuilder {
 
-    ContentHandlerBuilder skipOverlappedPath();
+    HandlerBuilder skipOverlappedPath();
 
-    ContentHandlerBuilder setJsonProvider(JsonProvider structureFactory);
+    HandlerBuilder setJsonProvider(JsonProvider structureFactory);
 
-    ContentHandlerBuilder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners);
+    HandlerBuilder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners);
 
-    ContentHandlerBuilder bind(JsonPath.Builder builder, JsonPathListener... jsonPathListeners);
+    HandlerBuilder bind(JsonPath.Builder builder, JsonPathListener... jsonPathListeners);
 
     ContentHandler build();
 

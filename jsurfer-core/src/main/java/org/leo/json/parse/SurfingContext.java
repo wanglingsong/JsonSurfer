@@ -24,7 +24,7 @@ package org.leo.json.parse;
 
 import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.ParseException;
-import org.leo.json.ContentHandlerBuilder;
+import org.leo.json.HandlerBuilder;
 import org.leo.json.path.ArrayIndex;
 import org.leo.json.path.JsonPath;
 import org.leo.json.path.PathOperator;
@@ -36,7 +36,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-public class SurfingContext implements ParsingContext, ContentHandlerBuilder, ContentHandler {
+public class SurfingContext implements ParsingContext, HandlerBuilder, ContentHandler {
 
     private boolean built = false;
     private boolean stopped = false;
@@ -63,13 +63,13 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
     };
 
     @Override
-    public ContentHandlerBuilder skipOverlappedPath() {
+    public HandlerBuilder skipOverlappedPath() {
         this.skipOverlappedPath = true;
         return this;
     }
 
     @Override
-    public ContentHandlerBuilder setJsonProvider(JsonProvider structureFactory) {
+    public HandlerBuilder setJsonProvider(JsonProvider structureFactory) {
         this.jsonProvider = structureFactory;
         return this;
     }
@@ -233,12 +233,12 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
     }
 
     @Override
-    public ContentHandlerBuilder bind(JsonPath.Builder builder, JsonPathListener... jsonPathListeners) {
+    public HandlerBuilder bind(JsonPath.Builder builder, JsonPathListener... jsonPathListeners) {
         return bind(builder.build(), jsonPathListeners);
     }
 
     @Override
-    public ContentHandlerBuilder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners) {
+    public HandlerBuilder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners) {
         if (built) {
             throw new IllegalStateException("The JsonSurfer is already built");
         }

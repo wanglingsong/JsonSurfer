@@ -2,7 +2,7 @@ import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import org.junit.Test;
-import org.leo.json.ContentHandlerBuilder;
+import org.leo.json.HandlerBuilder;
 import org.leo.json.GsonSurfer;
 import org.leo.json.JsonSimpleSurfer;
 import org.leo.json.parse.GsonProvider;
@@ -27,7 +27,7 @@ public class PerformanceTest {
     @Test
     public void testLargeJsonJPSimple() throws Exception {
         JsonSimpleSurfer loader = new JsonSimpleSurfer();
-        ContentHandlerBuilder handler = handler().setJsonProvider(new JsonSimpleProvider());
+        HandlerBuilder handler = handler().setJsonProvider(new JsonSimpleProvider());
         final AtomicLong counter = new AtomicLong();
         JsonPathListener printListener = new JsonPathListener() {
 
@@ -48,7 +48,7 @@ public class PerformanceTest {
     @Test
     public void testLargeJsonJPGson() throws Exception {
         GsonSurfer loader = new GsonSurfer();
-        ContentHandlerBuilder handler = handler().setJsonProvider(new GsonProvider());
+        HandlerBuilder handler = handler().setJsonProvider(new GsonProvider());
         final AtomicLong counter = new AtomicLong();
         JsonPathListener printListener = new JsonPathListener() {
             @Override
