@@ -33,10 +33,6 @@ import org.leo.json.parse.JsonSimpleProvider;
 
 public class JsonSimpleSurfer implements JsonSurfer {
 
-    public static ContentHandlerBuilder start() {
-        return BuilderFactory.start().setJsonStructureFactory(new JsonSimpleProvider());
-    }
-
     @Override
     public void surf(Reader reader, ContentHandler contentHandler) {
         JSONParser parser = new JSONParser();

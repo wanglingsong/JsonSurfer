@@ -32,7 +32,6 @@ import org.json.simple.parser.ParseException;
 import org.leo.json.ContentHandlerBuilder;
 import org.leo.json.path.ArrayIndex;
 import org.leo.json.path.JsonPath;
-import org.leo.json.path.JsonPosition;
 import org.leo.json.path.PathOperator;
 import org.leo.json.path.PathOperator.Type;
 
@@ -44,7 +43,7 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
     private boolean built = false;
     private boolean stopped = false;
     private boolean skipOverlappedPath = false;
-    private JsonPosition currentPath;
+    private JsonPosition currentPosition;
     private Map<Integer, Map<JsonPath, JsonPathListener[]>> definitePathMap = Maps.newHashMap();
     private Map<JsonPath, JsonPathListener[]> indefinitePathMap = Maps.newHashMap();
     private ContentDispatcher dispatcher = new ContentDispatcher();
@@ -72,7 +71,7 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
     }
 
     @Override
-    public ContentHandlerBuilder setJsonStructureFactory(JsonProvider structureFactory) {
+    public ContentHandlerBuilder setJsonProvider(JsonProvider structureFactory) {
         this.jsonProvider = structureFactory;
         return this;
     }
@@ -82,7 +81,7 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
         if (stopped) {
             return;
         }
-        currentPath = JsonPosition.start();
+        currentPosition = JsonPosition.start();
         doMatching(null);
         dispatcher.startJSON();
     }
@@ -94,8 +93,8 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
         }
         dispatcher.endJSON();
         // clear resources
-        currentPath.clear();
-        currentPath = null;
+        currentPosition.clear();
+        currentPosition = null;
         indefinitePathMap = null;
         definitePathMap = null;
     }
@@ -105,7 +104,7 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
         if (stopped) {
             return false;
         }
-        PathOperator top = currentPath.peek();
+        PathOperator top = currentPosition.peek();
         if (top.getType() == Type.ARRAY) {
             ((ArrayIndex) top).increaseArrayIndex();
             doMatching(startJsonProcessor);
@@ -123,7 +122,7 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
 
         if (!indefinitePathMap.isEmpty()) {
             for (Map.Entry<JsonPath, JsonPathListener[]> entry : indefinitePathMap.entrySet()) {
-                if (entry.getKey().match(currentPath)) {
+                if (entry.getKey().match(currentPosition)) {
                     if (listeners == null) {
                         listeners = Lists.newLinkedList();
                     }
@@ -132,11 +131,11 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
             }
         }
 
-        int semiHashcode = semiHashcode(currentPath);
+        int semiHashcode = semiHashcode(currentPosition);
         Map<JsonPath, JsonPathListener[]> map = definitePathMap.get(semiHashcode);
         if (map != null) {
             for (Map.Entry<JsonPath, JsonPathListener[]> entry : map.entrySet()) {
-                if (entry.getKey().match(currentPath)) {
+                if (entry.getKey().match(currentPosition)) {
                     if (listeners == null) {
                         listeners = Lists.newLinkedList();
                     }
@@ -169,7 +168,7 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
         if (stopped) {
             return false;
         }
-        currentPath.child(key);
+        currentPosition.stepInObject(key);
         dispatcher.startObjectEntry(key);
         doMatching(startJsonProcessor);
         return true;
@@ -180,7 +179,7 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
         if (stopped) {
             return false;
         }
-        currentPath.pop();
+        currentPosition.pop();
         dispatcher.endObjectEntry();
         return true;
     }
@@ -190,12 +189,12 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
         if (stopped) {
             return false;
         }
-        PathOperator top = currentPath.peek();
+        PathOperator top = currentPosition.peek();
         if (top.getType() == Type.ARRAY) {
             ((ArrayIndex) top).increaseArrayIndex();
             doMatching(startJsonProcessor);
         }
-        currentPath.array();
+        currentPosition.stepInArray();
         dispatcher.startArray();
         return true;
     }
@@ -205,7 +204,7 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
         if (stopped) {
             return false;
         }
-        currentPath.pop();
+        currentPosition.pop();
         dispatcher.endArray();
         return true;
     }
@@ -215,7 +214,7 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
         if (stopped) {
             return false;
         }
-        PathOperator top = currentPath.peek();
+        PathOperator top = currentPosition.peek();
         if (top.getType() == Type.ARRAY) {
             ((ArrayIndex) top).increaseArrayIndex();
             doMatching(startJsonProcessor);
@@ -226,13 +225,18 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
 
     @Override
     public String getPath() {
-        return this.currentPath.toString();
+        return this.currentPosition.toString();
     }
 
     @Override
     public ContentHandler build() {
         this.built = true;
         return this;
+    }
+
+    @Override
+    public ContentHandlerBuilder bind(JsonPath.Builder builder, JsonPathListener... jsonPathListeners) {
+        return bind(builder.build(), jsonPathListeners);
     }
 
     @Override

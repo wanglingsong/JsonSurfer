@@ -43,10 +43,7 @@ public class GsonSurfer implements JsonSurfer {
         PRIMITIVE
     }
 
-    public static ContentHandlerBuilder start() {
-        // TODO Implement gson parsing context
-        return BuilderFactory.start().setJsonStructureFactory(new GsonProvider());
-    }
+    // TODO Implement gson parsing context
 
     @Override
     public void surf(Reader reader, ContentHandler contentHandler) {

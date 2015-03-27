@@ -20,31 +20,44 @@
  * THE SOFTWARE.
  */
 
-package org.leo.json.path;
+package org.leo.json.parse;
+
+import org.leo.json.path.ArrayIndex;
+import org.leo.json.path.ChildNode;
+import org.leo.json.path.JsonPath;
+import org.leo.json.path.PathOperator;
+import org.leo.json.path.Root;
 
 /**
  * Created by Leo on 2015/3/27.
  */
-public class JsonPosition extends JsonPath {
+class JsonPosition extends JsonPath {
+
+    //TODO recycling node for saving gc
 
     public static JsonPosition start() {
         JsonPosition newPath = new JsonPosition();
-        newPath.path.push(Root.instance());
+        newPath.operators.push(Root.instance());
         return newPath;
     }
 
     public PathOperator pop() {
-        return path.pop();
+        return operators.pop();
     }
 
-    public JsonPath array() {
-        path.push(new ArrayIndex());
+    public JsonPosition stepInArray() {
+        operators.push(new ArrayIndex());
+        return this;
+    }
+
+    public JsonPosition stepInObject(String key) {
+        operators.push(new ChildNode(key));
         return this;
     }
 
     public void clear() {
-        path.clear();
-        path = null;
+        operators.clear();
+        operators = null;
     }
 
 }

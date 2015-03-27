@@ -34,9 +34,11 @@ public interface ContentHandlerBuilder {
 
     ContentHandlerBuilder skipOverlappedPath();
 
-    ContentHandlerBuilder setJsonStructureFactory(JsonProvider structureFactory);
+    ContentHandlerBuilder setJsonProvider(JsonProvider structureFactory);
 
     ContentHandlerBuilder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners);
+
+    ContentHandlerBuilder bind(JsonPath.Builder builder, JsonPathListener... jsonPathListeners);
 
     ContentHandler build();
 

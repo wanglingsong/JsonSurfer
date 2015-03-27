@@ -23,11 +23,16 @@
 package org.leo.json;
 
 import org.leo.json.parse.SurfingContext;
+import org.leo.json.path.JsonPath;
 
 public class BuilderFactory {
 
-    public static ContentHandlerBuilder start() {
+    public static ContentHandlerBuilder handler() {
         return new SurfingContext();
+    }
+
+    public static JsonPath.Builder path() {
+        return JsonPath.Builder.start();
     }
 
 }

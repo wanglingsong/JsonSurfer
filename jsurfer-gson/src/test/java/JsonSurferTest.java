@@ -10,13 +10,12 @@ import org.leo.json.JsonSurfer;
 import org.leo.json.ContentHandlerBuilder;
 import org.leo.json.JsonSimpleSurfer;
 import org.leo.json.parse.*;
-import org.leo.json.path.JsonPath;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import java.io.InputStreamReader;
 
-import static org.leo.json.path.JsonPath.start;
+import static org.leo.json.BuilderFactory.path;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
@@ -39,12 +38,12 @@ public class JsonSurferTest {
 
     @Test
     public void testSampleJson() throws Exception {
-        ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
+        ContentHandlerBuilder builder = BuilderFactory.handler().setJsonProvider(provider);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
-        builder.bind(start().child("store").child("book").index(0).child("category"), mockListener)
-                .bind(start().child("store").child("book").index(0), mockListener)
-                .bind(start().child("store").child("car"), mockListener)
-                .bind(start().child("store").child("bicycle"), mockListener);
+        builder.bind(path().child("store").child("book").index(0).child("category"), mockListener)
+                .bind(path().child("store").child("book").index(0), mockListener)
+                .bind(path().child("store").child("car"), mockListener)
+                .bind(path().child("store").child("bicycle"), mockListener);
         loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
 
         Object book = provider.createObject();
@@ -69,12 +68,12 @@ public class JsonSurferTest {
 
     @Test
     public void testStoppableParsing() throws Exception {
-        ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
+        ContentHandlerBuilder builder = BuilderFactory.handler().setJsonProvider(provider);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
-        builder.bind(start().child("store").child("book").index(0), mockListener)
-                .bind(start().child("store").child("book").index(1), mockListener)
-                .bind(start().child("store").child("book").index(2), mockListener)
-                .bind(start().child("store").child("book").index(3), mockListener);
+        builder.bind(path().child("store").child("book").index(0), mockListener)
+                .bind(path().child("store").child("book").index(1), mockListener)
+                .bind(path().child("store").child("book").index(2), mockListener)
+                .bind(path().child("store").child("book").index(3), mockListener);
 
         Mockito.doNothing().when(mockListener)
                 .onValue(anyObject(), Matchers.argThat(new TypeSafeMatcher<ParsingContext>() {
@@ -98,19 +97,19 @@ public class JsonSurferTest {
 
     @Test
     public void testChildNodeWildcard() throws Exception {
-        ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
+        ContentHandlerBuilder builder = BuilderFactory.handler().setJsonProvider(provider);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
-        builder.bind(start().child("store").childWildcard(), mockListener);
+        builder.bind(path().child("store").anyChild(), mockListener);
         loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener, times(3))
                 .onValue(anyObject(), any(ParsingContext.class));
     }
 
     @Test
-    public void testArrayWildcard() throws Exception {
-        ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
+    public void testanyIndex() throws Exception {
+        ContentHandlerBuilder builder = BuilderFactory.handler().setJsonProvider(provider);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
-        builder.bind(start().child("store").child("book").arrayWildcard(), mockListener);
+        builder.bind(path().child("store").child("book").anyIndex(), mockListener);
         loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener, times(4))
                 .onValue(anyObject(), any(ParsingContext.class));
@@ -118,9 +117,9 @@ public class JsonSurferTest {
 
     @Test
     public void testWildcardCombination() throws Exception {
-        ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
+        ContentHandlerBuilder builder = BuilderFactory.handler().setJsonProvider(provider);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
-        builder.bind(start().child("store").child("book").arrayWildcard().childWildcard(), mockListener);
+        builder.bind(path().child("store").child("book").anyIndex().anyChild(), mockListener);
         loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener, times(18)).onValue(anyObject(),
                 any(ParsingContext.class));
@@ -128,7 +127,7 @@ public class JsonSurferTest {
 
     @Test
     public void testParsingArray() throws Exception {
-        ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
+        ContentHandlerBuilder builder = BuilderFactory.handler().setJsonProvider(provider);
         JsonPathListener wholeArray = Mockito.mock(JsonPathListener.class);
         JsonPathListener stringElement = Mockito.mock(JsonPathListener.class);
         JsonPathListener numberElement = Mockito.mock(JsonPathListener.class);
@@ -136,12 +135,12 @@ public class JsonSurferTest {
         JsonPathListener nullElement = Mockito.mock(JsonPathListener.class);
         JsonPathListener objectElement = Mockito.mock(JsonPathListener.class);
 
-        builder.bind(start(), wholeArray);
-        builder.bind(start().index(0), stringElement);
-        builder.bind(start().index(1), numberElement);
-        builder.bind(start().index(2), booleanElement);
-        builder.bind(start().index(3), nullElement);
-        builder.bind(start().index(4), objectElement);
+        builder.bind(path(), wholeArray);
+        builder.bind(path().index(0), stringElement);
+        builder.bind(path().index(1), numberElement);
+        builder.bind(path().index(2), booleanElement);
+        builder.bind(path().index(3), nullElement);
+        builder.bind(path().index(4), objectElement);
         loader.surf(new InputStreamReader(Resources.getResource("array.json").openStream()), builder.build());
         Object object = provider.createObject();
         provider.consumeObjectEntry(object, "key", provider.primitive("value"));
@@ -162,9 +161,9 @@ public class JsonSurferTest {
 
     @Test
     public void testDeepScan() throws Exception {
-        ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
+        ContentHandlerBuilder builder = BuilderFactory.handler().setJsonProvider(provider);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
-        builder.bind(JsonPath.start().scan().child("author"), mockListener);
+        builder.bind(path().scan().child("author"), mockListener);
         loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener).onValue(eq(provider.primitive("Nigel Rees")), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive("Evelyn Waugh")), any(ParsingContext.class));
@@ -174,9 +173,9 @@ public class JsonSurferTest {
 
     @Test
     public void testDeepScan2() throws Exception {
-        ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
+        ContentHandlerBuilder builder = BuilderFactory.handler().setJsonProvider(provider);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
-        builder.bind(JsonPath.start().child("store").scan().child("price"), mockListener);
+        builder.bind(path().child("store").scan().child("price"), mockListener);
         loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener).onValue(eq(provider.primitive(8.95)), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive(12.99)), any(ParsingContext.class));
@@ -187,8 +186,8 @@ public class JsonSurferTest {
 
     @Test
     public void testFindEveryThing() throws Exception {
-        ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
-        builder.bind(JsonPath.start().scan().wildcard(), new JsonPathListener() {
+        ContentHandlerBuilder builder = BuilderFactory.handler().setJsonProvider(provider);
+        builder.bind(path().scan().any(), new JsonPathListener() {
             @Override
             public void onValue(Object value, ParsingContext context) {
                 System.out.println(value);
@@ -199,9 +198,9 @@ public class JsonSurferTest {
 
     @Test
     public void testIndexesAndChildrenOperator() throws Exception {
-        ContentHandlerBuilder builder = BuilderFactory.start().setJsonStructureFactory(provider);
+        ContentHandlerBuilder builder = BuilderFactory.handler().setJsonProvider(provider);
         JsonPathListener mockListener = Mockito.mock(JsonPathListener.class);
-        builder.bind(JsonPath.start().scan().child("book").indexes(1,3).children("author", "title"), mockListener);
+        builder.bind(path().scan().child("book").indexes(1,3).children("author", "title"), mockListener);
         loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener).onValue(eq(provider.primitive("Evelyn Waugh")), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive("Sword of Honour")), any(ParsingContext.class));

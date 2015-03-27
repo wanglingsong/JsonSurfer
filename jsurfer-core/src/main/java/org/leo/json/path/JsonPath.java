@@ -24,21 +24,80 @@ package org.leo.json.path;
 
 import com.google.common.collect.Sets;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
 public class JsonPath {
 
-    //TODO recycling node for saving gc
+    public static class Builder {
 
-    protected LinkedList<PathOperator> path = new LinkedList<PathOperator>();
+        private JsonPath jsonPath;
+
+        public static Builder start() {
+            Builder builder = new Builder();
+            JsonPath newPath = new JsonPath();
+            newPath.operators.push(Root.instance());
+            builder.jsonPath = newPath;
+            return builder;
+        }
+
+        public Builder child(String key) {
+            jsonPath.operators.push(new ChildNode(key));
+            return this;
+        }
+
+        public Builder children(String... children) {
+            jsonPath.operators.push(new ChildrenNode(Sets.newHashSet(children)));
+            return this;
+        }
+
+        public Builder anyChild() {
+            jsonPath.operators.push(ChildWildcard.instance());
+            return this;
+        }
+
+
+        public Builder index(int index) {
+            jsonPath.operators.push(new ArrayIndex(index));
+            return this;
+        }
+
+        public Builder indexes(Integer... indexes) {
+            jsonPath.operators.push(new ArrayIndexes(Sets.newHashSet(indexes)));
+            return this;
+        }
+
+        public Builder anyIndex() {
+            jsonPath.operators.push(ArrayWildcard.instance());
+            return this;
+        }
+
+        public Builder scan() {
+            jsonPath.definite = false;
+            // TODO Singleton
+            jsonPath.operators.push(new DeepScan());
+            return this;
+        }
+
+        public Builder any() {
+            // TODO Singleton
+            jsonPath.operators.push(new Wildcard());
+            return this;
+        }
+
+        public JsonPath build() {
+            return this.jsonPath;
+        }
+
+    }
 
     private boolean definite = true;
 
+    protected LinkedList<PathOperator> operators = new LinkedList<PathOperator>();
+
     public boolean match(JsonPath jsonPath) {
-        Iterator<PathOperator> iterator1 = path.iterator();
-        Iterator<PathOperator> iterator2 = jsonPath.path.iterator();
+        Iterator<PathOperator> iterator1 = operators.iterator();
+        Iterator<PathOperator> iterator2 = jsonPath.operators.iterator();
         while (iterator1.hasNext()) {
             if (!iterator2.hasNext()) {
                 return false;
@@ -59,76 +118,26 @@ public class JsonPath {
         return !iterator2.hasNext();
     }
 
-    public static JsonPath start() {
-        JsonPath newPath = new JsonPath();
-        newPath.path.push(Root.instance());
-        return newPath;
-    }
-
-    public JsonPath child(String key) {
-        path.push(new ChildNode(key));
-        return this;
-    }
-
-    public JsonPath children(String... children) {
-        path.push(new ChildrenNode(Sets.newHashSet(children)));
-        return this;
-    }
-
-    public JsonPath childWildcard() {
-        path.push(ChildWildcard.instance());
-        return this;
-    }
-
-
-    public JsonPath indexes(Integer... indexes) {
-        path.push(new ArrayIndexes(Sets.newHashSet(indexes)));
-        return this;
-    }
-
-    public JsonPath arrayWildcard() {
-        path.push(ArrayWildcard.instance());
-        return this;
-    }
-
-    public JsonPath index(int index) {
-        path.push(new ArrayIndex(index));
-        return this;
-    }
-
-    public JsonPath scan() {
-        this.definite = false;
-        // TODO Singleton
-        path.push(new DeepScan());
-        return this;
-    }
-
-    public JsonPath wildcard() {
-        // TODO Singleton
-        path.push(new Wildcard());
-        return this;
-    }
-
     public PathOperator peek() {
-        return path.peek();
+        return operators.peek();
     }
 
     public int pathDepth() {
-        return this.path.size();
+        return this.operators.size();
+    }
+
+    public boolean isDefinite() {
+        return definite;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        Iterator<PathOperator> dItr = path.descendingIterator();
+        Iterator<PathOperator> dItr = operators.descendingIterator();
         while (dItr.hasNext()) {
             sb.append(dItr.next());
         }
         return sb.toString();
-    }
-
-    public boolean isDefinite() {
-        return definite;
     }
 
 }
