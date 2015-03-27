@@ -31,7 +31,7 @@ public class BuilderFactory {
         return new SurfingContext();
     }
 
-    public static JsonPath.Builder path() {
+    public static JsonPath.Builder root() {
         return JsonPath.Builder.start();
     }
 

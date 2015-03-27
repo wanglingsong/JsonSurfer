@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.leo.json.BuilderFactory.handler;
-import static org.leo.json.BuilderFactory.path;
+import static org.leo.json.BuilderFactory.root;
 
 
 public class PerformanceTest {
@@ -37,7 +37,7 @@ public class PerformanceTest {
                 LOGGER.trace("value: {}", value);
             }
         };
-        handler.bind(path().child("builders").anyChild().child("properties"), printListener).skipOverlappedPath();
+        handler.bind(root().child("builders").anyChild().child("properties"), printListener).skipOverlappedPath();
         long start = System.currentTimeMillis();
         loader.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), handler.build());
         LOGGER.info("jsurfer-simple processes {} value in {} millisecond", counter.get(), System.currentTimeMillis()
@@ -57,7 +57,7 @@ public class PerformanceTest {
                 LOGGER.trace("value: {}", value);
             }
         };
-        handler.bind(path().child("builders").anyChild().child("properties"), printListener).skipOverlappedPath();
+        handler.bind(root().child("builders").anyChild().child("properties"), printListener).skipOverlappedPath();
         long start = System.currentTimeMillis();
         loader.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), handler.build());
         LOGGER.info("jsurfer-gson processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);
