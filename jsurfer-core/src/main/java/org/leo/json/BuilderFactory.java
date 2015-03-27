@@ -27,8 +27,8 @@ import org.leo.json.path.JsonPath;
 
 public class BuilderFactory {
 
-    public static HandlerBuilder handler() {
-        return new SurfingContext();
+    public static SurfingContext.Builder handler() {
+        return SurfingContext.Builder.builder();
     }
 
     public static JsonPath.Builder root() {

@@ -20,26 +20,48 @@
  * THE SOFTWARE.
  */
 
-package org.leo.json;
+package org.leo.json.parse;
 
-import org.json.simple.parser.ContentHandler;
-import org.leo.json.parse.JsonPathListener;
-import org.leo.json.parse.JsonProvider;
-import org.leo.json.path.JsonPath;
+import java.util.ArrayList;
+import java.util.Map;
 
 /**
- * Created by Administrator on 2015/3/22.
+ * Created by Leo on 2015/3/27.
  */
-public interface HandlerBuilder {
+public class JavaCollectionProvider implements JsonProvider<Map<String, Object>, ArrayList<Object>, Object> {
+    // TODO
+    @Override
+    public Map<String, Object> createObject() {
+        return null;
+    }
 
-    HandlerBuilder skipOverlappedPath();
+    @Override
+    public ArrayList<Object> createArray() {
+        return null;
+    }
 
-    HandlerBuilder setJsonProvider(JsonProvider structureFactory);
+    @Override
+    public boolean isObject(Object object) {
+        return false;
+    }
 
-    HandlerBuilder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners);
+    @Override
+    public boolean isArray(Object array) {
+        return false;
+    }
 
-    HandlerBuilder bind(JsonPath.Builder builder, JsonPathListener... jsonPathListeners);
+    @Override
+    public void consumeObjectEntry(Map<String, Object> object, String key, Object value) {
 
-    ContentHandler build();
+    }
 
+    @Override
+    public void consumeArrayElement(ArrayList<Object> array, Object value) {
+
+    }
+
+    @Override
+    public Object primitive(Object value) {
+        return null;
+    }
 }

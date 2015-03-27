@@ -24,55 +24,103 @@ package org.leo.json.parse;
 
 import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.ParseException;
-import org.leo.json.HandlerBuilder;
 import org.leo.json.path.ArrayIndex;
 import org.leo.json.path.JsonPath;
 import org.leo.json.path.PathOperator;
 import org.leo.json.path.PathOperator.Type;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
-public class SurfingContext implements ParsingContext, HandlerBuilder, ContentHandler {
+public class SurfingContext implements ParsingContext, ContentHandler {
+
+    public static class Builder {
+
+        private SurfingContext context;
+
+        public static Builder builder() {
+            Builder builder = new Builder();
+            builder.context = new SurfingContext();
+            return builder;
+        }
+
+        public ContentHandler build() {
+            if (context.jsonProvider == null) {
+                context.jsonProvider = new JavaCollectionProvider();
+            }
+            if (!context.indefinitePathMap.isEmpty()) {
+                LinkedHashMap<Integer, List<Binding>> sortedMap = new LinkedHashMap<Integer, List<Binding>>(context.indefinitePathMap.size());
+                ArrayList<Integer> keys = new ArrayList<Integer>(context.indefinitePathMap.keySet());
+                Collections.sort(keys);
+                for (Integer key : keys) {
+                    sortedMap.put(key, context.indefinitePathMap.get(key));
+                }
+                context.indefinitePathMap = sortedMap;
+            }
+            context.built = true;
+            return context;
+        }
+
+        public Builder bind(JsonPath.Builder builder, JsonPathListener... jsonPathListeners) {
+            return bind(builder.build(), jsonPathListeners);
+        }
+
+        public Builder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners) {
+            if (context.built) {
+                throw new IllegalStateException("The JsonSurfer is already built");
+            }
+            if (!jsonPath.isDefinite()) {
+                int minimumDepth = jsonPath.minimumPathDepth();
+                List<Binding> bindings = context.indefinitePathMap.get(minimumDepth);
+                if (bindings == null) {
+                    bindings = new ArrayList<Binding>();
+                    context.indefinitePathMap.put(minimumDepth, bindings);
+                }
+                bindings.add(new Binding(jsonPath, jsonPathListeners));
+            } else {
+                int depth = jsonPath.pathDepth();
+                List<Binding> bindings = context.definitePathMap.get(depth);
+                if (bindings == null) {
+                    bindings = new ArrayList<Binding>();
+                    context.definitePathMap.put(depth, bindings);
+                }
+                bindings.add(new Binding(jsonPath, jsonPathListeners));
+            }
+            return this;
+        }
+
+        public Builder skipOverlappedPath() {
+            context.skipOverlappedPath = true;
+            return this;
+        }
+
+        public Builder withJsonProvider(JsonProvider structureFactory) {
+            context.jsonProvider = structureFactory;
+            return this;
+        }
+
+    }
+
+    private static class Binding {
+
+        public Binding(JsonPath jsonPath, JsonPathListener[] listeners) {
+            this.jsonPath = jsonPath;
+            this.listeners = listeners;
+        }
+
+        private JsonPath jsonPath;
+        private JsonPathListener[] listeners;
+
+    }
 
     private boolean built = false;
     private boolean stopped = false;
     private boolean skipOverlappedPath = false;
     private JsonProvider jsonProvider;
     private JsonPosition currentPosition;
-    private Map<Integer, Map<JsonPath, JsonPathListener[]>> definitePathMap = new HashMap<Integer, Map<JsonPath, JsonPathListener[]>>();
-    private Map<JsonPath, JsonPathListener[]> indefinitePathMap = new HashMap<JsonPath, JsonPathListener[]>();
+    private Map<Integer, List<Binding>> definitePathMap = new HashMap<Integer, List<Binding>>();
+    private LinkedHashMap<Integer, List<Binding>> indefinitePathMap = new LinkedHashMap<Integer, List<Binding>>();
     private ContentDispatcher dispatcher = new ContentDispatcher();
-
-    private interface CollectorProcessor {
-
-        boolean process(JsonCollector collector) throws IOException, ParseException;
-
-    }
-
-    private CollectorProcessor startJsonProcessor = new CollectorProcessor() {
-
-        @Override
-        public boolean process(JsonCollector collector) throws IOException, ParseException {
-            collector.startJSON();
-            return true;
-        }
-    };
-
-    @Override
-    public HandlerBuilder skipOverlappedPath() {
-        this.skipOverlappedPath = true;
-        return this;
-    }
-
-    @Override
-    public HandlerBuilder setJsonProvider(JsonProvider structureFactory) {
-        this.jsonProvider = structureFactory;
-        return this;
-    }
 
     @Override
     public void startJSON() throws ParseException, IOException {
@@ -80,7 +128,7 @@ public class SurfingContext implements ParsingContext, HandlerBuilder, ContentHa
             return;
         }
         currentPosition = JsonPosition.start();
-        doMatching(null);
+        doMatching(false);
         dispatcher.startJSON();
     }
 
@@ -105,13 +153,13 @@ public class SurfingContext implements ParsingContext, HandlerBuilder, ContentHa
         PathOperator top = currentPosition.peek();
         if (top.getType() == Type.ARRAY) {
             ((ArrayIndex) top).increaseArrayIndex();
-            doMatching(startJsonProcessor);
+            doMatching(true);
         }
         dispatcher.startObject();
         return true;
     }
 
-    private void doMatching(CollectorProcessor processor) throws IOException, ParseException {
+    private void doMatching(boolean initializeCollector) throws IOException, ParseException {
         // skip matching if "skipOverlappedPath" is enable
         if (skipOverlappedPath && !this.dispatcher.isEmpty()) {
             return;
@@ -119,25 +167,30 @@ public class SurfingContext implements ParsingContext, HandlerBuilder, ContentHa
         LinkedList<JsonPathListener> listeners = null;
 
         if (!indefinitePathMap.isEmpty()) {
-            for (Map.Entry<JsonPath, JsonPathListener[]> entry : indefinitePathMap.entrySet()) {
-                if (entry.getKey().match(currentPosition)) {
-                    if (listeners == null) {
-                        listeners = new LinkedList<JsonPathListener>();
+            for (Map.Entry<Integer, List<Binding>> entry : indefinitePathMap.entrySet()) {
+                if (entry.getKey() <= currentPosition.minimumPathDepth()) {
+                    for (Binding binding : entry.getValue()) {
+                        if (binding.jsonPath.match(currentPosition)) {
+                            if (listeners == null) {
+                                listeners = new LinkedList<JsonPathListener>();
+                            }
+                            Collections.addAll(listeners, binding.listeners);
+                        }
                     }
-                    Collections.addAll(listeners, entry.getValue());
+                } else {
+                    break;
                 }
             }
         }
 
-        int semiHashcode = semiHashcode(currentPosition);
-        Map<JsonPath, JsonPathListener[]> map = definitePathMap.get(semiHashcode);
-        if (map != null) {
-            for (Map.Entry<JsonPath, JsonPathListener[]> entry : map.entrySet()) {
-                if (entry.getKey().match(currentPosition)) {
+        List<Binding> bindings = definitePathMap.get(currentPosition.pathDepth());
+        if (bindings != null) {
+            for (Binding binding : bindings) {
+                if (binding.jsonPath.match(currentPosition)) {
                     if (listeners == null) {
                         listeners = new LinkedList<JsonPathListener>();
                     }
-                    Collections.addAll(listeners, entry.getValue());
+                    Collections.addAll(listeners, binding.listeners);
                 }
             }
         }
@@ -145,8 +198,8 @@ public class SurfingContext implements ParsingContext, HandlerBuilder, ContentHa
         if (listeners != null) {
             JsonCollector collector = new JsonCollector(listeners, this);
             collector.setProvider(jsonProvider);
-            if (processor != null) {
-                processor.process(collector);
+            if (initializeCollector) {
+                collector.startJSON();
             }
             dispatcher.addReceiver(collector);
         }
@@ -168,7 +221,7 @@ public class SurfingContext implements ParsingContext, HandlerBuilder, ContentHa
         }
         currentPosition.stepInObject(key);
         dispatcher.startObjectEntry(key);
-        doMatching(startJsonProcessor);
+        doMatching(true);
         return true;
     }
 
@@ -190,7 +243,7 @@ public class SurfingContext implements ParsingContext, HandlerBuilder, ContentHa
         PathOperator top = currentPosition.peek();
         if (top.getType() == Type.ARRAY) {
             ((ArrayIndex) top).increaseArrayIndex();
-            doMatching(startJsonProcessor);
+            doMatching(true);
         }
         currentPosition.stepInArray();
         dispatcher.startArray();
@@ -215,7 +268,7 @@ public class SurfingContext implements ParsingContext, HandlerBuilder, ContentHa
         PathOperator top = currentPosition.peek();
         if (top.getType() == Type.ARRAY) {
             ((ArrayIndex) top).increaseArrayIndex();
-            doMatching(startJsonProcessor);
+            doMatching(true);
         }
         dispatcher.primitive(value);
         return true;
@@ -226,35 +279,6 @@ public class SurfingContext implements ParsingContext, HandlerBuilder, ContentHa
         return this.currentPosition.toString();
     }
 
-    @Override
-    public ContentHandler build() {
-        this.built = true;
-        return this;
-    }
-
-    @Override
-    public HandlerBuilder bind(JsonPath.Builder builder, JsonPathListener... jsonPathListeners) {
-        return bind(builder.build(), jsonPathListeners);
-    }
-
-    @Override
-    public HandlerBuilder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners) {
-        if (built) {
-            throw new IllegalStateException("The JsonSurfer is already built");
-        }
-        if (!jsonPath.isDefinite()) {
-            indefinitePathMap.put(jsonPath, jsonPathListeners);
-        } else {
-            int semiHashcode = semiHashcode(jsonPath);
-            Map<JsonPath, JsonPathListener[]> map = definitePathMap.get(semiHashcode);
-            if (map == null) {
-                map = new HashMap<JsonPath, JsonPathListener[]>();
-                definitePathMap.put(semiHashcode, map);
-            }
-            map.put(jsonPath, jsonPathListeners);
-        }
-        return this;
-    }
 
     @Override
     public void stopParsing() {
@@ -266,7 +290,4 @@ public class SurfingContext implements ParsingContext, HandlerBuilder, ContentHa
         return this.stopped;
     }
 
-    private int semiHashcode(JsonPath path) {
-        return 31 * path.pathDepth() + path.peek().getType().ordinal();
-    }
 }

@@ -25,7 +25,7 @@ package org.leo.json.path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.Stack;
 
 public class JsonPath {
 
@@ -86,18 +86,35 @@ public class JsonPath {
         }
 
         public JsonPath build() {
+            if (!jsonPath.definite) {
+                // calculate minimum depth
+                for (PathOperator operator : jsonPath.operators) {
+                    if (!(operator.getType() == PathOperator.Type.DEEP_SCAN)) {
+                        jsonPath.minimumDepth++;
+                    }
+                }
+            }
             return this.jsonPath;
         }
 
     }
 
     private boolean definite = true;
+    private int minimumDepth = 0;
 
-    protected LinkedList<PathOperator> operators = new LinkedList<PathOperator>();
+    protected Stack<PathOperator> operators = new Stack<PathOperator>();
 
     public boolean match(JsonPath jsonPath) {
-        Iterator<PathOperator> iterator1 = operators.iterator();
-        Iterator<PathOperator> iterator2 = jsonPath.operators.iterator();
+        Iterator<PathOperator> iterator1;
+        Iterator<PathOperator> iterator2;
+        PathOperator peek1 = operators.peek();
+        PathOperator peek2 = jsonPath.operators.peek();
+        if (!peek1.match(peek2)) {
+            return false;
+        } else {
+            iterator1 = operators.listIterator(1);
+            iterator2 = jsonPath.operators.listIterator(1);
+        }
         while (iterator1.hasNext()) {
             if (!iterator2.hasNext()) {
                 return false;
@@ -109,10 +126,10 @@ public class JsonPath {
                 while (!prevScan.match(o2) && iterator2.hasNext()) {
                     o2 = iterator2.next();
                 }
-                continue;
-            }
-            if (!o1.match(o2)) {
-                return false;
+            } else {
+                if (!o1.match(o2)) {
+                    return false;
+                }
             }
         }
         return !iterator2.hasNext();
@@ -126,6 +143,14 @@ public class JsonPath {
         return this.operators.size();
     }
 
+    public int minimumPathDepth() {
+        if (definite) {
+            return this.pathDepth();
+        } else {
+            return minimumDepth;
+        }
+    }
+
     public boolean isDefinite() {
         return definite;
     }
@@ -133,9 +158,8 @@ public class JsonPath {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        Iterator<PathOperator> dItr = operators.descendingIterator();
-        while (dItr.hasNext()) {
-            sb.append(dItr.next());
+        for (PathOperator operator : operators) {
+            sb.append(operator);
         }
         return sb.toString();
     }

@@ -30,11 +30,12 @@ import org.leo.json.exception.JsonSurfingException;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.LinkedList;
+import java.util.Stack;
 
 public class GsonSurfer implements JsonSurfer {
 
     private enum EntryType {
+        ROOT,
         OBJECT,
         ARRAY,
         PRIMITIVE
@@ -46,7 +47,8 @@ public class GsonSurfer implements JsonSurfer {
     public void surf(Reader reader, ContentHandler contentHandler) {
         try {
             JsonReader jsonReader = new JsonReader(reader);
-            LinkedList<EntryType> entryStack = new LinkedList<EntryType>();
+            Stack<EntryType> entryStack = new Stack<EntryType>();
+            entryStack.push(EntryType.ROOT);
             // TODO to correct behavior
 
             contentHandler.startJSON();
@@ -96,7 +98,7 @@ public class GsonSurfer implements JsonSurfer {
                         }
                         JsonToken peek = jsonReader.peek();
                         if (peek == JsonToken.STRING || peek == JsonToken.BOOLEAN || peek == JsonToken.NUMBER
-                            || peek == JsonToken.NULL) {
+                                || peek == JsonToken.NULL) {
                             entryStack.push(EntryType.PRIMITIVE);
                         } else if (peek == JsonToken.BEGIN_OBJECT) {
                             entryStack.push(EntryType.OBJECT);
