@@ -40,6 +40,10 @@ public class ChildNode extends PathOperator {
         return key;
     }
 
+    public void setKey(String key) {
+        this.key = key;
+    }
+
     @Override
     public boolean match(PathOperator pathOperator) {
         return super.match(pathOperator) && Objects.equals(key, ((ChildNode) pathOperator).key);

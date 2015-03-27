@@ -24,9 +24,9 @@ package org.leo.json;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
-import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.ParseException;
 import org.leo.json.exception.JsonSurfingException;
+import org.leo.json.parse.SurfingContext;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -44,30 +44,30 @@ public class GsonSurfer implements JsonSurfer {
     // TODO Implement gson parsing context
 
     @Override
-    public void surf(Reader reader, ContentHandler contentHandler) {
+    public void surf(Reader reader, SurfingContext context) {
         try {
             JsonReader jsonReader = new JsonReader(reader);
             Stack<EntryType> entryStack = new Stack<EntryType>();
             entryStack.push(EntryType.ROOT);
             // TODO to correct behavior
 
-            contentHandler.startJSON();
+            context.startJSON();
             while (true) {
                 JsonToken token = jsonReader.peek();
                 switch (token) {
                     case BEGIN_ARRAY:
                         jsonReader.beginArray();
-                        if (!contentHandler.startArray()) {
+                        if (!context.startArray()) {
                             return;
                         }
                         break;
                     case END_ARRAY:
                         jsonReader.endArray();
-                        if (!contentHandler.endArray()) {
+                        if (!context.endArray()) {
                             return;
                         }
                         if (entryStack.peek() == EntryType.ARRAY) {
-                            if (!contentHandler.endObjectEntry()) {
+                            if (!context.endObjectEntry()) {
                                 return;
                             }
                             entryStack.pop();
@@ -75,17 +75,17 @@ public class GsonSurfer implements JsonSurfer {
                         break;
                     case BEGIN_OBJECT:
                         jsonReader.beginObject();
-                        if (!contentHandler.startObject()) {
+                        if (!context.startObject()) {
                             return;
                         }
                         break;
                     case END_OBJECT:
                         jsonReader.endObject();
-                        if (!contentHandler.endObject()) {
+                        if (!context.endObject()) {
                             return;
                         }
                         if (entryStack.peek() == EntryType.OBJECT) {
-                            if (!contentHandler.endObjectEntry()) {
+                            if (!context.endObjectEntry()) {
                                 return;
                             }
                             entryStack.pop();
@@ -93,7 +93,7 @@ public class GsonSurfer implements JsonSurfer {
                         break;
                     case NAME:
                         String name = jsonReader.nextName();
-                        if (!contentHandler.startObjectEntry(name)) {
+                        if (!context.startObjectEntry(name)) {
                             return;
                         }
                         JsonToken peek = jsonReader.peek();
@@ -108,11 +108,11 @@ public class GsonSurfer implements JsonSurfer {
                         break;
                     case STRING:
                         String s = jsonReader.nextString();
-                        if (!contentHandler.primitive(s)) {
+                        if (!context.primitive(s)) {
                             return;
                         }
                         if (entryStack.peek() == EntryType.PRIMITIVE) {
-                            if (!contentHandler.endObjectEntry()) {
+                            if (!context.endObjectEntry()) {
                                 return;
                             }
                             entryStack.pop();
@@ -120,11 +120,11 @@ public class GsonSurfer implements JsonSurfer {
                         break;
                     case NUMBER:
                         String n = jsonReader.nextString();
-                        if (!contentHandler.primitive(Double.parseDouble(n))) {
+                        if (!context.primitive(Double.parseDouble(n))) {
                             return;
                         }
                         if (entryStack.peek() == EntryType.PRIMITIVE) {
-                            if (!contentHandler.endObjectEntry()) {
+                            if (!context.endObjectEntry()) {
                                 return;
                             }
                             entryStack.pop();
@@ -132,11 +132,11 @@ public class GsonSurfer implements JsonSurfer {
                         break;
                     case BOOLEAN:
                         boolean b = jsonReader.nextBoolean();
-                        if (!contentHandler.primitive(b)) {
+                        if (!context.primitive(b)) {
                             return;
                         }
                         if (entryStack.peek() == EntryType.PRIMITIVE) {
-                            if (!contentHandler.endObjectEntry()) {
+                            if (!context.endObjectEntry()) {
                                 return;
                             }
                             entryStack.pop();
@@ -144,18 +144,18 @@ public class GsonSurfer implements JsonSurfer {
                         break;
                     case NULL:
                         jsonReader.nextNull();
-                        if (!contentHandler.primitive(null)) {
+                        if (!context.primitive(null)) {
                             return;
                         }
                         if (entryStack.peek() == EntryType.PRIMITIVE) {
-                            if (!contentHandler.endObjectEntry()) {
+                            if (!context.endObjectEntry()) {
                                 return;
                             }
                             entryStack.pop();
                         }
                         break;
                     case END_DOCUMENT:
-                        contentHandler.endJSON();
+                        context.endJSON();
                         entryStack.clear();
                         return;
                 }

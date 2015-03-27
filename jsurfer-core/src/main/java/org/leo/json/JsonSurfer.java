@@ -22,7 +22,7 @@
 
 package org.leo.json;
 
-import org.json.simple.parser.ContentHandler;
+import org.leo.json.parse.SurfingContext;
 
 import java.io.Reader;
 
@@ -31,6 +31,6 @@ import java.io.Reader;
  */
 public interface JsonSurfer {
 
-    void surf(Reader reader, ContentHandler contentHandler);
+    void surf(Reader reader, SurfingContext context);
 
 }

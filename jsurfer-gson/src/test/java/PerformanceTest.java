@@ -15,7 +15,7 @@ import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.leo.json.BuilderFactory.handler;
+import static org.leo.json.BuilderFactory.context;
 import static org.leo.json.BuilderFactory.root;
 import static org.leo.json.parse.SurfingContext.Builder;
 
@@ -27,7 +27,7 @@ public class PerformanceTest {
     @Test
     public void testLargeJsonJPSimple() throws Exception {
         JsonSimpleSurfer loader = new JsonSimpleSurfer();
-        Builder handler = handler().withJsonProvider(new JsonSimpleProvider());
+        Builder handler = context().withJsonProvider(new JsonSimpleProvider());
         final AtomicLong counter = new AtomicLong();
         JsonPathListener printListener = new JsonPathListener() {
 
@@ -48,7 +48,7 @@ public class PerformanceTest {
     @Test
     public void testLargeJsonJPGson() throws Exception {
         GsonSurfer loader = new GsonSurfer();
-        Builder handler = handler().withJsonProvider(new GsonProvider());
+        Builder handler = context().withJsonProvider(new GsonProvider());
         final AtomicLong counter = new AtomicLong();
         JsonPathListener printListener = new JsonPathListener() {
             @Override
@@ -67,7 +67,7 @@ public class PerformanceTest {
     public void testLargeJsonJPGsonWithScan() throws Exception {
         GsonSurfer loader = new GsonSurfer();
 //        for (int i=0;i < 1000;i++) {
-        Builder handler = handler().withJsonProvider(new GsonProvider());
+        Builder handler = context().withJsonProvider(new GsonProvider());
         final AtomicLong counter = new AtomicLong();
         JsonPathListener printListener = new JsonPathListener() {
             @Override

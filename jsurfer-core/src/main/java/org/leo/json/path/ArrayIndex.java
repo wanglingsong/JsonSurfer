@@ -42,6 +42,10 @@ public class ArrayIndex extends PathOperator {
         return arrayIndex;
     }
 
+    public void reset() {
+        this.arrayIndex = -1;
+    }
+
     public void setArrayIndex(int arrayIndex) {
         this.arrayIndex = arrayIndex;
     }

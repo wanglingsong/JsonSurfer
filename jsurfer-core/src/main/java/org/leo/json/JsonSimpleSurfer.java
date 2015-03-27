@@ -22,22 +22,21 @@
 
 package org.leo.json;
 
-import java.io.IOException;
-import java.io.Reader;
-
-import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.leo.json.exception.JsonSurfingException;
-import org.leo.json.parse.JsonSimpleProvider;
+import org.leo.json.parse.SurfingContext;
+
+import java.io.IOException;
+import java.io.Reader;
 
 public class JsonSimpleSurfer implements JsonSurfer {
 
     @Override
-    public void surf(Reader reader, ContentHandler contentHandler) {
+    public void surf(Reader reader, SurfingContext context) {
         JSONParser parser = new JSONParser();
         try {
-            parser.parse(reader, contentHandler);
+            parser.parse(reader, context);
         } catch (ParseException e) {
             throw new JsonSurfingException(e);
         } catch (IOException e) {

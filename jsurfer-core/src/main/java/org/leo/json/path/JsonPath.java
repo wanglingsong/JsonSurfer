@@ -22,10 +22,7 @@
 
 package org.leo.json.path;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Stack;
+import java.util.*;
 
 public class JsonPath {
 
@@ -75,7 +72,9 @@ public class JsonPath {
         public Builder scan() {
             jsonPath.definite = false;
             // TODO Singleton
-            jsonPath.operators.push(new DeepScan());
+            if (!(jsonPath.operators.peek().getType() == PathOperator.Type.DEEP_SCAN)) {
+                jsonPath.operators.push(new DeepScan());
+            }
             return this;
         }
 
@@ -105,26 +104,26 @@ public class JsonPath {
     protected Stack<PathOperator> operators = new Stack<PathOperator>();
 
     public boolean match(JsonPath jsonPath) {
-        Iterator<PathOperator> iterator1;
-        Iterator<PathOperator> iterator2;
+        ListIterator<PathOperator> iterator1;
+        ListIterator<PathOperator> iterator2;
         PathOperator peek1 = operators.peek();
         PathOperator peek2 = jsonPath.operators.peek();
         if (!peek1.match(peek2)) {
             return false;
         } else {
-            iterator1 = operators.listIterator(1);
-            iterator2 = jsonPath.operators.listIterator(1);
+            iterator1 = operators.listIterator(operators.size() - 1);
+            iterator2 = jsonPath.operators.listIterator(jsonPath.operators.size() - 1);
         }
-        while (iterator1.hasNext()) {
-            if (!iterator2.hasNext()) {
+        while (iterator1.hasPrevious()) {
+            if (!iterator2.hasPrevious()) {
                 return false;
             }
-            PathOperator o1 = iterator1.next();
-            PathOperator o2 = iterator2.next();
+            PathOperator o1 = iterator1.previous();
+            PathOperator o2 = iterator2.previous();
             if (o1.getType() == PathOperator.Type.DEEP_SCAN) {
-                PathOperator prevScan = iterator1.next();
-                while (!prevScan.match(o2) && iterator2.hasNext()) {
-                    o2 = iterator2.next();
+                PathOperator prevScan = iterator1.previous();
+                while (!prevScan.match(o2) && iterator2.hasPrevious()) {
+                    o2 = iterator2.previous();
                 }
             } else {
                 if (!o1.match(o2)) {
@@ -132,7 +131,7 @@ public class JsonPath {
                 }
             }
         }
-        return !iterator2.hasNext();
+        return !iterator2.hasPrevious();
     }
 
     public PathOperator peek() {

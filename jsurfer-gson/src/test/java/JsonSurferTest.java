@@ -13,7 +13,7 @@ import org.mockito.Mockito;
 
 import java.io.InputStreamReader;
 
-import static org.leo.json.BuilderFactory.handler;
+import static org.leo.json.BuilderFactory.context;
 import static org.leo.json.BuilderFactory.root;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
@@ -37,7 +37,7 @@ public class JsonSurferTest {
 
     @Test
     public void testSampleJson() throws Exception {
-        Builder builder = handler().withJsonProvider(provider);
+        Builder builder = context().withJsonProvider(provider);
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind(root().child("store").child("book").index(0).child("category"), mockListener)
                 .bind(root().child("store").child("book").index(0), mockListener)
@@ -67,7 +67,7 @@ public class JsonSurferTest {
 
     @Test
     public void testStoppableParsing() throws Exception {
-        Builder builder = handler().withJsonProvider(provider);
+        Builder builder = context().withJsonProvider(provider);
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind(root().child("store").child("book").indexes(0, 1, 2), mockListener)
                 .bind(root().child("store").child("book").index(3), mockListener);
@@ -94,7 +94,7 @@ public class JsonSurferTest {
 
     @Test
     public void testChildNodeWildcard() throws Exception {
-        Builder builder = handler().withJsonProvider(provider);
+        Builder builder = context().withJsonProvider(provider);
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind(root().child("store").anyChild(), mockListener);
         loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
@@ -104,7 +104,7 @@ public class JsonSurferTest {
 
     @Test
     public void testAnyIndex() throws Exception {
-        Builder builder = handler().withJsonProvider(provider);
+        Builder builder = context().withJsonProvider(provider);
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind(root().child("store").child("book").anyIndex(), mockListener);
         loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
@@ -114,7 +114,7 @@ public class JsonSurferTest {
 
     @Test
     public void testWildcardCombination() throws Exception {
-        Builder builder = handler().withJsonProvider(provider);
+        Builder builder = context().withJsonProvider(provider);
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind(root().child("store").child("book").anyIndex().anyChild(), mockListener);
         loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
@@ -124,7 +124,7 @@ public class JsonSurferTest {
 
     @Test
     public void testParsingArray() throws Exception {
-        Builder builder = handler().withJsonProvider(provider);
+        Builder builder = context().withJsonProvider(provider);
         JsonPathListener wholeArray = mock(JsonPathListener.class);
         JsonPathListener stringElement = mock(JsonPathListener.class);
         JsonPathListener numberElement = mock(JsonPathListener.class);
@@ -158,10 +158,10 @@ public class JsonSurferTest {
 
     @Test
     public void testDeepScan() throws Exception {
-        Builder builder = handler().withJsonProvider(provider);
+        Builder builder = context().withJsonProvider(provider);
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind(root().scan().child("author"), mockListener);
-        builder.bind(root().scan().child("store").scan().child("bicycle").child("color"), mockListener);
+        builder.bind(root().scan().child("store").scan().child("bicycle").scan().child("color"), mockListener);
         loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener).onValue(eq(provider.primitive("Nigel Rees")), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive("Evelyn Waugh")), any(ParsingContext.class));
@@ -173,9 +173,9 @@ public class JsonSurferTest {
 
     @Test
     public void testDeepScan2() throws Exception {
-        Builder builder = handler().withJsonProvider(provider);
+        Builder builder = context().withJsonProvider(provider);
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        builder.bind(root().child("store").scan().child("price"), mockListener);
+        builder.bind(root().scan().child("store").scan().child("price"), mockListener);
         loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener).onValue(eq(provider.primitive(8.95)), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive(12.99)), any(ParsingContext.class));
@@ -186,18 +186,17 @@ public class JsonSurferTest {
 
     @Test
     public void testAny() throws Exception {
-        Builder builder = handler().withJsonProvider(provider);
+        Builder builder = context().withJsonProvider(provider);
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        builder.bind(root().child("store").child("bicycle").any(), mockListener);
+        builder.bind(root().child("store").scan().child("bicycle").scan().any(), mockListener);
         loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener).onValue(eq(provider.primitive("red")), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive(19.95)), any(ParsingContext.class));
-
     }
 
     @Test
     public void testFindEverything() throws Exception {
-        Builder builder = handler().withJsonProvider(provider);
+        Builder builder = context().withJsonProvider(provider);
         builder.bind(root().scan().any(), new JsonPathListener() {
             @Override
             public void onValue(Object value, ParsingContext context) {
@@ -209,7 +208,7 @@ public class JsonSurferTest {
 
     @Test
     public void testIndexesAndChildrenOperator() throws Exception {
-        Builder builder = handler().withJsonProvider(provider);
+        Builder builder = context().withJsonProvider(provider);
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind(root().scan().child("book").indexes(1, 3).children("author", "title"), mockListener);
         loader.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());

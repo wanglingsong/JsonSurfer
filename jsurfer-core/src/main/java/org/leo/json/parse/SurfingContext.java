@@ -37,6 +37,9 @@ public class SurfingContext implements ParsingContext, ContentHandler {
     public static class Builder {
 
         private SurfingContext context;
+        private Map<Integer, ArrayList<Binding>> definiteBindings = new HashMap<Integer, ArrayList<Binding>>();
+        private ArrayList<IndefinitePathBinding> indefiniteBindings = new ArrayList<IndefinitePathBinding>();
+
 
         public static Builder builder() {
             Builder builder = new Builder();
@@ -44,20 +47,22 @@ public class SurfingContext implements ParsingContext, ContentHandler {
             return builder;
         }
 
-        public ContentHandler build() {
-            if (context.jsonProvider == null) {
-                context.jsonProvider = new JavaCollectionProvider();
-            }
-            if (!context.indefinitePathMap.isEmpty()) {
-                LinkedHashMap<Integer, List<Binding>> sortedMap = new LinkedHashMap<Integer, List<Binding>>(context.indefinitePathMap.size());
-                ArrayList<Integer> keys = new ArrayList<Integer>(context.indefinitePathMap.keySet());
-                Collections.sort(keys);
-                for (Integer key : keys) {
-                    sortedMap.put(key, context.indefinitePathMap.get(key));
+        public SurfingContext build() {
+            if (!context.built) {
+                if (context.jsonProvider == null) {
+                    context.jsonProvider = new JavaCollectionProvider();
                 }
-                context.indefinitePathMap = sortedMap;
+                if (!indefiniteBindings.isEmpty()) {
+                    Collections.sort(indefiniteBindings);
+                    context.indefinitePathMap = indefiniteBindings.toArray(new IndefinitePathBinding[indefiniteBindings.size()]);
+                }
+                if (!definiteBindings.isEmpty()) {
+                    for (Map.Entry<Integer, ArrayList<Binding>> entry : definiteBindings.entrySet()) {
+                        context.definitePathMap.put(entry.getKey(), entry.getValue().toArray(new Binding[entry.getValue().size()]));
+                    }
+                }
+                context.built = true;
             }
-            context.built = true;
             return context;
         }
 
@@ -65,24 +70,23 @@ public class SurfingContext implements ParsingContext, ContentHandler {
             return bind(builder.build(), jsonPathListeners);
         }
 
-        public Builder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners) {
+        private void check() {
             if (context.built) {
                 throw new IllegalStateException("The JsonSurfer is already built");
             }
+        }
+
+        public Builder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners) {
+            check();
             if (!jsonPath.isDefinite()) {
                 int minimumDepth = jsonPath.minimumPathDepth();
-                List<Binding> bindings = context.indefinitePathMap.get(minimumDepth);
-                if (bindings == null) {
-                    bindings = new ArrayList<Binding>();
-                    context.indefinitePathMap.put(minimumDepth, bindings);
-                }
-                bindings.add(new Binding(jsonPath, jsonPathListeners));
+                indefiniteBindings.add(new IndefinitePathBinding(jsonPath, jsonPathListeners, minimumDepth));
             } else {
                 int depth = jsonPath.pathDepth();
-                List<Binding> bindings = context.definitePathMap.get(depth);
+                ArrayList<Binding> bindings = definiteBindings.get(depth);
                 if (bindings == null) {
                     bindings = new ArrayList<Binding>();
-                    context.definitePathMap.put(depth, bindings);
+                    definiteBindings.put(depth, bindings);
                 }
                 bindings.add(new Binding(jsonPath, jsonPathListeners));
             }
@@ -90,13 +94,37 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         }
 
         public Builder skipOverlappedPath() {
+            check();
             context.skipOverlappedPath = true;
             return this;
         }
 
         public Builder withJsonProvider(JsonProvider structureFactory) {
+            check();
             context.jsonProvider = structureFactory;
             return this;
+        }
+
+    }
+
+    private static class IndefinitePathBinding extends Binding implements Comparable<IndefinitePathBinding> {
+
+        private int minimumPathDepth;
+
+        public IndefinitePathBinding(JsonPath jsonPath, JsonPathListener[] listeners, int minimumPathDepth) {
+            super(jsonPath, listeners);
+            this.minimumPathDepth = minimumPathDepth;
+        }
+
+        @Override
+        public int compareTo(IndefinitePathBinding o) {
+            if (minimumPathDepth < o.minimumPathDepth) {
+                return -1;
+            } else if (minimumPathDepth > o.minimumPathDepth) {
+                return 1;
+            } else {
+                return 0;
+            }
         }
 
     }
@@ -108,8 +136,8 @@ public class SurfingContext implements ParsingContext, ContentHandler {
             this.listeners = listeners;
         }
 
-        private JsonPath jsonPath;
-        private JsonPathListener[] listeners;
+        protected JsonPath jsonPath;
+        protected JsonPathListener[] listeners;
 
     }
 
@@ -118,8 +146,11 @@ public class SurfingContext implements ParsingContext, ContentHandler {
     private boolean skipOverlappedPath = false;
     private JsonProvider jsonProvider;
     private JsonPosition currentPosition;
-    private Map<Integer, List<Binding>> definitePathMap = new HashMap<Integer, List<Binding>>();
-    private LinkedHashMap<Integer, List<Binding>> indefinitePathMap = new LinkedHashMap<Integer, List<Binding>>();
+    private Map<Integer, Binding[]> definitePathMap = new HashMap<Integer, Binding[]>();
+
+    // sorted by minimum path depth
+    private IndefinitePathBinding[] indefinitePathMap;
+
     private ContentDispatcher dispatcher = new ContentDispatcher();
 
     @Override
@@ -166,16 +197,14 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         }
         LinkedList<JsonPathListener> listeners = null;
 
-        if (!indefinitePathMap.isEmpty()) {
-            for (Map.Entry<Integer, List<Binding>> entry : indefinitePathMap.entrySet()) {
-                if (entry.getKey() <= currentPosition.minimumPathDepth()) {
-                    for (Binding binding : entry.getValue()) {
-                        if (binding.jsonPath.match(currentPosition)) {
-                            if (listeners == null) {
-                                listeners = new LinkedList<JsonPathListener>();
-                            }
-                            Collections.addAll(listeners, binding.listeners);
+        if (indefinitePathMap != null) {
+            for (IndefinitePathBinding binding : indefinitePathMap) {
+                if (binding.minimumPathDepth <= currentPosition.pathDepth()) {
+                    if (binding.jsonPath.match(currentPosition)) {
+                        if (listeners == null) {
+                            listeners = new LinkedList<JsonPathListener>();
                         }
+                        Collections.addAll(listeners, binding.listeners);
                     }
                 } else {
                     break;
@@ -183,7 +212,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
             }
         }
 
-        List<Binding> bindings = definitePathMap.get(currentPosition.pathDepth());
+        Binding[] bindings = definitePathMap.get(currentPosition.pathDepth());
         if (bindings != null) {
             for (Binding binding : bindings) {
                 if (binding.jsonPath.match(currentPosition)) {

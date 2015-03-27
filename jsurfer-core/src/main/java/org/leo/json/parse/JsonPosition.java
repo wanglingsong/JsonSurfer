@@ -22,11 +22,10 @@
 
 package org.leo.json.parse;
 
-import org.leo.json.path.ArrayIndex;
-import org.leo.json.path.ChildNode;
-import org.leo.json.path.JsonPath;
-import org.leo.json.path.PathOperator;
-import org.leo.json.path.Root;
+import org.leo.json.path.*;
+
+import java.lang.ref.SoftReference;
+import java.util.Stack;
 
 /**
  * Created by Leo on 2015/3/27.
@@ -35,29 +34,77 @@ class JsonPosition extends JsonPath {
 
     //TODO recycling node for saving gc
 
+    private SoftReference<Stack<ChildNode>> childNodeCache = new SoftReference<Stack<ChildNode>>(new Stack<ChildNode>());
+    private SoftReference<Stack<ArrayIndex>> arrayNodeCache = new SoftReference<Stack<ArrayIndex>>(new Stack<ArrayIndex>());
+
     static JsonPosition start() {
         JsonPosition newPath = new JsonPosition();
         newPath.operators.push(Root.instance());
         return newPath;
     }
 
-    PathOperator stepOut() {
-        return operators.pop();
+    void stepOut() {
+        PathOperator node = operators.pop();
+        if (node.getType() == PathOperator.Type.OBJECT) {
+            Stack<ChildNode> stack = childNodeCache.get();
+            if (stack != null) {
+                stack.push((ChildNode) node);
+            } else {
+                createChildNodeCache();
+            }
+        } else if (node.getType() == PathOperator.Type.ARRAY) {
+            Stack<ArrayIndex> stack = arrayNodeCache.get();
+            if (stack != null) {
+                stack.push((ArrayIndex) node);
+            } else {
+                createArrayNodeCache();
+            }
+        }
     }
 
-    JsonPosition stepInArray() {
-        operators.push(new ArrayIndex());
-        return this;
+    void stepInArray() {
+        Stack<ArrayIndex> stack = arrayNodeCache.get();
+        ArrayIndex node = null;
+        if (stack == null) {
+            createArrayNodeCache();
+        } else if (!stack.isEmpty()) {
+            node = stack.pop();
+            node.reset();
+        }
+        if (node == null) {
+            node = new ArrayIndex();
+        }
+        operators.push(node);
     }
 
-    JsonPosition stepInObject(String key) {
-        operators.push(new ChildNode(key));
-        return this;
+    void stepInObject(String key) {
+        Stack<ChildNode> stack = childNodeCache.get();
+        ChildNode node = null;
+        if (stack == null) {
+            createChildNodeCache();
+        } else if (!stack.isEmpty()) {
+            node = stack.pop();
+            node.setKey(key);
+        }
+        if (node == null) {
+            node = new ChildNode(key);
+        }
+        operators.push(node);
     }
 
     void clear() {
         operators.clear();
         operators = null;
+    }
+
+    private void createChildNodeCache() {
+        System.out.println("create child node cache");
+        childNodeCache = new SoftReference<Stack<ChildNode>>(new Stack<ChildNode>());
+    }
+
+    private void createArrayNodeCache() {
+        System.out.println("create array node cache");
+        arrayNodeCache = new SoftReference<Stack<ArrayIndex>>(new Stack<ArrayIndex>());
     }
 
 }
