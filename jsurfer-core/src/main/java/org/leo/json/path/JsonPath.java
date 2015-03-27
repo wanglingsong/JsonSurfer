@@ -22,8 +22,8 @@
 
 package org.leo.json.path;
 
-import com.google.common.collect.Sets;
-
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -47,12 +47,12 @@ public class JsonPath {
         }
 
         public Builder children(String... children) {
-            jsonPath.operators.push(new ChildrenNode(Sets.newHashSet(children)));
+            jsonPath.operators.push(new ChildrenNode(new HashSet<String>(Arrays.asList(children))));
             return this;
         }
 
         public Builder anyChild() {
-            jsonPath.operators.push(ChildWildcard.instance());
+            jsonPath.operators.push(AnyChild.instance());
             return this;
         }
 
@@ -63,12 +63,12 @@ public class JsonPath {
         }
 
         public Builder indexes(Integer... indexes) {
-            jsonPath.operators.push(new ArrayIndexes(Sets.newHashSet(indexes)));
+            jsonPath.operators.push(new ArrayIndexes(new HashSet<Integer>(Arrays.asList(indexes))));
             return this;
         }
 
         public Builder anyIndex() {
-            jsonPath.operators.push(ArrayWildcard.instance());
+            jsonPath.operators.push(AnyIndex.instance());
             return this;
         }
 

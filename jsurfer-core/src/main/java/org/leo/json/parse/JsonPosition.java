@@ -35,27 +35,27 @@ class JsonPosition extends JsonPath {
 
     //TODO recycling node for saving gc
 
-    public static JsonPosition start() {
+    static JsonPosition start() {
         JsonPosition newPath = new JsonPosition();
         newPath.operators.push(Root.instance());
         return newPath;
     }
 
-    public PathOperator pop() {
+    PathOperator stepOut() {
         return operators.pop();
     }
 
-    public JsonPosition stepInArray() {
+    JsonPosition stepInArray() {
         operators.push(new ArrayIndex());
         return this;
     }
 
-    public JsonPosition stepInObject(String key) {
+    JsonPosition stepInObject(String key) {
         operators.push(new ChildNode(key));
         return this;
     }
 
-    public void clear() {
+    void clear() {
         operators.clear();
         operators = null;
     }

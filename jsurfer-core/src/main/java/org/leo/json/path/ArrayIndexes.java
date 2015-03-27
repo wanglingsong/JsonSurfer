@@ -22,9 +22,6 @@
 
 package org.leo.json.path;
 
-import com.google.common.collect.Sets;
-
-import java.util.Collection;
 import java.util.HashSet;
 
 /**

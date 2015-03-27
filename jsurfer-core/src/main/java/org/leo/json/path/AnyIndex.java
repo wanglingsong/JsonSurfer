@@ -25,15 +25,15 @@ package org.leo.json.path;
 /**
  * Created by Administrator on 2015/3/22.
  */
-public class ArrayWildcard extends PathOperator {
+public class AnyIndex extends PathOperator {
 
-    private final static ArrayWildcard INSTANCE = new ArrayWildcard();
+    private final static AnyIndex INSTANCE = new AnyIndex();
 
-    public static ArrayWildcard instance() {
+    public static AnyIndex instance() {
         return INSTANCE;
     }
 
-    private ArrayWildcard() {
+    private AnyIndex() {
         super(Type.ARRAY);
     }
 

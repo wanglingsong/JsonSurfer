@@ -22,18 +22,15 @@
 
 package org.leo.json;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.LinkedList;
-
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.ParseException;
 import org.leo.json.exception.JsonSurfingException;
-import org.leo.json.parse.GsonProvider;
 
-import com.google.common.collect.Lists;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.LinkedList;
 
 public class GsonSurfer implements JsonSurfer {
 
@@ -49,7 +46,7 @@ public class GsonSurfer implements JsonSurfer {
     public void surf(Reader reader, ContentHandler contentHandler) {
         try {
             JsonReader jsonReader = new JsonReader(reader);
-            LinkedList<EntryType> entryStack = Lists.newLinkedList();
+            LinkedList<EntryType> entryStack = new LinkedList<EntryType>();
             // TODO to correct behavior
 
             contentHandler.startJSON();

@@ -22,7 +22,6 @@
 
 package org.leo.json.parse;
 
-import com.google.common.collect.Lists;
 import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.ParseException;
 
@@ -35,7 +34,7 @@ import java.util.LinkedList;
  */
 public class ContentDispatcher implements ContentHandler {
 
-    LinkedList<ContentHandler> receiver = Lists.newLinkedList();
+    LinkedList<ContentHandler> receiver = new LinkedList<ContentHandler>();
 
     public boolean isEmpty() {
         return this.receiver.isEmpty();

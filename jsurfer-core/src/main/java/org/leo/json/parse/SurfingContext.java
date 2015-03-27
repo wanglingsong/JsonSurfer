@@ -22,11 +22,6 @@
 
 package org.leo.json.parse;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Map;
-
 import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.ParseException;
 import org.leo.json.ContentHandlerBuilder;
@@ -35,19 +30,22 @@ import org.leo.json.path.JsonPath;
 import org.leo.json.path.PathOperator;
 import org.leo.json.path.PathOperator.Type;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 public class SurfingContext implements ParsingContext, ContentHandlerBuilder, ContentHandler {
 
     private boolean built = false;
     private boolean stopped = false;
     private boolean skipOverlappedPath = false;
-    private JsonPosition currentPosition;
-    private Map<Integer, Map<JsonPath, JsonPathListener[]>> definitePathMap = Maps.newHashMap();
-    private Map<JsonPath, JsonPathListener[]> indefinitePathMap = Maps.newHashMap();
-    private ContentDispatcher dispatcher = new ContentDispatcher();
     private JsonProvider jsonProvider;
+    private JsonPosition currentPosition;
+    private Map<Integer, Map<JsonPath, JsonPathListener[]>> definitePathMap = new HashMap<Integer, Map<JsonPath, JsonPathListener[]>>();
+    private Map<JsonPath, JsonPathListener[]> indefinitePathMap = new HashMap<JsonPath, JsonPathListener[]>();
+    private ContentDispatcher dispatcher = new ContentDispatcher();
 
     private interface CollectorProcessor {
 
@@ -124,7 +122,7 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
             for (Map.Entry<JsonPath, JsonPathListener[]> entry : indefinitePathMap.entrySet()) {
                 if (entry.getKey().match(currentPosition)) {
                     if (listeners == null) {
-                        listeners = Lists.newLinkedList();
+                        listeners = new LinkedList<JsonPathListener>();
                     }
                     Collections.addAll(listeners, entry.getValue());
                 }
@@ -137,7 +135,7 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
             for (Map.Entry<JsonPath, JsonPathListener[]> entry : map.entrySet()) {
                 if (entry.getKey().match(currentPosition)) {
                     if (listeners == null) {
-                        listeners = Lists.newLinkedList();
+                        listeners = new LinkedList<JsonPathListener>();
                     }
                     Collections.addAll(listeners, entry.getValue());
                 }
@@ -179,7 +177,7 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
         if (stopped) {
             return false;
         }
-        currentPosition.pop();
+        currentPosition.stepOut();
         dispatcher.endObjectEntry();
         return true;
     }
@@ -204,7 +202,7 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
         if (stopped) {
             return false;
         }
-        currentPosition.pop();
+        currentPosition.stepOut();
         dispatcher.endArray();
         return true;
     }
@@ -250,7 +248,7 @@ public class SurfingContext implements ParsingContext, ContentHandlerBuilder, Co
             int semiHashcode = semiHashcode(jsonPath);
             Map<JsonPath, JsonPathListener[]> map = definitePathMap.get(semiHashcode);
             if (map == null) {
-                map = Maps.newHashMap();
+                map = new HashMap<JsonPath, JsonPathListener[]>();
                 definitePathMap.put(semiHashcode, map);
             }
             map.put(jsonPath, jsonPathListeners);

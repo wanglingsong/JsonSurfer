@@ -22,7 +22,6 @@
 
 package org.leo.json.parse;
 
-import com.google.common.collect.Lists;
 import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.ParseException;
 
@@ -104,7 +103,7 @@ class JsonGenerator implements ContentHandler {
 
     public void startJSON() throws ParseException, IOException {
         if (valueStack == null) {
-            valueStack = Lists.newLinkedList();
+            valueStack = new LinkedList<Object>();
         } else {
             valueStack.clear();
         }

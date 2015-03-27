@@ -25,15 +25,15 @@ package org.leo.json.path;
 /**
  * Created by Administrator on 2015/3/22.
  */
-public class ChildWildcard extends PathOperator {
+public class AnyChild extends PathOperator {
 
-    private final static ChildWildcard INSTANCE = new ChildWildcard();
+    private final static AnyChild INSTANCE = new AnyChild();
 
-    public static ChildWildcard instance() {
+    public static AnyChild instance() {
         return INSTANCE;
     }
 
-    private ChildWildcard() {
+    private AnyChild() {
         super(Type.OBJECT);
     }
 
