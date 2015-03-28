@@ -1,6 +1,6 @@
 # JsonSurfer - Let's surf on Json!
 ## Why JsonSurfer
-Jsonsurfer is good at in processing **big and complicated json** data.
+Jsonsurfer is good at processing **big and complicated json** data.
 * Streaming
 
     No need to deserialize entire json into memory
