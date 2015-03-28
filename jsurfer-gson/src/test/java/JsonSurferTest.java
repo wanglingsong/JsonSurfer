@@ -72,7 +72,7 @@ public class JsonSurferTest {
         builder.bind(root().child("store").child("book").indexes(0, 1, 2), mockListener)
                 .bind(root().child("store").child("book").index(3), mockListener);
 
-        Mockito.doNothing().when(mockListener)
+        doNothing().when(mockListener)
                 .onValue(anyObject(), argThat(new TypeSafeMatcher<ParsingContext>() {
 
                     @Override

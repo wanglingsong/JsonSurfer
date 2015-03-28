@@ -26,8 +26,10 @@ public class PerformanceTest {
 
     @Test
     public void testLargeJsonJPSimple() throws Exception {
-        JsonSimpleSurfer loader = new JsonSimpleSurfer();
-        Builder handler = context().withJsonProvider(new JsonSimpleProvider());
+        // use json-simple parser
+        JsonSimpleSurfer surfer = new JsonSimpleSurfer();
+        // transform json into json-simple model i.e.org.json.simple.JSONObject or org.json.simple.JSONArray
+        Builder builder = context().withJsonProvider(new JsonSimpleProvider());
         final AtomicLong counter = new AtomicLong();
         JsonPathListener printListener = new JsonPathListener() {
 
@@ -37,9 +39,9 @@ public class PerformanceTest {
                 LOGGER.trace("value: {}", value);
             }
         };
-        handler.bind(root().child("builders").anyChild().child("properties"), printListener).skipOverlappedPath();
+        builder.bind(root().child("builders").anyChild().child("properties"), printListener).skipOverlappedPath();
         long start = System.currentTimeMillis();
-        loader.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), handler.build());
+        surfer.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), builder.build());
         LOGGER.info("jsurfer-simple processes {} value in {} millisecond", counter.get(), System.currentTimeMillis()
                 - start);
 
@@ -47,8 +49,10 @@ public class PerformanceTest {
 
     @Test
     public void testLargeJsonJPGson() throws Exception {
-        GsonSurfer loader = new GsonSurfer();
-        Builder handler = context().withJsonProvider(new GsonProvider());
+        // use gson parser
+        GsonSurfer surfer = new GsonSurfer();
+        // transform json into gson model i.e.com.google.gson.JsonElement
+        Builder builder = context().withJsonProvider(new GsonProvider());
         final AtomicLong counter = new AtomicLong();
         JsonPathListener printListener = new JsonPathListener() {
             @Override
@@ -57,15 +61,16 @@ public class PerformanceTest {
                 LOGGER.trace("value: {}", value);
             }
         };
-        handler.bind(root().child("builders").anyChild().child("properties"), printListener).skipOverlappedPath();
+        // equivalent to $.builders.*.properties
+        builder.bind(root().child("builders").anyChild().child("properties"), printListener).skipOverlappedPath();
         long start = System.currentTimeMillis();
-        loader.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), handler.build());
+        surfer.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), builder.build());
         LOGGER.info("jsurfer-gson without deep scan processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);
     }
 
     @Test
     public void testLargeJsonJPGsonWithScan() throws Exception {
-        GsonSurfer loader = new GsonSurfer();
+        GsonSurfer surfer = new GsonSurfer();
 //        for (int i=0;i < 1000;i++) {
         Builder handler = context().withJsonProvider(new GsonProvider());
         final AtomicLong counter = new AtomicLong();
@@ -78,7 +83,7 @@ public class PerformanceTest {
         };
         handler.bind(root().child("builders").scan().child("properties").scan().child("product"), printListener);
         long start = System.currentTimeMillis();
-        loader.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), handler.build());
+        surfer.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), handler.build());
         LOGGER.info("jsurfer-gson with deep scan processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);
 //        }
     }
