@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>jsurfer-core</module>
+        <module>jsurfer-simple</module>
         <module>jsurfer-gson</module>
         <module>jsurfer-jackson</module>
     </modules>

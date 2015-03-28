@@ -87,6 +87,9 @@ public class JsonPath {
         }
 
         public JsonPath build() {
+            if (jsonPath.operators.peek().getType() == PathOperator.Type.DEEP_SCAN) {
+                throw new IllegalStateException("deep-scan shouldn't be the last operator.");
+            }
             if (!jsonPath.definite) {
                 // calculate minimum depth
                 for (PathOperator operator : jsonPath.operators) {
