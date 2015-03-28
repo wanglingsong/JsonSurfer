@@ -57,7 +57,7 @@ TODO
 ```
 ### Code Examples
 
-* Sample Json:
+Sample Json:
 ```javascript
 {
     "store": {
@@ -98,18 +98,90 @@ TODO
 }
 ```
 
-1. Find the authors of all books: 
+* Find the authors of all books: 
 ```javascript
 $.store.book[*].author
 ```
 ```java
-        HandlerBuilder builder = handler();
-        builder.bind(root().child("store").child("book").anyIndex().child("author"), new JsonPathListener() {
+        JsonPathListener print = new JsonPathListener() {
             @Override
             public void onValue(Object value, ParsingContext context) {
                 System.out.println(value);
             }
-        });
+        };
         GsonSurfer surfer = new GsonSurfer();
-        surfer.surf(new FileReader(new File("sample.json")), builder.build());
+        SurfingContext.Builder builder = BuilderFactory.context().withJsonProvider(new GsonProvider());
+        builder.bind(root().child("store").child("book").anyIndex().child("author"), print);
+        surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
+```
+Output
+```
+"Nigel Rees"
+"Evelyn Waugh"
+"Herman Melville"
+"J. R. R. Tolkien"
+```
+* All authors
+```javascript
+$..author
+```
+```java
+        builder.bind(root().scan().child("author"), print);
+```
+Output
+```
+"Nigel Rees"
+"Evelyn Waugh"
+"Herman Melville"
+"J. R. R. Tolkien"
+```
+* All things in store
+```javascript
+$.store.*
+```
+```java
+        builder.bind(root().child("store").any(), print);
+```
+Output
+```
+[{"category":"reference","author":"Nigel Rees","title":"Sayings of the Century","price":8.95},{"category":"fiction","author":"Evelyn Waugh","title":"Sword of Honour","price":12.99},{"category":"fiction","author":"Herman Melville","title":"Moby Dick","isbn":"0-553-21311-3","price":8.99},{"category":"fiction","author":"J. R. R. Tolkien","title":"The Lord of the Rings","isbn":"0-395-19395-8","price":22.99}]
+{"color":"red","price":19.95}
+```
+* The price of everything in the store
+```javascript
+$.store..price
+```
+```java
+        builder.bind(root().child("store").scan().child("price"), print);
+```
+Output
+```
+8.95
+12.99
+8.99
+22.99
+19.95
+```
+* The thrid book
+```javascript
+$..book[2]
+```
+```java
+        builder.bind(root().scan().child("book").index(2), print);
+```
+Output
+```
+{"category":"fiction","author":"Herman Melville","title":"Moby Dick","isbn":"0-553-21311-3","price":8.99}
+```
+* The first two books
+```javascript
+$..book[0,1]
+```
+```java
+        builder.bind(root().scan().child("book").indexes(0,1), print);
+```
+Output
+```
+{"category":"reference","author":"Nigel Rees","title":"Sayings of the Century","price":8.95}
+{"category":"fiction","author":"Evelyn Waugh","title":"Sword of Honour","price":12.99}
 ```
