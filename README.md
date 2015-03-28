@@ -1,6 +1,6 @@
 # JsonSurfer - Let's surf on Json!
 ## Why JsonSurfer
-Jsonsurfer is good at in processing **huge and complicated json** data.
+Jsonsurfer is good at in processing **big and complicated json** data.
 * Streaming
 
     No need to deserialize entire json into memory
@@ -184,7 +184,7 @@ Output
 {"category":"fiction","author":"Evelyn Waugh","title":"Sword of Honour","price":12.99}
 ```
 #### Stoppable parsing
-Use same JsonPath in above example but only return the first book by stopping parsing on the fly.
+The parsing is stopped when the first book found and printed.
 ```javascript
 $..book[0,1]
 ```
