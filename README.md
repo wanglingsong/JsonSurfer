@@ -51,7 +51,7 @@ Jsonsurfer is good at in processing **huge and complicated json** data.
         // equivalent to $.builders.*.properties
         builder.bind(root().child("builders").anyChild().child("properties"), printListener).skipOverlappedPath();
 ```
-* Stop parsing on the fly. Refer to [Stoppable parsing](#Stoppable parsing)
+* Stop parsing on the fly. Refer to [Stoppable parsing](#stoppable-parsing)
 ### Code Examples
 
 Sample Json:
