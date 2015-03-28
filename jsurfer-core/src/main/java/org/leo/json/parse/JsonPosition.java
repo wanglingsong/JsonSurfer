@@ -65,9 +65,7 @@ class JsonPosition extends JsonPath {
     void stepInArray() {
         Stack<ArrayIndex> stack = arrayNodeCache.get();
         ArrayIndex node = null;
-        if (stack == null) {
-            createArrayNodeCache();
-        } else if (!stack.isEmpty()) {
+        if (stack != null && !stack.isEmpty()) {
             node = stack.pop();
             node.reset();
         }
@@ -80,9 +78,7 @@ class JsonPosition extends JsonPath {
     void stepInObject(String key) {
         Stack<ChildNode> stack = childNodeCache.get();
         ChildNode node = null;
-        if (stack == null) {
-            createChildNodeCache();
-        } else if (!stack.isEmpty()) {
+        if (stack != null && !stack.isEmpty()) {
             node = stack.pop();
             node.setKey(key);
         }
@@ -98,12 +94,10 @@ class JsonPosition extends JsonPath {
     }
 
     private void createChildNodeCache() {
-        System.out.println("create child node cache");
         childNodeCache = new SoftReference<Stack<ChildNode>>(new Stack<ChildNode>());
     }
 
     private void createArrayNodeCache() {
-        System.out.println("create array node cache");
         arrayNodeCache = new SoftReference<Stack<ArrayIndex>>(new Stack<ArrayIndex>());
     }
 
