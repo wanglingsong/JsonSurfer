@@ -1,5 +1,6 @@
 # JsonSurfer - Let's surf on Json!
 ## Why JsonSurfer
+Jsonsurfer is good at in processing **huge and complicated json** data.
 * Streaming
 
     No need to deserialize entire json into memory
@@ -16,21 +17,21 @@
 
 ### [What is JsonPath?](http://goessner.net/articles/JsonPath/)
 
-* JsonSurfer is limited at current version:
+* JsonSurfer supports imcomplete JsonPath feature at current version:
 
-| Operator                  | Supported |
-| :-----------------------: | :-------: |
-| `$`                       | YES       |
-| `@`                       | Not yet   |
-| `*`                       | YES       |
-| `..`                      | YES       |
-| `.<name>`                 | YES       |
-| `['<name>' (, '<name>')]` | YES       |
-| `[<number> (, <number>)]` | YES       |
-| `[start:end]`             | Not yet   |
-| `[?(<expression>)]`       | Not yet   |
+| Operator                  |   Description     | Supported |
+| :-----------------------: |:-----------------:| :-------: |
+| `$`                       | root              | YES       |
+| `@`                       | current node      | Not yet   |
+| `*`                       | wildcard          | YES       |
+| `..`                      | recursive descent | YES       |
+| `.<name>`                 | child             | YES       |
+| `['<name>' (, '<name>')]` | child/children    | YES       |
+| `[<number> (, <number>)]` | index/indices     | YES       |
+| `[start:end]`             | array slice       | Not yet   |
+| `[?(<expression>)]`       | expression        | Not yet   |
 
-* JsonSurfer relies on third party library for parsing json. e.g json-simple, gson or jackson
+* JsonSurfer relies on third party library for parsing json and has dedicated maven projects built for them. e.g json-simple, gson or jackson
 * Pluggable json model provider
 ```java
         // use json-simple parser
@@ -45,7 +46,7 @@
         Builder builder = context().withJsonProvider(new GsonProvider());
 ```
 * **GsonSurfer** is recommended!
-* JsonSurfer offer a Java DSL for building JsonPath. More details in the following code examples.
+* JsonSurfer offer a Java DSL for building JsonPath. More details in the code examples section.
 ```java
         // equivalent to $.builders.*.properties
         builder.bind(root().child("builders").anyChild().child("properties"), printListener).skipOverlappedPath();
