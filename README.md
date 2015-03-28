@@ -1,24 +1,62 @@
 # JsonSurfer - Let's surf on Json!
 ## Why JsonSurfer
-How to read data from json in Java? 
+* Streaming
 
-Two approaches:
+    No need to deserialize entire json into memory
+    
+* JsonPath
 
-* Deserialize entire json into memory. i.e. Map or Java POJO
+    Selectively extract json data by the power of JsonPath
 
-    But what if the json is large? For example, 100 MB or larger.
+* Stoppable
 
-* Parse json using streaming.
-
-    Streaming can save you from memory-hogging.
-
-    But what if the json object is complicated (i.e. desired value nested deeply)?
-
-    Luckily, most of popular json library like Gson and Jackson provide powerful streaming API, however, they are still not convenient enough in this case, um.. at least for me.
-
+    JsonSurfer is built on [json-simple](https://code.google.com/p/json-simple/)'s Stoppable SAX-like interface that allows the processor to stop itself if necessary.
+    
 ## Getting started
-[JsonPath](http://goessner.net/articles/JsonPath/)
 
+### [What is JsonPath?](http://goessner.net/articles/JsonPath/)
+
+* JsonSurfer is limited at current version:
+
+| Operator                  | Supported |
+| :-----------------------: | :-------: |
+| `$`                       | YES       |
+| `@`                       | Not yet   |
+| `*`                       | YES       |
+| `..`                      | YES       |
+| `.<name>`                 | YES       |
+| `['<name>' (, '<name>')]` | YES       |
+| `[<number> (, <number>)]` | YES       |
+| `[start:end]`             | Not yet   |
+| `[?(<expression>)]`       | Not yet   |
+
+* JsonSurfer relies on third party library for parsing json. e.g json-simple, gson or jackson
+* Pluggable json model provider
+```java
+        // use json-simple parser
+        JsonSimpleSurfer loader = new JsonSimpleSurfer();
+        // transform json into json-simple model i.e.org.json.simple.JSONObject or org.json.simple.JSONArray
+        Builder builder = context().withJsonProvider(new JsonSimpleProvider()); 
+```
+```java
+        // use gson parser
+        GsonSurfer loader = new GsonSurfer();
+        // transform json into gson model i.e.com.google.gson.JsonElement
+        Builder builder = context().withJsonProvider(new GsonProvider());
+```
+* **GsonSurfer** is recommended!
+* JsonSurfer offer a Java DSL for building JsonPath. More details in the following code examples.
+```java
+        // equivalent to $.builders.*.properties
+        builder.bind(root().child("builders").anyChild().child("properties"), printListener).skipOverlappedPath();
+```
+* Stop parsing on the fly
+```java
+TODO
+```
+### Code Examples
+
+* Sample Json:
 ```javascript
 {
     "store": {
@@ -59,10 +97,10 @@ Two approaches:
 }
 ```
 
-## Code Example
-
-$.store.book[*].author:
-
+1. Find the authors of all books: 
+```javascript
+$.store.book[*].author
+```
 ```java
         HandlerBuilder builder = handler();
         builder.bind(root().child("store").child("book").anyIndex().child("author"), new JsonPathListener() {
