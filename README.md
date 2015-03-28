@@ -51,10 +51,7 @@ Jsonsurfer is good at in processing **huge and complicated json** data.
         // equivalent to $.builders.*.properties
         builder.bind(root().child("builders").anyChild().child("properties"), printListener).skipOverlappedPath();
 ```
-* Stop parsing on the fly
-```java
-TODO
-```
+* Stop parsing on the fly. Refer to [Stoppable parsing](#Stoppable parsing)
 ### Code Examples
 
 Sample Json:
@@ -98,7 +95,7 @@ Sample Json:
 }
 ```
 
-* Find the authors of all books: 
+#### Find the authors of all books: 
 ```javascript
 $.store.book[*].author
 ```
@@ -121,7 +118,7 @@ Output
 "Herman Melville"
 "J. R. R. Tolkien"
 ```
-* All authors
+#### All authors
 ```javascript
 $..author
 ```
@@ -135,7 +132,7 @@ Output
 "Herman Melville"
 "J. R. R. Tolkien"
 ```
-* All things in store
+#### All things in store
 ```javascript
 $.store.*
 ```
@@ -147,7 +144,7 @@ Output
 [{"category":"reference","author":"Nigel Rees","title":"Sayings of the Century","price":8.95},{"category":"fiction","author":"Evelyn Waugh","title":"Sword of Honour","price":12.99},{"category":"fiction","author":"Herman Melville","title":"Moby Dick","isbn":"0-553-21311-3","price":8.99},{"category":"fiction","author":"J. R. R. Tolkien","title":"The Lord of the Rings","isbn":"0-395-19395-8","price":22.99}]
 {"color":"red","price":19.95}
 ```
-* The price of everything in the store
+#### The price of everything in the store
 ```javascript
 $.store..price
 ```
@@ -162,7 +159,7 @@ Output
 22.99
 19.95
 ```
-* The thrid book
+#### The thrid book
 ```javascript
 $..book[2]
 ```
@@ -173,7 +170,7 @@ Output
 ```
 {"category":"fiction","author":"Herman Melville","title":"Moby Dick","isbn":"0-553-21311-3","price":8.99}
 ```
-* The first two books
+#### The first two books
 ```javascript
 $..book[0,1]
 ```
@@ -185,3 +182,22 @@ Output
 {"category":"reference","author":"Nigel Rees","title":"Sayings of the Century","price":8.95}
 {"category":"fiction","author":"Evelyn Waugh","title":"Sword of Honour","price":12.99}
 ```
+#### Stoppable parsing
+Use same JsonPath in above example but only return the first book by stopping parsing on the fly.
+```javascript
+$..book[0,1]
+```
+```java
+        builder.bind(root().scan().child("book").indexes(0, 1), new JsonPathListener() {
+            @Override
+            public void onValue(Object value, ParsingContext parsingContext) {
+                parsingContext.stopParsing();
+                System.out.println(value);
+            }
+        });
+```
+Output
+```
+{"category":"reference","author":"Nigel Rees","title":"Sayings of the Century","price":8.95}
+```
+
