@@ -232,7 +232,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
                 }
             }
         }
-        if (definitePathMap != null && pathLowerBound <= currentDepth && currentDepth <= pathUpperBound) {
+        if (definitePathMap != null && !(pathLowerBound > currentDepth || currentDepth > pathUpperBound)) {
             Binding[] bindings = definitePathMap.get(currentDepth);
             if (bindings != null) {
                 for (Binding binding : bindings) {
