@@ -200,9 +200,10 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         }
         LinkedList<JsonPathListener> listeners = null;
 
+        int currentDepth = currentPosition.pathDepth();
         if (indefinitePathMap != null) {
             for (IndefinitePathBinding binding : indefinitePathMap) {
-                if (binding.minimumPathDepth <= currentPosition.pathDepth()) {
+                if (binding.minimumPathDepth <= currentDepth) {
                     if (binding.jsonPath.match(currentPosition)) {
                         if (listeners == null) {
                             listeners = new LinkedList<JsonPathListener>();
@@ -215,7 +216,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
             }
         }
         if (definitePathMap != null) {
-            Binding[] bindings = definitePathMap.get(currentPosition.pathDepth());
+            Binding[] bindings = definitePathMap.get(currentDepth);
             if (bindings != null) {
                 for (Binding binding : bindings) {
                     if (binding.jsonPath.match(currentPosition)) {
