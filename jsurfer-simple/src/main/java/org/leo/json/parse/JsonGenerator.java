@@ -92,7 +92,7 @@ class JsonGenerator implements ContentHandler {
     }
 
     public boolean primitive(Object value) throws ParseException, IOException {
-        consumeValue(provider.primitive(value));
+        consumeValue(value);
         return true;
     }
 

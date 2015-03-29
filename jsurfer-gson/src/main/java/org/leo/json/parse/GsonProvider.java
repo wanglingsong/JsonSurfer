@@ -64,19 +64,28 @@ public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonEle
     }
 
     @Override
-    public JsonElement primitive(Object value) {
-        if (value instanceof Boolean) {
-            return  new JsonPrimitive((Boolean) value);
-        } else if (value instanceof Number) {
-            return new JsonPrimitive((Number) value);
-        } else if (value instanceof String) {
-            return new JsonPrimitive((String) value);
-        } else if (value instanceof Character) {
-            return new JsonPrimitive((Character) value);
-        } else if (value == null) {
-            return JsonNull.INSTANCE;
-        } else {
-            throw new IllegalStateException("invalid primitive value " + value);
-        }
+    public JsonElement primitive(boolean value) {
+        return  new JsonPrimitive(value);
     }
+
+    @Override
+    public JsonElement primitive(int value) {
+        return new JsonPrimitive(value);
+    }
+
+    @Override
+    public JsonElement primitive(double value) {
+        return  new JsonPrimitive(value);
+    }
+
+    @Override
+    public JsonElement primitive(String value) {
+        return new JsonPrimitive(value);
+    }
+
+    @Override
+    public JsonElement primitiveNull() {
+        return JsonNull.INSTANCE;
+    }
+
 }

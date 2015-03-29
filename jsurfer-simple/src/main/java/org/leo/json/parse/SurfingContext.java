@@ -170,7 +170,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
             return;
         }
         currentPosition = JsonPosition.start();
-        doMatching(false);
+        doMatching(false, false, null);
         dispatcher.startJSON();
     }
 
@@ -195,13 +195,13 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         PathOperator top = currentPosition.peek();
         if (top.getType() == Type.ARRAY) {
             ((ArrayIndex) top).increaseArrayIndex();
-            doMatching(true);
+            doMatching(true, false, null);
         }
         dispatcher.startObject();
         return true;
     }
 
-    private void doMatching(boolean initializeCollector) throws IOException, ParseException {
+    private void doMatching(boolean initializeCollector, boolean onPrimitive, Object primitive) throws IOException, ParseException {
         // skip matching if "skipOverlappedPath" is enable
         if (skipOverlappedPath && !this.dispatcher.isEmpty()) {
             return;
@@ -213,10 +213,19 @@ public class SurfingContext implements ParsingContext, ContentHandler {
             for (IndefinitePathBinding binding : indefinitePathMap) {
                 if (binding.minimumPathDepth <= currentDepth) {
                     if (binding.jsonPath.match(currentPosition)) {
-                        if (listeners == null) {
-                            listeners = new LinkedList<JsonPathListener>();
+                        if (onPrimitive) {
+                            for (JsonPathListener listener : binding.listeners) {
+                                if (isStopped()) {
+                                    break;
+                                }
+                                listener.onValue(primitive, this);
+                            }
+                        } else {
+                            if (listeners == null) {
+                                listeners = new LinkedList<JsonPathListener>();
+                            }
+                            Collections.addAll(listeners, binding.listeners);
                         }
-                        Collections.addAll(listeners, binding.listeners);
                     }
                 } else {
                     break;
@@ -228,16 +237,25 @@ public class SurfingContext implements ParsingContext, ContentHandler {
             if (bindings != null) {
                 for (Binding binding : bindings) {
                     if (binding.jsonPath.match(currentPosition)) {
-                        if (listeners == null) {
-                            listeners = new LinkedList<JsonPathListener>();
+                        if (onPrimitive) {
+                            for (JsonPathListener listener : binding.listeners) {
+                                if (isStopped()) {
+                                    break;
+                                }
+                                listener.onValue(primitive, this);
+                            }
+                        } else {
+                            if (listeners == null) {
+                                listeners = new LinkedList<JsonPathListener>();
+                            }
+                            Collections.addAll(listeners, binding.listeners);
                         }
-                        Collections.addAll(listeners, binding.listeners);
                     }
                 }
             }
         }
 
-        if (listeners != null) {
+        if (!onPrimitive && listeners != null) {
             JsonCollector collector = new JsonCollector(listeners, this);
             collector.setProvider(jsonProvider);
             if (initializeCollector) {
@@ -263,7 +281,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         }
         currentPosition.stepInObject(key);
         dispatcher.startObjectEntry(key);
-        doMatching(true);
+        doMatching(true, false, null);
         return true;
     }
 
@@ -285,7 +303,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         PathOperator top = currentPosition.peek();
         if (top.getType() == Type.ARRAY) {
             ((ArrayIndex) top).increaseArrayIndex();
-            doMatching(true);
+            doMatching(true, false, null);
         }
         currentPosition.stepInArray();
         dispatcher.startArray();
@@ -310,7 +328,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         PathOperator top = currentPosition.peek();
         if (top.getType() == Type.ARRAY) {
             ((ArrayIndex) top).increaseArrayIndex();
-            doMatching(true);
+            doMatching(true, true, value);
         }
         dispatcher.primitive(value);
         return true;
@@ -332,4 +350,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         return this.stopped;
     }
 
+    public JsonProvider getJsonProvider() {
+        return jsonProvider;
+    }
 }

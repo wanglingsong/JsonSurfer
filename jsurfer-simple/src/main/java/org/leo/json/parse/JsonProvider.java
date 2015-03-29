@@ -29,18 +29,26 @@ package org.leo.json.parse;
  */
 public interface JsonProvider<O, A, V> {
 
-    public O createObject();
+    O createObject();
 
-    public A createArray();
+    A createArray();
 
-    public boolean isObject(Object object);
+    boolean isObject(Object object);
 
-    public boolean isArray(Object array);
+    boolean isArray(Object array);
 
-    public void consumeObjectEntry(O object, String key, V value);
+    void consumeObjectEntry(O object, String key, V value);
 
-    public void consumeArrayElement(A array, V value);
+    void consumeArrayElement(A array, V value);
 
-    public V primitive(Object value);
+    V primitive(boolean value);
+
+    V primitive(int value);
+
+    V primitive(double value);
+
+    V primitive(String value);
+
+    V primitiveNull();
 
 }

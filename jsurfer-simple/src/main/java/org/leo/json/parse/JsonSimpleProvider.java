@@ -62,7 +62,28 @@ public class JsonSimpleProvider implements JsonProvider<JSONObject, JSONArray, O
     }
 
     @Override
-    public Object primitive(Object value) {
+    public Object primitive(boolean value) {
         return value;
     }
+
+    @Override
+    public Object primitive(int value) {
+        return value;
+    }
+
+    @Override
+    public Object primitive(double value) {
+        return value;
+    }
+
+    @Override
+    public Object primitive(String value) {
+        return value;
+    }
+
+    @Override
+    public Object primitiveNull() {
+        return null;
+    }
+
 }

@@ -24,67 +24,72 @@
 
 package org.leo.json.parse;
 
-import java.util.ArrayList;
-import java.util.Map;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * Created by Leo on 2015/3/27.
+ * Created by Leo on 2015/3/29.
  */
-public class JavaCollectionProvider implements JsonProvider<Map<String, Object>, ArrayList<Object>, Object> {
-    // TODO
+public class JacksonProvider implements JsonProvider<ObjectNode, ArrayNode, JsonNode> {
+
+    private JsonNodeFactory factory = JsonNodeFactory.instance;
+
     @Override
-    public Map<String, Object> createObject() {
-        return null;
+    public ObjectNode createObject() {
+        return factory.objectNode();
     }
 
     @Override
-    public ArrayList<Object> createArray() {
-        return null;
+    public ArrayNode createArray() {
+        return factory.arrayNode();
     }
 
     @Override
     public boolean isObject(Object object) {
-        return false;
+        return object instanceof ObjectNode;
     }
 
     @Override
     public boolean isArray(Object array) {
-        return false;
+        return array instanceof ArrayNode;
     }
 
     @Override
-    public void consumeObjectEntry(Map<String, Object> object, String key, Object value) {
-
+    public void consumeObjectEntry(ObjectNode object, String key, JsonNode value) {
+        object.set(key, value);
     }
 
     @Override
-    public void consumeArrayElement(ArrayList<Object> array, Object value) {
-
+    public void consumeArrayElement(ArrayNode array, JsonNode value) {
+        array.add(value);
     }
 
     @Override
-    public Object primitive(boolean value) {
-        return null;
+    public JsonNode primitive(boolean value) {
+        return factory.booleanNode(value);
     }
 
     @Override
-    public Object primitive(int value) {
-        return null;
+    public JsonNode primitive(int value) {
+        return factory.numberNode(value);
     }
 
     @Override
-    public Object primitive(double value) {
-        return null;
+    public JsonNode primitive(double value) {
+        return factory.numberNode(value);
     }
 
     @Override
-    public Object primitive(String value) {
-        return null;
+    public JsonNode primitive(String value) {
+        return factory.textNode(value);
     }
 
     @Override
-    public Object primitiveNull() {
-        return null;
+    public JsonNode primitiveNull() {
+        return factory.nullNode();
     }
 
 }

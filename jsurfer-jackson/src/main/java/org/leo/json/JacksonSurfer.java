@@ -24,8 +24,9 @@
 
 package org.leo.json;
 
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import org.json.simple.parser.ParseException;
 import org.leo.json.exception.JsonSurfingException;
 import org.leo.json.parse.JsonProvider;
@@ -33,135 +34,125 @@ import org.leo.json.parse.SurfingContext;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Stack;
 
-public class GsonSurfer implements JsonSurfer {
-
-    private enum EntryType {
-        ROOT,
-        OBJECT,
-        ARRAY,
-        PRIMITIVE
-    }
-
-    // TODO Implement gson parsing context
+/**
+ * Created by Leo on 2015/3/29.
+ */
+public class JacksonSurfer implements JsonSurfer {
 
     @Override
     public void surf(Reader reader, SurfingContext context) {
         try {
             JsonProvider provider = context.getJsonProvider();
-            JsonReader jsonReader = new JsonReader(reader);
-            Stack<EntryType> entryStack = new Stack<EntryType>();
-            entryStack.push(EntryType.ROOT);
-            // TODO to correct behavior
-
+            JsonFactory f = new JsonFactory();
+            JsonParser jp = f.createParser(reader);
             context.startJSON();
             while (true) {
-                JsonToken token = jsonReader.peek();
+                JsonToken token = jp.nextToken();
+                if (token == null) {
+                    context.endJSON();
+                    return;
+                }
                 switch (token) {
-                    case BEGIN_ARRAY:
-                        jsonReader.beginArray();
-                        if (!context.startArray()) {
-                            return;
-                        }
-                        break;
-                    case END_ARRAY:
-                        jsonReader.endArray();
-                        if (!context.endArray()) {
-                            return;
-                        }
-                        if (entryStack.peek() == EntryType.ARRAY) {
-                            if (!context.endObjectEntry()) {
-                                return;
-                            }
-                            entryStack.pop();
-                        }
-                        break;
-                    case BEGIN_OBJECT:
-                        jsonReader.beginObject();
+                    case NOT_AVAILABLE:
+                        return;
+                    case START_OBJECT:
                         if (!context.startObject()) {
                             return;
                         }
                         break;
                     case END_OBJECT:
-                        jsonReader.endObject();
                         if (!context.endObject()) {
                             return;
                         }
-                        if (entryStack.peek() == EntryType.OBJECT) {
+                        if (jp.getCurrentName() != null) {
                             if (!context.endObjectEntry()) {
                                 return;
                             }
-                            entryStack.pop();
                         }
                         break;
-                    case NAME:
-                        String name = jsonReader.nextName();
-                        if (!context.startObjectEntry(name)) {
+                    case START_ARRAY:
+                        if (!context.startArray()) {
                             return;
-                        }
-                        JsonToken peek = jsonReader.peek();
-                        if (peek == JsonToken.STRING || peek == JsonToken.BOOLEAN || peek == JsonToken.NUMBER
-                                || peek == JsonToken.NULL) {
-                            entryStack.push(EntryType.PRIMITIVE);
-                        } else if (peek == JsonToken.BEGIN_OBJECT) {
-                            entryStack.push(EntryType.OBJECT);
-                        } else if (peek == JsonToken.BEGIN_ARRAY) {
-                            entryStack.push(EntryType.ARRAY);
                         }
                         break;
-                    case STRING:
-                        String s = jsonReader.nextString();
-                        if (!context.primitive(provider.primitive(s))) {
+                    case END_ARRAY:
+                        if (!context.endArray()) {
                             return;
                         }
-                        if (entryStack.peek() == EntryType.PRIMITIVE) {
+                        if (jp.getCurrentName() != null) {
                             if (!context.endObjectEntry()) {
                                 return;
                             }
-                            entryStack.pop();
                         }
                         break;
-                    case NUMBER:
-                        double n = jsonReader.nextDouble();
-                        if (!context.primitive(provider.primitive(n))) {
+                    case FIELD_NAME:
+                        if (!context.startObjectEntry(jp.getCurrentName())) {
                             return;
                         }
-                        if (entryStack.peek() == EntryType.PRIMITIVE) {
+                        break;
+                    case VALUE_EMBEDDED_OBJECT:
+                        throw new IllegalStateException("Unexpected token");
+                    case VALUE_STRING:
+                        if (!context.primitive(provider.primitive(jp.getText()))) {
+                            return;
+                        }
+                        if (jp.getCurrentName() != null) {
                             if (!context.endObjectEntry()) {
                                 return;
                             }
-                            entryStack.pop();
                         }
                         break;
-                    case BOOLEAN:
-                        boolean b = jsonReader.nextBoolean();
-                        if (!context.primitive(provider.primitive(b))) {
+                    case VALUE_NUMBER_INT:
+                        if (!context.primitive(provider.primitive(jp.getIntValue()))) {
                             return;
                         }
-                        if (entryStack.peek() == EntryType.PRIMITIVE) {
+                        if (jp.getCurrentName() != null) {
                             if (!context.endObjectEntry()) {
                                 return;
                             }
-                            entryStack.pop();
                         }
                         break;
-                    case NULL:
-                        jsonReader.nextNull();
+                    case VALUE_NUMBER_FLOAT:
+                        if (!context.primitive(provider.primitive(jp.getDoubleValue()))) {
+                            return;
+                        }
+                        if (jp.getCurrentName() != null) {
+                            if (!context.endObjectEntry()) {
+                                return;
+                            }
+                        }
+                        break;
+                    case VALUE_TRUE:
+                        if (!context.primitive(provider.primitive(true))) {
+                            return;
+                        }
+                        if (jp.getCurrentName() != null) {
+                            if (!context.endObjectEntry()) {
+                                return;
+                            }
+                        }
+                        break;
+                    case VALUE_FALSE:
+                        if (!context.primitive(provider.primitive(false))) {
+                            return;
+                        }
+                        if (jp.getCurrentName() != null) {
+                            if (!context.endObjectEntry()) {
+                                return;
+                            }
+                        }
+                        break;
+                    case VALUE_NULL:
                         if (!context.primitive(provider.primitiveNull())) {
                             return;
                         }
-                        if (entryStack.peek() == EntryType.PRIMITIVE) {
+                        if (jp.getCurrentName() != null) {
                             if (!context.endObjectEntry()) {
                                 return;
                             }
-                            entryStack.pop();
                         }
                         break;
-                    case END_DOCUMENT:
-                        context.endJSON();
-                        entryStack.clear();
-                        return;
                 }
             }
         } catch (IOException e) {

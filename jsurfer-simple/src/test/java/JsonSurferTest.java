@@ -178,13 +178,13 @@ public class JsonSurferTest {
         provider.consumeArrayElement(array, provider.primitive("abc"));
         provider.consumeArrayElement(array, provider.primitive(8.88));
         provider.consumeArrayElement(array, provider.primitive(true));
-        provider.consumeArrayElement(array, provider.primitive(null));
+        provider.consumeArrayElement(array, provider.primitiveNull());
         provider.consumeArrayElement(array, object);
         verify(wholeArray).onValue(eq(array), any(ParsingContext.class));
         verify(stringElement).onValue(eq(provider.primitive("abc")), any(ParsingContext.class));
         verify(numberElement).onValue(eq(provider.primitive(8.88)), any(ParsingContext.class));
         verify(booleanElement).onValue(eq(provider.primitive(true)), any(ParsingContext.class));
-        verify(nullElement).onValue(eq(provider.primitive(null)), any(ParsingContext.class));
+        verify(nullElement).onValue(eq(provider.primitiveNull()), any(ParsingContext.class));
         verify(objectElement).onValue(eq(object), any(ParsingContext.class));
 
     }
