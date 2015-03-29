@@ -40,7 +40,7 @@ public class DeepScan extends PathOperator {
 
     @Override
     public String toString() {
-        return ".";
+        return "..";
     }
 
 }
