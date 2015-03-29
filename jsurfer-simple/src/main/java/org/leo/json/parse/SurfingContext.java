@@ -59,6 +59,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
                     context.indefinitePathMap = indefiniteBindings.toArray(new IndefinitePathBinding[indefiniteBindings.size()]);
                 }
                 if (!definiteBindings.isEmpty()) {
+                    context.definitePathMap = new HashMap<Integer, Binding[]>(definiteBindings.size());
                     for (Map.Entry<Integer, ArrayList<Binding>> entry : definiteBindings.entrySet()) {
                         context.definitePathMap.put(entry.getKey(), entry.getValue().toArray(new Binding[entry.getValue().size()]));
                     }
@@ -101,9 +102,9 @@ public class SurfingContext implements ParsingContext, ContentHandler {
             return this;
         }
 
-        public Builder withJsonProvider(JsonProvider structureFactory) {
+        public Builder withJsonProvider(JsonProvider provider) {
             check();
-            context.jsonProvider = structureFactory;
+            context.jsonProvider = provider;
             return this;
         }
 
@@ -148,7 +149,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
     private boolean skipOverlappedPath = false;
     private JsonProvider jsonProvider;
     private JsonPosition currentPosition;
-    private Map<Integer, Binding[]> definitePathMap = new HashMap<Integer, Binding[]>();
+    private Map<Integer, Binding[]> definitePathMap;
 
     // sorted by minimum path depth
     private IndefinitePathBinding[] indefinitePathMap;
@@ -213,15 +214,16 @@ public class SurfingContext implements ParsingContext, ContentHandler {
                 }
             }
         }
-
-        Binding[] bindings = definitePathMap.get(currentPosition.pathDepth());
-        if (bindings != null) {
-            for (Binding binding : bindings) {
-                if (binding.jsonPath.match(currentPosition)) {
-                    if (listeners == null) {
-                        listeners = new LinkedList<JsonPathListener>();
+        if (definitePathMap != null) {
+            Binding[] bindings = definitePathMap.get(currentPosition.pathDepth());
+            if (bindings != null) {
+                for (Binding binding : bindings) {
+                    if (binding.jsonPath.match(currentPosition)) {
+                        if (listeners == null) {
+                            listeners = new LinkedList<JsonPathListener>();
+                        }
+                        Collections.addAll(listeners, binding.listeners);
                     }
-                    Collections.addAll(listeners, binding.listeners);
                 }
             }
         }

@@ -109,16 +109,13 @@ public class JsonPath {
     protected Stack<PathOperator> operators = new Stack<PathOperator>();
 
     public boolean match(JsonPath jsonPath) {
-        ListIterator<PathOperator> iterator1;
-        ListIterator<PathOperator> iterator2;
         PathOperator peek1 = operators.peek();
         PathOperator peek2 = jsonPath.operators.peek();
         if (!peek1.match(peek2)) {
             return false;
-        } else {
-            iterator1 = operators.listIterator(operators.size() - 1);
-            iterator2 = jsonPath.operators.listIterator(jsonPath.operators.size() - 1);
         }
+        ListIterator<PathOperator> iterator1 = operators.listIterator(operators.size() - 1);
+        ListIterator<PathOperator> iterator2 = jsonPath.operators.listIterator(jsonPath.operators.size() - 1);
         while (iterator1.hasPrevious()) {
             if (!iterator2.hasPrevious()) {
                 return false;
