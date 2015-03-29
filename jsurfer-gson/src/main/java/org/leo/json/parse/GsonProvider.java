@@ -24,10 +24,7 @@
 
 package org.leo.json.parse;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 
 /**
  * Created by Administrator on 2015/3/25.
@@ -68,6 +65,18 @@ public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonEle
 
     @Override
     public JsonElement primitive(Object value) {
-        return DEFAULT_GSON.toJsonTree(value);
+        if (value instanceof Boolean) {
+            return  new JsonPrimitive((Boolean) value);
+        } else if (value instanceof Number) {
+            return new JsonPrimitive((Number) value);
+        } else if (value instanceof String) {
+            return new JsonPrimitive((String) value);
+        } else if (value instanceof Character) {
+            return new JsonPrimitive((Character) value);
+        } else if (value == null) {
+            return JsonNull.INSTANCE;
+        } else {
+            throw new IllegalStateException("invalid primitive value " + value);
+        }
     }
 }

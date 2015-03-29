@@ -339,7 +339,7 @@ public class JsonSurferTest {
                 LOGGER.trace("value: {}", value);
             }
         };
-        builder.bind(root().child("builders").scan().child("properties").scan().child("product"), printListener);
+        builder.bind(root().child("builders").scan().child("properties"), printListener);
         long start = System.currentTimeMillis();
         surfer.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), builder.build());
         LOGGER.info(surfer.getClass().getSimpleName() + " with deep scan processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);
