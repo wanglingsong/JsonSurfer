@@ -4,23 +4,48 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>jsurfer</artifactId>
-        <groupId>org.jsfr</groupId>
-        <version>1.1</version>
+        <groupId>com.github.jsurfer</groupId>
+        <version>1.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jsurfer-jackson</artifactId>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
-            <groupId>org.jsfr</groupId>
+            <groupId>com.github.jsurfer</groupId>
             <artifactId>jsurfer-simple</artifactId>
-            <version>1.1</version>
+            <version>1.2</version>
         </dependency>
         <dependency>
-            <groupId>org.jsfr</groupId>
+            <groupId>com.github.jsurfer</groupId>
             <artifactId>jsurfer-simple</artifactId>
-            <version>1.1</version>
+            <version>1.2</version>
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
