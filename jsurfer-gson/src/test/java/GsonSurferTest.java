@@ -27,8 +27,8 @@ import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import org.junit.Before;
 import org.junit.Test;
-import org.leo.json.GsonSurfer;
-import org.leo.json.parse.GsonProvider;
+import org.jsfr.json.GsonSurfer;
+import org.jsfr.json.parse.GsonProvider;
 
 import java.io.InputStreamReader;
 import java.util.Map;

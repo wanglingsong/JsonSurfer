@@ -30,9 +30,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
-import org.leo.json.JacksonSurfer;
-import org.leo.json.parse.JacksonProvider;
-import org.leo.json.parse.JsonSimpleProvider;
+import org.jsfr.json.JacksonSurfer;
+import org.jsfr.json.parse.JacksonProvider;
 
 import java.util.concurrent.atomic.AtomicLong;
 
