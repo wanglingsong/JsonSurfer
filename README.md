@@ -45,7 +45,6 @@ Jsonsurfer is good at processing **big and complicated json** data with three ma
         // transform json into gson model i.e.com.google.gson.JsonElement
         Builder builder = context().withJsonProvider(new GsonProvider());
 ```
-* **GsonSurfer** is recommended!
 * JsonSurfer offer a Java DSL for building JsonPath. More details in the code examples section.
 ```java
         // equivalent to $.builders.*.properties
