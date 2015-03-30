@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.parse;
+package org.jsfr.json;
 
 import org.json.simple.parser.ParseException;
 
@@ -32,7 +32,7 @@ import java.util.Collection;
 /**
  * Created by Administrator on 2015/3/21.
  */
-public class JsonCollector extends JsonGenerator {
+class JsonCollector extends JsonGenerator {
 
     private Collection<JsonPathListener> jsonPathListeners;
     private ParsingContext context;

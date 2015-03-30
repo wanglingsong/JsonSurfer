@@ -22,50 +22,48 @@
  * THE SOFTWARE.
  */
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.TreeNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+package org.jsfr.json;
+
 import com.google.common.io.Resources;
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 import org.junit.Before;
 import org.junit.Test;
-import org.jsfr.json.JacksonSurfer;
-import org.jsfr.json.parse.JacksonProvider;
 
+import java.io.InputStreamReader;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Created by Leo on 2015/3/30.
+ * Created by Leo on 2015/3/29.
  */
-public class JacksonSurferTest extends JsonSurferTest {
+public class GsonSurferTest extends JsonSurferTest {
 
     @Override
     @Before
     public void setUp() throws Exception {
-        surfer = new JacksonSurfer();
-        provider = new JacksonProvider();
+        provider = new GsonProvider();
+        surfer = new GsonSurfer(provider);
     }
 
     @Test
-    public void testLargeJsonJackson() throws Exception {
+    public void testLargeJsonRawGson() throws Exception {
         final AtomicLong counter = new AtomicLong();
-        ObjectMapper om = new ObjectMapper();
-        JsonFactory f = new JsonFactory();
-        JsonParser jp = f.createParser(Resources.getResource("allthethings.json").openStream());
+        Gson gson = new Gson();
+        JsonReader reader = new JsonReader(new InputStreamReader(Resources.getResource("allthethings.json").openStream(), "UTF-8"));
         long start = System.currentTimeMillis();
-        jp.nextToken();
-        jp.nextToken();
-        jp.nextToken();
-        while (jp.nextToken() == JsonToken.FIELD_NAME) {
-            if (jp.nextToken() == JsonToken.START_OBJECT) {
-                TreeNode tree = om.readTree(jp);
-                counter.incrementAndGet();
-                LOGGER.trace("value: {}", tree);
-            }
+        reader.beginObject();
+        reader.nextName();
+        // $.builders
+        reader.beginObject();
+        while (reader.hasNext()) {
+            reader.nextName();
+            Map element = gson.fromJson(reader, Map.class);
+            Object value = ((Map) element.get("properties")).get("branch");
+            counter.incrementAndGet();
+            JsonSurferTest.LOGGER.trace("JsonPath: {} value: {}", reader.getPath(), value);
         }
-        jp.close();
-        LOGGER.info("Jackson processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);
+        JsonSurferTest.LOGGER.info("Gson processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);
     }
 
 }

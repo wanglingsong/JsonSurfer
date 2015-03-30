@@ -24,18 +24,26 @@
 
 package org.jsfr.json;
 
-import org.jsfr.json.parse.SurfingContext;
+import org.jsfr.json.exception.JsonSurfingException;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.jsfr.json.exception.JsonSurfingException;
 
 import java.io.IOException;
 import java.io.Reader;
 
-public class JsonSimpleSurfer implements JsonSurfer {
+public class JsonSimpleSurfer extends AbstractSurfer {
+
+    public JsonSimpleSurfer() {
+        super(new JsonSimpleProvider());
+    }
+
+    public JsonSimpleSurfer(JsonProvider jsonProvider) {
+        super(jsonProvider);
+    }
 
     @Override
     public void surf(Reader reader, SurfingContext context) {
+        ensureJsonProvider(context);
         JSONParser parser = new JSONParser();
         try {
             parser.parse(reader, context);

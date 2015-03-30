@@ -24,7 +24,10 @@
 
 package org.jsfr.json.path;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.ListIterator;
+import java.util.Stack;
 
 public class JsonPath {
 

@@ -22,9 +22,13 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.parse;
+package org.jsfr.json;
 
-import org.jsfr.json.path.*;
+import org.jsfr.json.path.ArrayIndex;
+import org.jsfr.json.path.ChildNode;
+import org.jsfr.json.path.JsonPath;
+import org.jsfr.json.path.PathOperator;
+import org.jsfr.json.path.Root;
 
 import java.lang.ref.SoftReference;
 import java.util.Stack;
@@ -64,7 +68,7 @@ class JsonPosition extends JsonPath {
         }
     }
 
-    void stepInArray() {
+    void stepOverNextIndex() {
         Stack<ArrayIndex> stack = arrayNodeCache.get();
         ArrayIndex node = null;
         if (stack != null && !stack.isEmpty()) {
@@ -77,7 +81,7 @@ class JsonPosition extends JsonPath {
         operators.push(node);
     }
 
-    void stepInObject(String key) {
+    void stepIntoChild(String key) {
         Stack<ChildNode> stack = childNodeCache.get();
         ChildNode node = null;
         if (stack != null && !stack.isEmpty()) {

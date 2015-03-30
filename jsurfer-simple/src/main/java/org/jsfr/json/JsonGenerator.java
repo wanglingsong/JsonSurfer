@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.parse;
+package org.jsfr.json;
 
 import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.ParseException;

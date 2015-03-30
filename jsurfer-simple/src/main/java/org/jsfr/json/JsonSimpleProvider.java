@@ -22,70 +22,68 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.parse;
+package org.jsfr.json;
 
-import com.google.gson.*;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 /**
  * Created by Administrator on 2015/3/25.
  */
-public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonElement> {
-
-    private final static Gson DEFAULT_GSON = new Gson();
-
+public class JsonSimpleProvider implements JsonProvider<JSONObject, JSONArray, Object> {
     @Override
-    public JsonObject createObject() {
-        return new JsonObject();
+    public JSONObject createObject() {
+        return new JSONObject();
     }
 
     @Override
-    public JsonArray createArray() {
-        return new JsonArray();
+    public JSONArray createArray() {
+        return new JSONArray();
     }
 
     @Override
     public boolean isObject(Object object) {
-        return object instanceof JsonObject;
+        return object instanceof JSONObject;
     }
 
     @Override
     public boolean isArray(Object array) {
-        return array instanceof JsonArray;
+        return array instanceof JSONArray;
     }
 
     @Override
-    public void consumeObjectEntry(JsonObject object, String key, JsonElement value) {
-        object.add(key, value);
+    public void consumeObjectEntry(JSONObject object, String key, Object value) {
+        object.put(key, value);
     }
 
     @Override
-    public void consumeArrayElement(JsonArray array, JsonElement value) {
+    public void consumeArrayElement(JSONArray array, Object value) {
         array.add(value);
     }
 
     @Override
-    public JsonElement primitive(boolean value) {
-        return  new JsonPrimitive(value);
+    public Object primitive(boolean value) {
+        return value;
     }
 
     @Override
-    public JsonElement primitive(int value) {
-        return new JsonPrimitive(value);
+    public Object primitive(int value) {
+        return value;
     }
 
     @Override
-    public JsonElement primitive(double value) {
-        return  new JsonPrimitive(value);
+    public Object primitive(double value) {
+        return value;
     }
 
     @Override
-    public JsonElement primitive(String value) {
-        return new JsonPrimitive(value);
+    public Object primitive(String value) {
+        return value;
     }
 
     @Override
-    public JsonElement primitiveNull() {
-        return JsonNull.INSTANCE;
+    public Object primitiveNull() {
+        return null;
     }
 
 }

@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.parse;
+package org.jsfr.json;
 
 import org.json.simple.parser.ContentHandler;
 import org.json.simple.parser.ParseException;
@@ -34,7 +34,7 @@ import java.util.LinkedList;
 /**
  * Created by Administrator on 2015/3/21.
  */
-public class ContentDispatcher implements ContentHandler {
+class ContentDispatcher implements ContentHandler {
 
     LinkedList<ContentHandler> receiver = new LinkedList<ContentHandler>();
 

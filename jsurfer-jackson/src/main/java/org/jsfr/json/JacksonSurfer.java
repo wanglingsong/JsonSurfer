@@ -27,10 +27,8 @@ package org.jsfr.json;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import org.jsfr.json.parse.SurfingContext;
-import org.json.simple.parser.ParseException;
 import org.jsfr.json.exception.JsonSurfingException;
-import org.jsfr.json.parse.JsonProvider;
+import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -38,12 +36,20 @@ import java.io.Reader;
 /**
  * Created by Leo on 2015/3/29.
  */
-public class JacksonSurfer implements JsonSurfer {
+public class JacksonSurfer extends AbstractSurfer {
+
+    public JacksonSurfer() {
+        super(new JacksonProvider());
+    }
+
+    public JacksonSurfer(JsonProvider jsonProvider) {
+        super(jsonProvider);
+    }
 
     @Override
     public void surf(Reader reader, SurfingContext context) {
+        ensureJsonProvider(context);
         try {
-            JsonProvider provider = context.getJsonProvider();
             JsonFactory f = new JsonFactory();
             JsonParser jp = f.createParser(reader);
             context.startJSON();
@@ -94,7 +100,7 @@ public class JacksonSurfer implements JsonSurfer {
                     case VALUE_EMBEDDED_OBJECT:
                         throw new IllegalStateException("Unexpected token");
                     case VALUE_STRING:
-                        if (!context.primitive(provider.primitive(jp.getText()))) {
+                        if (!context.primitive(jsonProvider.primitive(jp.getText()))) {
                             return;
                         }
                         if (jp.getCurrentName() != null) {
@@ -104,7 +110,7 @@ public class JacksonSurfer implements JsonSurfer {
                         }
                         break;
                     case VALUE_NUMBER_INT:
-                        if (!context.primitive(provider.primitive(jp.getIntValue()))) {
+                        if (!context.primitive(jsonProvider.primitive(jp.getIntValue()))) {
                             return;
                         }
                         if (jp.getCurrentName() != null) {
@@ -114,7 +120,7 @@ public class JacksonSurfer implements JsonSurfer {
                         }
                         break;
                     case VALUE_NUMBER_FLOAT:
-                        if (!context.primitive(provider.primitive(jp.getDoubleValue()))) {
+                        if (!context.primitive(jsonProvider.primitive(jp.getDoubleValue()))) {
                             return;
                         }
                         if (jp.getCurrentName() != null) {
@@ -124,7 +130,7 @@ public class JacksonSurfer implements JsonSurfer {
                         }
                         break;
                     case VALUE_TRUE:
-                        if (!context.primitive(provider.primitive(true))) {
+                        if (!context.primitive(jsonProvider.primitive(true))) {
                             return;
                         }
                         if (jp.getCurrentName() != null) {
@@ -134,7 +140,7 @@ public class JacksonSurfer implements JsonSurfer {
                         }
                         break;
                     case VALUE_FALSE:
-                        if (!context.primitive(provider.primitive(false))) {
+                        if (!context.primitive(jsonProvider.primitive(false))) {
                             return;
                         }
                         if (jp.getCurrentName() != null) {
@@ -144,7 +150,7 @@ public class JacksonSurfer implements JsonSurfer {
                         }
                         break;
                     case VALUE_NULL:
-                        if (!context.primitive(provider.primitiveNull())) {
+                        if (!context.primitive(jsonProvider.primitiveNull())) {
                             return;
                         }
                         if (jp.getCurrentName() != null) {

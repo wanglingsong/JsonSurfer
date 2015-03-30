@@ -22,17 +22,10 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.parse;
+package org.jsfr.json;
 
-/**
- * Created by Leo on 2015/3/22.
- */
-public interface ParsingContext {
+public interface JsonPathListener {
 
-    void stopParsing();
-
-    boolean isStopped();
-
-    String getPath();
+    void onValue(Object value, ParsingContext context);
 
 }

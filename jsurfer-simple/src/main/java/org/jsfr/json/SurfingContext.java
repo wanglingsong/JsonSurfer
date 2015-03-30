@@ -22,17 +22,21 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.parse;
+package org.jsfr.json;
 
-import org.json.simple.parser.ContentHandler;
-import org.json.simple.parser.ParseException;
 import org.jsfr.json.path.ArrayIndex;
 import org.jsfr.json.path.JsonPath;
 import org.jsfr.json.path.PathOperator;
 import org.jsfr.json.path.PathOperator.Type;
+import org.json.simple.parser.ContentHandler;
+import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 public class SurfingContext implements ParsingContext, ContentHandler {
 
@@ -51,9 +55,6 @@ public class SurfingContext implements ParsingContext, ContentHandler {
 
         public SurfingContext build() {
             if (!context.built) {
-                if (context.jsonProvider == null) {
-                    context.jsonProvider = new JavaCollectionProvider();
-                }
                 if (!indefiniteBindings.isEmpty()) {
                     Collections.sort(indefiniteBindings);
                     context.indefinitePathLookup = indefiniteBindings.toArray(new IndefinitePathBinding[indefiniteBindings.size()]);
@@ -278,7 +279,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         if (stopped) {
             return false;
         }
-        currentPosition.stepInObject(key);
+        currentPosition.stepIntoChild(key);
         dispatcher.startObjectEntry(key);
         doMatching(true, false, null);
         return true;
@@ -304,7 +305,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
             ((ArrayIndex) top).increaseArrayIndex();
             doMatching(true, false, null);
         }
-        currentPosition.stepInArray();
+        currentPosition.stepOverNextIndex();
         dispatcher.startArray();
         return true;
     }
@@ -338,7 +339,6 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         return this.currentPosition.toString();
     }
 
-
     @Override
     public void stopParsing() {
         this.stopped = true;
@@ -349,7 +349,11 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         return this.stopped;
     }
 
-    public JsonProvider getJsonProvider() {
+    void setJsonProvider(JsonProvider jsonProvider) {
+        this.jsonProvider = jsonProvider;
+    }
+
+    JsonProvider getJsonProvider() {
         return jsonProvider;
     }
 }

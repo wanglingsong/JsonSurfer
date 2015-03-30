@@ -26,16 +26,14 @@ package org.jsfr.json;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
-import org.jsfr.json.parse.SurfingContext;
-import org.json.simple.parser.ParseException;
 import org.jsfr.json.exception.JsonSurfingException;
-import org.jsfr.json.parse.JsonProvider;
+import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Stack;
 
-public class GsonSurfer implements JsonSurfer {
+public class GsonSurfer extends AbstractSurfer {
 
     private enum EntryType {
         ROOT,
@@ -44,12 +42,19 @@ public class GsonSurfer implements JsonSurfer {
         PRIMITIVE
     }
 
-    // TODO Implement gson parsing context
+    public GsonSurfer() {
+        super(new GsonProvider());
+    }
+
+
+    public GsonSurfer(JsonProvider jsonProvider) {
+        super(jsonProvider);
+    }
 
     @Override
     public void surf(Reader reader, SurfingContext context) {
+        ensureJsonProvider(context);
         try {
-            JsonProvider provider = context.getJsonProvider();
             JsonReader jsonReader = new JsonReader(reader);
             Stack<EntryType> entryStack = new Stack<EntryType>();
             entryStack.push(EntryType.ROOT);
@@ -112,7 +117,7 @@ public class GsonSurfer implements JsonSurfer {
                         break;
                     case STRING:
                         String s = jsonReader.nextString();
-                        if (!context.primitive(provider.primitive(s))) {
+                        if (!context.primitive(jsonProvider.primitive(s))) {
                             return;
                         }
                         if (entryStack.peek() == EntryType.PRIMITIVE) {
@@ -124,7 +129,7 @@ public class GsonSurfer implements JsonSurfer {
                         break;
                     case NUMBER:
                         double n = jsonReader.nextDouble();
-                        if (!context.primitive(provider.primitive(n))) {
+                        if (!context.primitive(jsonProvider.primitive(n))) {
                             return;
                         }
                         if (entryStack.peek() == EntryType.PRIMITIVE) {
@@ -136,7 +141,7 @@ public class GsonSurfer implements JsonSurfer {
                         break;
                     case BOOLEAN:
                         boolean b = jsonReader.nextBoolean();
-                        if (!context.primitive(provider.primitive(b))) {
+                        if (!context.primitive(jsonProvider.primitive(b))) {
                             return;
                         }
                         if (entryStack.peek() == EntryType.PRIMITIVE) {
@@ -148,7 +153,7 @@ public class GsonSurfer implements JsonSurfer {
                         break;
                     case NULL:
                         jsonReader.nextNull();
-                        if (!context.primitive(provider.primitiveNull())) {
+                        if (!context.primitive(jsonProvider.primitiveNull())) {
                             return;
                         }
                         if (entryStack.peek() == EntryType.PRIMITIVE) {

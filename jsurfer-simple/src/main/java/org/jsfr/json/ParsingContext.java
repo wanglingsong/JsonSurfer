@@ -22,29 +22,17 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.path;
-
-import java.util.HashSet;
+package org.jsfr.json;
 
 /**
- * Created by Administrator on 2015/3/25.
+ * Created by Leo on 2015/3/22.
  */
-public class ArrayIndexes extends PathOperator {
+public interface ParsingContext {
 
-    private HashSet<Integer> indexes;
+    void stopParsing();
 
-    protected ArrayIndexes(HashSet<Integer> indexes) {
-        super(Type.ARRAY);
-        this.indexes = indexes;
-    }
+    boolean isStopped();
 
-    @Override
-    public boolean match(PathOperator pathOperator) {
-        return super.match(pathOperator) && indexes.contains(((ArrayIndex) pathOperator).getArrayIndex());
-    }
+    String getPath();
 
-    @Override
-    public String toString() {
-        return String.valueOf(indexes);
-    }
 }

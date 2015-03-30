@@ -24,9 +24,10 @@
 
 package org.jsfr.json;
 
-import org.jsfr.json.parse.SurfingContext;
+import org.jsfr.json.path.JsonPath;
 
 import java.io.Reader;
+import java.util.Collection;
 
 /**
  * Created by Administrator on 2015/3/23.
@@ -34,5 +35,9 @@ import java.io.Reader;
 public interface JsonSurfer {
 
     void surf(Reader reader, SurfingContext context);
+
+    <T> Collection<T> collect(Reader reader, JsonPath... paths);
+
+    <T> T collectOne(Reader reader, JsonPath... paths);
 
 }

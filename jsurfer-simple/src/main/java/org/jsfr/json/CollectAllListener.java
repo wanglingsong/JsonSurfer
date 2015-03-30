@@ -22,69 +22,25 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.parse;
+package org.jsfr.json;
 
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.Collection;
 
 /**
- * Created by Leo on 2015/3/27.
+ * Created by Leo on 2015/3/30.
  */
-public class JavaCollectionProvider implements JsonProvider<Map<String, Object>, ArrayList<Object>, Object> {
-    // TODO
+public class CollectAllListener<T> extends TypedListener<T> {
+
+    private Collection<T> collection = new ArrayList<T>();
+
     @Override
-    public Map<String, Object> createObject() {
-        return null;
+    public void onTypedValue(T value, ParsingContext context) {
+        collection.add(value);
     }
 
-    @Override
-    public ArrayList<Object> createArray() {
-        return null;
-    }
-
-    @Override
-    public boolean isObject(Object object) {
-        return false;
-    }
-
-    @Override
-    public boolean isArray(Object array) {
-        return false;
-    }
-
-    @Override
-    public void consumeObjectEntry(Map<String, Object> object, String key, Object value) {
-
-    }
-
-    @Override
-    public void consumeArrayElement(ArrayList<Object> array, Object value) {
-
-    }
-
-    @Override
-    public Object primitive(boolean value) {
-        return null;
-    }
-
-    @Override
-    public Object primitive(int value) {
-        return null;
-    }
-
-    @Override
-    public Object primitive(double value) {
-        return null;
-    }
-
-    @Override
-    public Object primitive(String value) {
-        return null;
-    }
-
-    @Override
-    public Object primitiveNull() {
-        return null;
+    public Collection<T> getCollection() {
+        return collection;
     }
 
 }

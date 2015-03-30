@@ -24,7 +24,6 @@
 
 package org.jsfr.json;
 
-import org.jsfr.json.parse.SurfingContext;
 import org.jsfr.json.path.JsonPath;
 
 public class BuilderFactory {

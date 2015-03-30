@@ -22,29 +22,33 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.path;
-
-import java.util.HashSet;
+package org.jsfr.json;
 
 /**
  * Created by Administrator on 2015/3/25.
  */
-public class ArrayIndexes extends PathOperator {
+public interface JsonProvider<O, A, V> {
 
-    private HashSet<Integer> indexes;
+    O createObject();
 
-    protected ArrayIndexes(HashSet<Integer> indexes) {
-        super(Type.ARRAY);
-        this.indexes = indexes;
-    }
+    A createArray();
 
-    @Override
-    public boolean match(PathOperator pathOperator) {
-        return super.match(pathOperator) && indexes.contains(((ArrayIndex) pathOperator).getArrayIndex());
-    }
+    boolean isObject(Object object);
 
-    @Override
-    public String toString() {
-        return String.valueOf(indexes);
-    }
+    boolean isArray(Object array);
+
+    void consumeObjectEntry(O object, String key, V value);
+
+    void consumeArrayElement(A array, V value);
+
+    V primitive(boolean value);
+
+    V primitive(int value);
+
+    V primitive(double value);
+
+    V primitive(String value);
+
+    V primitiveNull();
+
 }

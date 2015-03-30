@@ -22,33 +22,18 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.parse;
+package org.jsfr.json;
 
 /**
- * Created by Administrator on 2015/3/25.
+ * Created by Leo on 2015/3/30.
  */
-public interface JsonProvider<O, A, V> {
+public abstract class TypedListener<T> implements JsonPathListener {
 
-    O createObject();
+    public abstract void onTypedValue(T value, ParsingContext context);
 
-    A createArray();
-
-    boolean isObject(Object object);
-
-    boolean isArray(Object array);
-
-    void consumeObjectEntry(O object, String key, V value);
-
-    void consumeArrayElement(A array, V value);
-
-    V primitive(boolean value);
-
-    V primitive(int value);
-
-    V primitive(double value);
-
-    V primitive(String value);
-
-    V primitiveNull();
+    @Override
+    public void onValue(Object value, ParsingContext context) {
+        onTypedValue((T) value, context);
+    }
 
 }
