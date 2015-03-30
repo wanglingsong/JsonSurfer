@@ -1,5 +1,5 @@
 # JsonSurfer - Let's surf on Json!
-![](https://travis-ci.org/wanglingsong/JsonSurfer.svg?branch=master)
+![](https://travis-ci.org/jsurfer/JsonSurfer.svg?branch=master)
 ## Why JsonSurfer
 Jsonsurfer is good at processing **big and complicated json** data with three major features.
 * Streaming
