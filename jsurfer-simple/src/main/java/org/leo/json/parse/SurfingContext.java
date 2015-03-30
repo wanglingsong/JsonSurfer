@@ -39,7 +39,6 @@ public class SurfingContext implements ParsingContext, ContentHandler {
     public static class Builder {
 
         private SurfingContext context;
-        private int maxDepth = -1;
         private Map<Integer, ArrayList<Binding>> definiteBindings = new HashMap<Integer, ArrayList<Binding>>();
         private ArrayList<IndefinitePathBinding> indefiniteBindings = new ArrayList<IndefinitePathBinding>();
 
@@ -60,9 +59,9 @@ public class SurfingContext implements ParsingContext, ContentHandler {
                     context.indefinitePathLookup = indefiniteBindings.toArray(new IndefinitePathBinding[indefiniteBindings.size()]);
                 }
                 if (!definiteBindings.isEmpty()) {
-                    context.definitePathLookup = new Binding[maxDepth][];
+                    context.definitePathLookup = new Binding[context.maxDepth - context.minDepth + 1][];
                     for (Map.Entry<Integer, ArrayList<Binding>> entry : definiteBindings.entrySet()) {
-                        context.definitePathLookup[entry.getKey() - 1] = entry.getValue().toArray(new Binding[entry.getValue().size()]);
+                        context.definitePathLookup[entry.getKey() - context.minDepth] = entry.getValue().toArray(new Binding[entry.getValue().size()]);
                     }
                 }
                 context.built = true;
@@ -87,8 +86,11 @@ public class SurfingContext implements ParsingContext, ContentHandler {
                 indefiniteBindings.add(new IndefinitePathBinding(jsonPath, jsonPathListeners, minimumDepth));
             } else {
                 int depth = jsonPath.pathDepth();
-                if (depth > maxDepth) {
-                    maxDepth = depth;
+                if (depth > context.maxDepth) {
+                    context.maxDepth = depth;
+                }
+                if (depth < context.minDepth) {
+                    context.minDepth = depth;
                 }
                 ArrayList<Binding> bindings = definiteBindings.get(depth);
                 if (bindings == null) {
@@ -153,6 +155,8 @@ public class SurfingContext implements ParsingContext, ContentHandler {
     private boolean skipOverlappedPath = false;
     private JsonProvider jsonProvider;
     private JsonPosition currentPosition;
+    private int minDepth = Integer.MAX_VALUE;
+    private int maxDepth = -1;
     private Binding[][] definitePathLookup;
     // sorted by minimum path depth
     private IndefinitePathBinding[] indefinitePathLookup;
@@ -227,9 +231,8 @@ public class SurfingContext implements ParsingContext, ContentHandler {
                 }
             }
         }
-        int index = currentDepth - 1;
-        if (definitePathLookup != null && index < definitePathLookup.length) {
-            Binding[] bindings = definitePathLookup[index];
+        if (definitePathLookup != null && !(currentDepth < minDepth || currentDepth > maxDepth)) {
+            Binding[] bindings = definitePathLookup[currentDepth - minDepth];
             if (bindings != null) {
                 for (Binding binding : bindings) {
                     if (binding.jsonPath.match(currentPosition)) {
