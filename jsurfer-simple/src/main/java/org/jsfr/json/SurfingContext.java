@@ -38,6 +38,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import static org.jsfr.json.compiler.JsonPathCompiler.compile;
+
 public class SurfingContext implements ParsingContext, ContentHandler {
 
     public static class Builder {
@@ -68,6 +70,10 @@ public class SurfingContext implements ParsingContext, ContentHandler {
                 context.built = true;
             }
             return context;
+        }
+
+        public Builder bind(String path, JsonPathListener... jsonPathListeners) {
+            return bind(compile(path), jsonPathListeners);
         }
 
         public Builder bind(JsonPath.Builder builder, JsonPathListener... jsonPathListeners) {

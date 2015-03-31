@@ -40,7 +40,6 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.jsfr.json.BuilderFactory.context;
-import static org.jsfr.json.BuilderFactory.root;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
@@ -75,10 +74,10 @@ public class JsonSurferTest {
     public void testSampleJson() throws Exception {
         Builder builder = context();
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        builder.bind(root().child("store").child("book").index(0).child("category"), mockListener)
-                .bind(root().child("store").child("book").index(0), mockListener)
-                .bind(root().child("store").child("car"), mockListener)
-                .bind(root().child("store").child("bicycle"), mockListener);
+        builder.bind("$.store.book[0].category", mockListener)
+                .bind("$.store.book[0]", mockListener)
+                .bind("$.store.car", mockListener)
+                .bind("$.store.bicycle", mockListener);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
 
         Object book = provider.createObject();
@@ -105,8 +104,8 @@ public class JsonSurferTest {
     public void testStoppableParsing() throws Exception {
         Builder builder = context();
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        builder.bind(root().child("store").child("book").indexes(0, 1, 2), mockListener)
-                .bind(root().child("store").child("book").index(3), mockListener);
+        builder.bind("$.store.book[0,1,2]", mockListener)
+                .bind("$.store.book[3]", mockListener);
 
         doNothing().when(mockListener)
                 .onValue(anyObject(), argThat(new TypeSafeMatcher<ParsingContext>() {
@@ -132,7 +131,7 @@ public class JsonSurferTest {
     public void testChildNodeWildcard() throws Exception {
         Builder builder = context();
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        builder.bind(root().child("store").anyChild(), mockListener);
+        builder.bind("$.store.*", mockListener);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener, times(3))
                 .onValue(anyObject(), any(ParsingContext.class));
@@ -142,7 +141,7 @@ public class JsonSurferTest {
     public void testAnyIndex() throws Exception {
         Builder builder = context();
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        builder.bind(root().child("store").child("book").anyIndex(), mockListener);
+        builder.bind("$.store.book[*]", mockListener);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener, times(4))
                 .onValue(anyObject(), any(ParsingContext.class));
@@ -152,7 +151,7 @@ public class JsonSurferTest {
     public void testWildcardCombination() throws Exception {
         Builder builder = context();
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        builder.bind(root().child("store").child("book").anyIndex().anyChild(), mockListener);
+        builder.bind("$.store.book[*].*", mockListener);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener, times(18)).onValue(anyObject(),
                 any(ParsingContext.class));
@@ -168,12 +167,12 @@ public class JsonSurferTest {
         JsonPathListener nullElement = mock(JsonPathListener.class);
         JsonPathListener objectElement = mock(JsonPathListener.class);
 
-        builder.bind(root(), wholeArray);
-        builder.bind(root().index(0), stringElement);
-        builder.bind(root().index(1), numberElement);
-        builder.bind(root().index(2), booleanElement);
-        builder.bind(root().index(3), nullElement);
-        builder.bind(root().index(4), objectElement);
+        builder.bind("$", wholeArray);
+        builder.bind("$[0]", stringElement);
+        builder.bind("$[1]", numberElement);
+        builder.bind("$[2]", booleanElement);
+        builder.bind("$[3]", nullElement);
+        builder.bind("$[4]", objectElement);
         surfer.surf(new InputStreamReader(Resources.getResource("array.json").openStream()), builder.build());
         Object object = provider.createObject();
         provider.consumeObjectEntry(object, "key", provider.primitive("value"));
@@ -196,8 +195,8 @@ public class JsonSurferTest {
     public void testDeepScan() throws Exception {
         Builder builder = context();
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        builder.bind(root().scan().child("author"), mockListener);
-        builder.bind(root().scan().child("store").scan().child("bicycle").scan().child("color"), mockListener);
+        builder.bind("$..author", mockListener);
+        builder.bind("$..store..bicycle..color", mockListener);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener).onValue(eq(provider.primitive("Nigel Rees")), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive("Evelyn Waugh")), any(ParsingContext.class));
@@ -211,7 +210,7 @@ public class JsonSurferTest {
     public void testDeepScan2() throws Exception {
         Builder builder = context();
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        builder.bind(root().scan().child("store").scan().child("price"), mockListener);
+        builder.bind("$..store..price", mockListener);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener).onValue(eq(provider.primitive(8.95)), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive(12.99)), any(ParsingContext.class));
@@ -224,7 +223,7 @@ public class JsonSurferTest {
     public void testAny() throws Exception {
         Builder builder = context();
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        builder.bind(root().child("store").scan().child("bicycle").scan().any(), mockListener);
+        builder.bind("$.store..bicycle..*", mockListener);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener).onValue(eq(provider.primitive("red")), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive(19.95)), any(ParsingContext.class));
@@ -233,7 +232,7 @@ public class JsonSurferTest {
     @Test
     public void testFindEverything() throws Exception {
         Builder builder = context();
-        builder.bind(root().scan().any(), new JsonPathListener() {
+        builder.bind("$..*", new JsonPathListener() {
             @Override
             public void onValue(Object value, ParsingContext context) {
                 LOGGER.trace(value.toString());
@@ -246,7 +245,7 @@ public class JsonSurferTest {
     public void testIndexesAndChildrenOperator() throws Exception {
         Builder builder = context();
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        builder.bind(root().scan().child("book").indexes(1, 3).children("author", "title"), mockListener);
+        builder.bind("$..book[1,3][author,title]", mockListener);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener).onValue(eq(provider.primitive("Evelyn Waugh")), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive("Sword of Honour")), any(ParsingContext.class));
@@ -256,7 +255,7 @@ public class JsonSurferTest {
 
     @Test
     public void testCollectAllRaw() throws Exception {
-        Collection<Object> values = surfer.collectAll(new InputStreamReader(Resources.getResource("sample.json").openStream()), root().scan().child("book").indexes(1, 3).children("author", "title").build());
+        Collection<Object> values = surfer.collectAll(new InputStreamReader(Resources.getResource("sample.json").openStream()), "$..book[1,3][author,title]");
         assertEquals(4, values.size());
         Iterator<Object> itr = values.iterator();
         itr.next();
@@ -265,69 +264,69 @@ public class JsonSurferTest {
 
     @Test
     public void testCollectOneRaw() throws Exception {
-        Object value = surfer.collectOne(new InputStreamReader(Resources.getResource("sample.json").openStream()), root().scan().child("book").indexes(1, 3).children("author", "title").build());
+        Object value = surfer.collectOne(new InputStreamReader(Resources.getResource("sample.json").openStream()), "$..book[1,3][author,title]");
         assertEquals("Evelyn Waugh", value);
     }
 
     @Test
     public void testCollectAll() throws Exception {
-        Collection<String> values = surfer.collectAll(new InputStreamReader(Resources.getResource("sample.json").openStream()), String.class, root().scan().child("book").indexes(1, 3).children("author", "title").build());
+        Collection<String> values = surfer.collectAll(new InputStreamReader(Resources.getResource("sample.json").openStream()), String.class, "$..book[1,3][author, title]");
         assertEquals(4, values.size());
         assertEquals("Evelyn Waugh", values.iterator().next());
     }
 
     @Test
     public void testCollectOne() throws Exception {
-        String value = surfer.collectOne(new InputStreamReader(Resources.getResource("sample.json").openStream()), String.class, root().scan().child("book").indexes(1, 3).children("author", "title").build());
+        String value = surfer.collectOne(new InputStreamReader(Resources.getResource("sample.json").openStream()), String.class, "$..book[1,3][author,title]");
         assertEquals("Evelyn Waugh", value);
     }
 
     @Test
     public void testExample1() throws Exception {
         Builder builder = BuilderFactory.context();
-        builder.bind(root().child("store").child("book").anyIndex().child("author"), print);
+        builder.bind("$.store.book[*].author", print);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
     }
 
     @Test
     public void testExample2() throws Exception {
         Builder builder = BuilderFactory.context();
-        builder.bind(root().scan().child("author"), print);
+        builder.bind("$..author", print);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
     }
 
     @Test
     public void testExample3() throws Exception {
         Builder builder = BuilderFactory.context();
-        builder.bind(root().child("store").any(), print);
+        builder.bind("$.store.*", print);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
     }
 
     @Test
     public void testExample4() throws Exception {
         Builder builder = BuilderFactory.context();
-        builder.bind(root().child("store").scan().child("price"), print);
+        builder.bind("$.store..price", print);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
     }
 
     @Test
     public void testExample5() throws Exception {
         Builder builder = BuilderFactory.context();
-        builder.bind(root().scan().child("book").index(2), print);
+        builder.bind("$..book[2]", print);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
     }
 
     @Test
     public void testExample6() throws Exception {
         Builder builder = BuilderFactory.context();
-        builder.bind(root().scan().child("book").indexes(0, 1), print);
+        builder.bind("$..book[0,1]", print);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
     }
 
     @Test
     public void testStoppable() throws Exception {
         Builder builder = BuilderFactory.context();
-        builder.bind(root().scan().child("book").indexes(0, 1), new JsonPathListener() {
+        builder.bind("$..book[0,1]", new JsonPathListener() {
             @Override
             public void onValue(Object value, ParsingContext parsingContext) {
                 parsingContext.stopParsing();
@@ -341,7 +340,7 @@ public class JsonSurferTest {
     public void testPlugableProvider() throws Exception {
         JsonPathListener mockListener = mock(JsonPathListener.class);
         Builder builder = BuilderFactory.context().withJsonProvider(new JavaCollectionProvider());
-        builder.bind(root().child("store"), mockListener);
+        builder.bind("$.store", mockListener);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
         verify(mockListener).onValue(isA(HashMap.class), any(ParsingContext.class));
     }
@@ -359,7 +358,7 @@ public class JsonSurferTest {
                 LOGGER.trace("value: {}", value);
             }
         };
-        builder.bind(root().child("builders").anyChild().child("properties"), printListener).skipOverlappedPath();
+        builder.bind("$.builders.*.properties", printListener).skipOverlappedPath();
         long start = System.currentTimeMillis();
         surfer.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), builder.build());
         LOGGER.info(surfer.getClass().getSimpleName() + " processes {} value in {} millisecond", counter.get(), System.currentTimeMillis()
@@ -379,7 +378,7 @@ public class JsonSurferTest {
                 LOGGER.trace("value: {}", value);
             }
         };
-        builder.bind(root().child("builders").scan().child("properties"), printListener);
+        builder.bind("$.builders..properties", printListener);
         long start = System.currentTimeMillis();
         surfer.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), builder.build());
         LOGGER.info(surfer.getClass().getSimpleName() + " with deep scan processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);

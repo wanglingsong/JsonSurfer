@@ -28,10 +28,10 @@ import org.jsfr.json.SurfingContext.Builder;
 import org.jsfr.json.path.JsonPath;
 
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.Collection;
 
 import static org.jsfr.json.SurfingContext.Builder.builder;
+import static org.jsfr.json.compiler.JsonPathCompiler.compile;
 
 
 /**
@@ -76,6 +76,26 @@ public abstract class AbstractSurfer implements JsonSurfer {
         surf(reader, builder.build());
         Object value = listener.getValue();
         return (T) jsonProvider.cast(value, tClass);
+    }
+
+    @Override
+    public <T> Collection<T> collectAll(Reader reader, Class<T> tClass, String... paths) {
+        return collectAll(reader, tClass, compile(paths));
+    }
+
+    @Override
+    public <T> T collectOne(Reader reader, Class<T> tClass, String... paths) {
+        return collectOne(reader, tClass, compile(paths));
+    }
+
+    @Override
+    public Collection<Object> collectAll(Reader reader, String... paths) {
+        return collectAll(reader, Object.class, paths);
+    }
+
+    @Override
+    public Object collectOne(Reader reader, String... paths) {
+        return collectOne(reader, Object.class, paths);
     }
 
     protected void ensureJsonProvider(SurfingContext context) {

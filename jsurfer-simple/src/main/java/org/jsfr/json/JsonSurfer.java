@@ -44,5 +44,13 @@ public interface JsonSurfer {
 
     <T> Collection<T> collectAll(Reader reader, Class<T> tClass, JsonPath... paths);
 
+    Object collectOne(Reader reader, String... paths);
+
+    <T> T collectOne(Reader reader, Class<T> tClass, String... paths);
+
+    Collection<Object> collectAll(Reader reader, String... paths);
+
+    <T> Collection<T> collectAll(Reader reader, Class<T> tClass, String... paths);
+
 
 }

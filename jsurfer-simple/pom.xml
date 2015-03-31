@@ -62,6 +62,17 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>4.5</version>
+                <configuration>
+                    <sourceDirectory>${basedir}/src/main/resources</sourceDirectory>
+                    <visitor>true</visitor>
+                    <listener>false</listener>
+                    <outputDirectory>${basedir}/src/main/java/org/jsfr/json/compiler</outputDirectory>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -70,6 +81,11 @@
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
             <version>1.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>4.5</version>
         </dependency>
     </dependencies>
 
