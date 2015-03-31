@@ -86,4 +86,14 @@ public class JsonSimpleProvider implements JsonProvider<JSONObject, JSONArray, O
         return null;
     }
 
+    @Override
+    public <T> T cast(Object value, Class<T> tClass) {
+        return null;
+    }
+
+    @Override
+    public boolean accept(Class tClass) {
+        return false;
+    }
+
 }

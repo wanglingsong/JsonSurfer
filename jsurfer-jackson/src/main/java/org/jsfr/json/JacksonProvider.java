@@ -24,26 +24,29 @@
 
 package org.jsfr.json;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.jsfr.json.exception.JsonSurfingException;
 
 /**
  * Created by Leo on 2015/3/29.
  */
 public class JacksonProvider implements JsonProvider<ObjectNode, ArrayNode, JsonNode> {
 
-    private JsonNodeFactory factory = JsonNodeFactory.instance;
-
+    private static ObjectMapper OM = new ObjectMapper();
+    private static JsonNodeFactory FACTORY = OM.getNodeFactory();
     @Override
     public ObjectNode createObject() {
-        return factory.objectNode();
+        return FACTORY.objectNode();
     }
 
     @Override
     public ArrayNode createArray() {
-        return factory.arrayNode();
+        return FACTORY.arrayNode();
     }
 
     @Override
@@ -68,27 +71,41 @@ public class JacksonProvider implements JsonProvider<ObjectNode, ArrayNode, Json
 
     @Override
     public JsonNode primitive(boolean value) {
-        return factory.booleanNode(value);
+        return FACTORY.booleanNode(value);
     }
 
     @Override
     public JsonNode primitive(int value) {
-        return factory.numberNode(value);
+        return FACTORY.numberNode(value);
     }
 
     @Override
     public JsonNode primitive(double value) {
-        return factory.numberNode(value);
+        return FACTORY.numberNode(value);
     }
 
     @Override
     public JsonNode primitive(String value) {
-        return factory.textNode(value);
+        return FACTORY.textNode(value);
     }
 
     @Override
     public JsonNode primitiveNull() {
-        return factory.nullNode();
+        return FACTORY.nullNode();
+    }
+
+    @Override
+    public <T> T cast(JsonNode value, Class<T> tClass) {
+        try {
+            return OM.treeToValue(value, tClass);
+        } catch (JsonProcessingException e) {
+            throw new JsonSurfingException(e);
+        }
+    }
+
+    @Override
+    public boolean accept(Class tClass) {
+        return OM.canDeserialize(OM.getTypeFactory().constructType(tClass));
     }
 
 }

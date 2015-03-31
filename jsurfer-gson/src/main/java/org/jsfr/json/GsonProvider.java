@@ -24,6 +24,8 @@
 
 package org.jsfr.json;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -34,6 +36,8 @@ import com.google.gson.JsonPrimitive;
  * Created by Administrator on 2015/3/25.
  */
 public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonElement> {
+
+    private static final Gson DEFAULT_GSON = new GsonBuilder().create();
 
     @Override
     public JsonObject createObject() {
@@ -89,5 +93,16 @@ public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonEle
     public JsonElement primitiveNull() {
         return JsonNull.INSTANCE;
     }
+
+    @Override
+    public <T> T cast(JsonElement value, Class<T> tClass) {
+        return DEFAULT_GSON.fromJson(value, tClass);
+    }
+
+    @Override
+    public boolean accept(Class tClass) {
+        return DEFAULT_GSON.getAdapter(tClass) != null;
+    }
+
 
 }

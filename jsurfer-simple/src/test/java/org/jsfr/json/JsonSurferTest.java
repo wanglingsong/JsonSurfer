@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.jsfr.json.BuilderFactory.context;
@@ -253,17 +254,32 @@ public class JsonSurferTest {
         verify(mockListener).onValue(eq(provider.primitive("The Lord of the Rings")), any(ParsingContext.class));
     }
 
+    @Test
+    public void testCollectAllRaw() throws Exception {
+        Collection<Object> values = surfer.collectAll(new InputStreamReader(Resources.getResource("sample.json").openStream()), root().scan().child("book").indexes(1, 3).children("author", "title").build());
+        assertEquals(4, values.size());
+        Iterator<Object> itr = values.iterator();
+        itr.next();
+        assertEquals("Sword of Honour", itr.next());
+    }
+
+    @Test
+    public void testCollectOneRaw() throws Exception {
+        Object value = surfer.collectOne(new InputStreamReader(Resources.getResource("sample.json").openStream()), root().scan().child("book").indexes(1, 3).children("author", "title").build());
+        assertEquals("Evelyn Waugh", value);
+    }
 
     @Test
     public void testCollectAll() throws Exception {
-        Collection<Object> values = surfer.collect(new InputStreamReader(Resources.getResource("sample.json").openStream()), root().scan().child("book").indexes(1, 3).children("author", "title").build());
+        Collection<String> values = surfer.collectAll(new InputStreamReader(Resources.getResource("sample.json").openStream()), String.class, root().scan().child("book").indexes(1, 3).children("author", "title").build());
         assertEquals(4, values.size());
+        assertEquals("Evelyn Waugh", values.iterator().next());
     }
 
     @Test
     public void testCollectOne() throws Exception {
-        Object value = surfer.collectOne(new InputStreamReader(Resources.getResource("sample.json").openStream()), root().scan().child("book").indexes(1, 3).children("author", "title").build());
-        assertEquals(provider.primitive("Evelyn Waugh"), value);
+        String value = surfer.collectOne(new InputStreamReader(Resources.getResource("sample.json").openStream()), String.class, root().scan().child("book").indexes(1, 3).children("author", "title").build());
+        assertEquals("Evelyn Waugh", value);
     }
 
     @Test

@@ -51,4 +51,8 @@ public interface JsonProvider<O, A, V> {
 
     V primitiveNull();
 
+    <T> T cast(V value, Class<T> tClass);
+
+    boolean accept(Class tClass);
+
 }

@@ -28,6 +28,7 @@ import org.jsfr.json.SurfingContext.Builder;
 import org.jsfr.json.path.JsonPath;
 
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import static org.jsfr.json.SurfingContext.Builder.builder;
@@ -45,25 +46,49 @@ public abstract class AbstractSurfer implements JsonSurfer {
     }
 
     @Override
-    public <T> Collection<T> collect(Reader reader, JsonPath... paths) {
-        CollectAllListener<T> listener = new CollectAllListener<T>();
-        Builder builder = builder().withJsonProvider(jsonProvider);
-        for (JsonPath jsonPath : paths) {
-            builder.bind(jsonPath, listener);
-        }
-        surf(reader, builder.build());
-        return listener.getCollection();
+    public Collection<Object> collectAll(Reader reader, JsonPath... paths) {
+        return collectAll(reader, Object.class, paths);
     }
 
     @Override
-    public <T> T collectOne(Reader reader, JsonPath... paths) {
-        CollectOneListener<T> listener = new CollectOneListener<T>();
+    public Object collectOne(Reader reader, JsonPath... paths) {
+        return collectOne(reader, Object.class, paths);
+    }
+
+    @Override
+    public <T> Collection<T> collectAll(Reader reader, final Class<T> tClass, JsonPath... paths) {
+        final ArrayList<T> collection = new ArrayList<T>();
+        JsonPathListener listener = new JsonPathListener() {
+            @Override
+            public void onValue(Object value, ParsingContext context) {
+                if (jsonProvider.accept(tClass)) {
+                    collection.add((T) jsonProvider.cast(value, tClass));
+                } else {
+                    collection.add((T) value);
+                }
+            }
+        };
         Builder builder = builder().withJsonProvider(jsonProvider);
         for (JsonPath jsonPath : paths) {
             builder.bind(jsonPath, listener);
         }
         surf(reader, builder.build());
-        return listener.getValue();
+        return collection;
+    }
+
+    @Override
+    public <T> T collectOne(Reader reader, Class<T> tClass, JsonPath... paths) {
+        CollectOneListener<Object> listener = new CollectOneListener<Object>();
+        Builder builder = builder().withJsonProvider(jsonProvider);
+        for (JsonPath jsonPath : paths) {
+            builder.bind(jsonPath, listener);
+        }
+        surf(reader, builder.build());
+        Object value = listener.getValue();
+        if (jsonProvider.accept(tClass)) {
+            return (T) jsonProvider.cast(value, tClass);
+        }
+        return (T) value;
     }
 
     protected void ensureJsonProvider(SurfingContext context) {

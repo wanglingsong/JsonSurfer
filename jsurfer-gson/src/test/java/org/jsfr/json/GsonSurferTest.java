@@ -31,8 +31,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static org.jsfr.json.BuilderFactory.root;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by Leo on 2015/3/29.
@@ -64,6 +68,21 @@ public class GsonSurferTest extends JsonSurferTest {
             JsonSurferTest.LOGGER.trace("JsonPath: {} value: {}", reader.getPath(), value);
         }
         JsonSurferTest.LOGGER.info("Gson processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);
+    }
+
+    @Test
+    public void testGsonTypeBindingOne() throws Exception {
+        InputStreamReader reader = new InputStreamReader(Resources.getResource("sample.json").openStream());
+        Book book = surfer.collectOne(reader, Book.class, root().scan().child("book").index(1).build());
+        assertEquals("Evelyn Waugh", book.getAuthor());
+    }
+
+    @Test
+    public void testGsonTypeBindingCollection() throws Exception {
+        InputStreamReader reader = new InputStreamReader(Resources.getResource("sample.json").openStream());
+        Collection<Book> book = surfer.collectAll(reader, Book.class, root().scan().child("book").indexes(0, 1).build());
+        assertEquals(2, book.size());
+        assertEquals("Nigel Rees", book.iterator().next().getAuthor());
     }
 
 }

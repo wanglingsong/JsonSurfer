@@ -1,6 +1,4 @@
 /*
- * The MIT License
- *
  * Copyright (c) 2015 WANG Lingsong
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,25 +22,45 @@
 
 package org.jsfr.json;
 
-import org.jsfr.json.path.JsonPath;
+public class Book {
 
-import java.io.Reader;
-import java.util.Collection;
+    private String category;
 
-/**
- * Created by Administrator on 2015/3/23.
- */
-public interface JsonSurfer {
+    private String author;
 
-    void surf(Reader reader, SurfingContext context);
+    private String title;
 
-    Object collectOne(Reader reader, JsonPath... paths);
+    private Double price;
 
-    <T> T collectOne(Reader reader, Class<T> tClass, JsonPath... paths);
+    public String getCategory() {
+        return category;
+    }
 
-    Collection<Object> collectAll(Reader reader, JsonPath... paths);
+    public void setCategory(String category) {
+        this.category = category;
+    }
 
-    <T> Collection<T> collectAll(Reader reader, Class<T> tClass, JsonPath... paths);
+    public String getAuthor() {
+        return author;
+    }
 
+    public void setAuthor(String author) {
+        this.author = author;
+    }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
 }
