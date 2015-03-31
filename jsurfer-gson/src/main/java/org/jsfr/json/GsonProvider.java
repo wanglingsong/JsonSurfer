@@ -96,13 +96,11 @@ public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonEle
 
     @Override
     public <T> T cast(JsonElement value, Class<T> tClass) {
-        return DEFAULT_GSON.fromJson(value, tClass);
+        if (DEFAULT_GSON.getAdapter(tClass) != null) {
+            return DEFAULT_GSON.fromJson(value, tClass);
+        } else {
+            return (T) value;
+        }
     }
-
-    @Override
-    public boolean accept(Class tClass) {
-        return DEFAULT_GSON.getAdapter(tClass) != null;
-    }
-
 
 }

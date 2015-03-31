@@ -30,17 +30,24 @@ import java.util.Collection;
 /**
  * Created by Leo on 2015/3/30.
  */
-public class CollectAllListener<T> extends TypedListener<T> {
+class CollectAllListener<T> implements JsonPathListener {
 
     private Collection<T> collection = new ArrayList<T>();
+    private JsonProvider jsonProvider;
+    private Class<T> tClass;
 
-    @Override
-    public void onTypedValue(T value, ParsingContext context) {
-        collection.add(value);
+    public CollectAllListener(JsonProvider jsonProvider, Class<T> tClass) {
+        this.jsonProvider = jsonProvider;
+        this.tClass = tClass;
     }
 
     public Collection<T> getCollection() {
         return collection;
+    }
+
+    @Override
+    public void onValue(Object value, ParsingContext context) {
+        collection.add((T) jsonProvider.cast(value, tClass));
     }
 
 }

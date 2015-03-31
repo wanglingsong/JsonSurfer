@@ -56,39 +56,26 @@ public abstract class AbstractSurfer implements JsonSurfer {
     }
 
     @Override
-    public <T> Collection<T> collectAll(Reader reader, final Class<T> tClass, JsonPath... paths) {
-        final ArrayList<T> collection = new ArrayList<T>();
-        JsonPathListener listener = new JsonPathListener() {
-            @Override
-            public void onValue(Object value, ParsingContext context) {
-                if (jsonProvider.accept(tClass)) {
-                    collection.add((T) jsonProvider.cast(value, tClass));
-                } else {
-                    collection.add((T) value);
-                }
-            }
-        };
-        Builder builder = builder().withJsonProvider(jsonProvider);
+    public <T> Collection<T> collectAll(Reader reader, Class<T> tClass, JsonPath... paths) {
+        CollectAllListener<T> listener = new CollectAllListener<T>(jsonProvider, tClass);
+        Builder builder = builder().withJsonProvider(jsonProvider).skipOverlappedPath();
         for (JsonPath jsonPath : paths) {
             builder.bind(jsonPath, listener);
         }
         surf(reader, builder.build());
-        return collection;
+        return listener.getCollection();
     }
 
     @Override
     public <T> T collectOne(Reader reader, Class<T> tClass, JsonPath... paths) {
-        CollectOneListener<Object> listener = new CollectOneListener<Object>();
-        Builder builder = builder().withJsonProvider(jsonProvider);
+        CollectOneListener listener = new CollectOneListener();
+        Builder builder = builder().withJsonProvider(jsonProvider).skipOverlappedPath();
         for (JsonPath jsonPath : paths) {
             builder.bind(jsonPath, listener);
         }
         surf(reader, builder.build());
         Object value = listener.getValue();
-        if (jsonProvider.accept(tClass)) {
-            return (T) jsonProvider.cast(value, tClass);
-        }
-        return (T) value;
+        return (T) jsonProvider.cast(value, tClass);
     }
 
     protected void ensureJsonProvider(SurfingContext context) {

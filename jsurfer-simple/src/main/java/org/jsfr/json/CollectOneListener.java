@@ -27,18 +27,17 @@ package org.jsfr.json;
 /**
  * Created by Leo on 2015/3/30.
  */
-public class CollectOneListener<T> extends TypedListener<T> {
+class CollectOneListener implements JsonPathListener {
 
-    private T value;
+    private Object value;
 
-    @Override
-    public void onTypedValue(T value, ParsingContext context) {
-        this.value = value;
-        context.stopParsing();
-    }
-
-    public T getValue() {
+    public Object getValue() {
         return value;
     }
 
+    @Override
+    public void onValue(Object value, ParsingContext context) {
+        this.value = value;
+        context.stopParsing();
+    }
 }

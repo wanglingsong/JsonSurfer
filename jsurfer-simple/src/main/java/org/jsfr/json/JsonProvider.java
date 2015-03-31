@@ -53,6 +53,4 @@ public interface JsonProvider<O, A, V> {
 
     <T> T cast(V value, Class<T> tClass);
 
-    boolean accept(Class tClass);
-
 }
