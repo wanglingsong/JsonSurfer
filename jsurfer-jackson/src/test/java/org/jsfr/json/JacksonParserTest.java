@@ -42,13 +42,13 @@ import static org.junit.Assert.assertEquals;
 /**
  * Created by Leo on 2015/3/30.
  */
-public class JacksonSurferTest extends JsonSurferTest {
+public class JacksonParserTest extends JsonSurferTest {
 
     @Override
     @Before
     public void setUp() throws Exception {
         provider = new JacksonProvider();
-        surfer = new JacksonSurfer(provider);
+        surfer = new JsonSurfer(new JacksonParser(), provider);
     }
 
     @Test

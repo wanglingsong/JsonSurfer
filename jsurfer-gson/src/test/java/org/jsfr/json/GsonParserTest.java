@@ -40,13 +40,13 @@ import static org.junit.Assert.assertEquals;
 /**
  * Created by Leo on 2015/3/29.
  */
-public class GsonSurferTest extends JsonSurferTest {
+public class GsonParserTest extends JsonSurferTest {
 
     @Override
     @Before
     public void setUp() throws Exception {
-        provider = new GsonProvider();
-        surfer = new GsonSurfer(provider);
+        provider = GsonProvider.INSTANCE;
+        surfer = new JsonSurfer(GsonParser.INSTANCE, provider);
     }
 
     @Test

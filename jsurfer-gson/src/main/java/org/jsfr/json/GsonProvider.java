@@ -37,7 +37,9 @@ import com.google.gson.JsonPrimitive;
  */
 public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonElement> {
 
-    private static final Gson DEFAULT_GSON = new GsonBuilder().create();
+    public final static GsonProvider INSTANCE = new GsonProvider();
+
+    private final static Gson DEFAULT_GSON = new GsonBuilder().create();
 
     @Override
     public JsonObject createObject() {

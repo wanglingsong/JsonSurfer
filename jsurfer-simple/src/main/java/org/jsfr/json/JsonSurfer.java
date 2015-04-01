@@ -24,33 +24,102 @@
 
 package org.jsfr.json;
 
+import org.jsfr.json.SurfingContext.Builder;
 import org.jsfr.json.path.JsonPath;
 
 import java.io.Reader;
 import java.util.Collection;
 
+import static org.jsfr.json.SurfingContext.Builder.builder;
+import static org.jsfr.json.compiler.JsonPathCompiler.compile;
+
+
 /**
- * Created by Administrator on 2015/3/23.
+ * Created by Leo on 2015/3/30.
  */
-public interface JsonSurfer {
+public class JsonSurfer {
 
-    void surf(Reader reader, SurfingContext context);
+    private JsonProvider jsonProvider;
+    private JsonParserAdapter jsonParserAdapter;
+    private ErrorHandlingStrategy errorHandlingStrategy;
 
-    Object collectOne(Reader reader, JsonPath... paths);
+    public JsonSurfer(JsonParserAdapter jsonParserAdapter, JsonProvider jsonProvider) {
+        this.jsonParserAdapter = jsonParserAdapter;
+        this.jsonProvider = jsonProvider;
+        this.errorHandlingStrategy = new DefaultErrorHandlingStrategy();
+    }
 
-    <T> T collectOne(Reader reader, Class<T> tClass, JsonPath... paths);
+    public JsonSurfer(JsonParserAdapter jsonParserAdapter, JsonProvider jsonProvider, ErrorHandlingStrategy errorHandlingStrategy) {
+        this.jsonProvider = jsonProvider;
+        this.jsonParserAdapter = jsonParserAdapter;
+        this.errorHandlingStrategy = errorHandlingStrategy;
+    }
 
-    Collection<Object> collectAll(Reader reader, JsonPath... paths);
+    public Collection<Object> collectAll(Reader reader, JsonPath... paths) {
+        return collectAll(reader, Object.class, paths);
+    }
 
-    <T> Collection<T> collectAll(Reader reader, Class<T> tClass, JsonPath... paths);
+    public void surf(Reader reader, SurfingContext context) {
+        ensureSetting(context);
+        jsonParserAdapter.parse(reader, context);
+    }
 
-    Object collectOne(Reader reader, String... paths);
+    public Object collectOne(Reader reader, JsonPath... paths) {
+        return collectOne(reader, Object.class, paths);
+    }
 
-    <T> T collectOne(Reader reader, Class<T> tClass, String... paths);
+    public <T> Collection<T> collectAll(Reader reader, Class<T> tClass, JsonPath... paths) {
+        CollectAllListener<T> listener = new CollectAllListener<T>(jsonProvider, tClass);
+        Builder builder = builder().withJsonProvider(jsonProvider).skipOverlappedPath();
+        for (JsonPath jsonPath : paths) {
+            builder.bind(jsonPath, listener);
+        }
+        surf(reader, builder.build());
+        return listener.getCollection();
+    }
 
-    Collection<Object> collectAll(Reader reader, String... paths);
+    @SuppressWarnings("unchecked")
+    public <T> T collectOne(Reader reader, Class<T> tClass, JsonPath... paths) {
+        CollectOneListener listener = new CollectOneListener();
+        Builder builder = builder().withJsonProvider(jsonProvider).skipOverlappedPath();
+        for (JsonPath jsonPath : paths) {
+            builder.bind(jsonPath, listener);
+        }
+        surf(reader, builder.build());
+        Object value = listener.getValue();
+        return tClass.cast(jsonProvider.cast(value, tClass));
+    }
 
-    <T> Collection<T> collectAll(Reader reader, Class<T> tClass, String... paths);
+    public <T> Collection<T> collectAll(Reader reader, Class<T> tClass, String... paths) {
+        return collectAll(reader, tClass, compile(paths));
+    }
 
+    public <T> T collectOne(Reader reader, Class<T> tClass, String... paths) {
+        return collectOne(reader, tClass, compile(paths));
+    }
 
+    public Collection<Object> collectAll(Reader reader, String... paths) {
+        return collectAll(reader, Object.class, paths);
+    }
+
+    public Object collectOne(Reader reader, String... paths) {
+        return collectOne(reader, Object.class, paths);
+    }
+
+    private void ensureSetting(SurfingContext context) {
+        if (context.getJsonProvider() == null) {
+            context.setJsonProvider(jsonProvider);
+        }
+        if (context.getErrorHandlingStrategy() == null) {
+            context.setErrorHandlingStrategy(errorHandlingStrategy);
+        }
+    }
+
+    public ErrorHandlingStrategy getErrorHandlingStrategy() {
+        return errorHandlingStrategy;
+    }
+
+    public void setErrorHandlingStrategy(ErrorHandlingStrategy errorHandlingStrategy) {
+        this.errorHandlingStrategy = errorHandlingStrategy;
+    }
 }

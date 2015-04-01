@@ -67,7 +67,7 @@ public class JsonSurferTest {
     @Before
     public void setUp() throws Exception {
         provider = new JsonSimpleProvider();
-        surfer = new JsonSimpleSurfer(provider);
+        surfer = new JsonSurfer(new JsonSimpleParser(), provider);
     }
 
     @Test
@@ -380,7 +380,7 @@ public class JsonSurferTest {
         builder.bind("$.builders.*.properties", printListener).skipOverlappedPath();
         long start = System.currentTimeMillis();
         surfer.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), builder.build());
-        LOGGER.info(surfer.getClass().getSimpleName() + " processes {} value in {} millisecond", counter.get(), System.currentTimeMillis()
+        LOGGER.info(this.getClass().getSimpleName() + " processes {} value in {} millisecond", counter.get(), System.currentTimeMillis()
                 - start);
 //        }
     }
@@ -400,7 +400,7 @@ public class JsonSurferTest {
         builder.bind("$.builders..properties", printListener);
         long start = System.currentTimeMillis();
         surfer.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), builder.build());
-        LOGGER.info(surfer.getClass().getSimpleName() + " with deep scan processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);
+        LOGGER.info(this.getClass().getSimpleName() + " with deep scan processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);
 //        }
     }
 

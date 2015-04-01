@@ -32,7 +32,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Stack;
 
-public class GsonSurfer extends AbstractSurfer {
+public class GsonParser implements JsonParserAdapter {
+
+    public final static GsonParser INSTANCE = new GsonParser();
 
     private enum EntryType {
         ROOT,
@@ -41,17 +43,8 @@ public class GsonSurfer extends AbstractSurfer {
         PRIMITIVE
     }
 
-    public GsonSurfer() {
-        super(new GsonProvider());
-    }
-
-    public GsonSurfer(JsonProvider jsonProvider) {
-        super(jsonProvider);
-    }
-
     @Override
-    public void surf(Reader reader, SurfingContext context) {
-        ensureSetting(context);
+    public void parse(Reader reader, SurfingContext context) {
         try {
             JsonReader jsonReader = new JsonReader(reader);
             Stack<EntryType> entryStack = new Stack<EntryType>();
@@ -115,7 +108,7 @@ public class GsonSurfer extends AbstractSurfer {
                         break;
                     case STRING:
                         String s = jsonReader.nextString();
-                        if (!context.primitive(jsonProvider.primitive(s))) {
+                        if (!context.primitive(context.getJsonProvider().primitive(s))) {
                             return;
                         }
                         if (entryStack.peek() == EntryType.PRIMITIVE) {
@@ -127,7 +120,7 @@ public class GsonSurfer extends AbstractSurfer {
                         break;
                     case NUMBER:
                         double n = jsonReader.nextDouble();
-                        if (!context.primitive(jsonProvider.primitive(n))) {
+                        if (!context.primitive(context.getJsonProvider().primitive(n))) {
                             return;
                         }
                         if (entryStack.peek() == EntryType.PRIMITIVE) {
@@ -139,7 +132,7 @@ public class GsonSurfer extends AbstractSurfer {
                         break;
                     case BOOLEAN:
                         boolean b = jsonReader.nextBoolean();
-                        if (!context.primitive(jsonProvider.primitive(b))) {
+                        if (!context.primitive(context.getJsonProvider().primitive(b))) {
                             return;
                         }
                         if (entryStack.peek() == EntryType.PRIMITIVE) {
@@ -151,7 +144,7 @@ public class GsonSurfer extends AbstractSurfer {
                         break;
                     case NULL:
                         jsonReader.nextNull();
-                        if (!context.primitive(jsonProvider.primitiveNull())) {
+                        if (!context.primitive(context.getJsonProvider().primitiveNull())) {
                             return;
                         }
                         if (entryStack.peek() == EntryType.PRIMITIVE) {
@@ -168,9 +161,9 @@ public class GsonSurfer extends AbstractSurfer {
                 }
             }
         } catch (IOException e) {
-            this.getErrorHandlingStrategy().handleParsingException(e);
+            context.getErrorHandlingStrategy().handleParsingException(e);
         } catch (ParseException e) {
-            this.getErrorHandlingStrategy().handleParsingException(e);
+            context.getErrorHandlingStrategy().handleParsingException(e);
         }
     }
 

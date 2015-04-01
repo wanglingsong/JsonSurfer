@@ -35,19 +35,10 @@ import java.io.Reader;
 /**
  * Created by Leo on 2015/3/29.
  */
-public class JacksonSurfer extends AbstractSurfer {
-
-    public JacksonSurfer() {
-        super(new JacksonProvider());
-    }
-
-    public JacksonSurfer(JsonProvider jsonProvider) {
-        super(jsonProvider);
-    }
+public class JacksonParser implements JsonParserAdapter {
 
     @Override
-    public void surf(Reader reader, SurfingContext context) {
-        ensureSetting(context);
+    public void parse(Reader reader, SurfingContext context) {
         try {
             JsonFactory f = new JsonFactory();
             JsonParser jp = f.createParser(reader);
@@ -99,7 +90,7 @@ public class JacksonSurfer extends AbstractSurfer {
                     case VALUE_EMBEDDED_OBJECT:
                         throw new IllegalStateException("Unexpected token");
                     case VALUE_STRING:
-                        if (!context.primitive(jsonProvider.primitive(jp.getText()))) {
+                        if (!context.primitive(context.getJsonProvider().primitive(jp.getText()))) {
                             return;
                         }
                         if (jp.getCurrentName() != null) {
@@ -109,7 +100,7 @@ public class JacksonSurfer extends AbstractSurfer {
                         }
                         break;
                     case VALUE_NUMBER_INT:
-                        if (!context.primitive(jsonProvider.primitive(jp.getIntValue()))) {
+                        if (!context.primitive(context.getJsonProvider().primitive(jp.getIntValue()))) {
                             return;
                         }
                         if (jp.getCurrentName() != null) {
@@ -119,7 +110,7 @@ public class JacksonSurfer extends AbstractSurfer {
                         }
                         break;
                     case VALUE_NUMBER_FLOAT:
-                        if (!context.primitive(jsonProvider.primitive(jp.getDoubleValue()))) {
+                        if (!context.primitive(context.getJsonProvider().primitive(jp.getDoubleValue()))) {
                             return;
                         }
                         if (jp.getCurrentName() != null) {
@@ -129,7 +120,7 @@ public class JacksonSurfer extends AbstractSurfer {
                         }
                         break;
                     case VALUE_TRUE:
-                        if (!context.primitive(jsonProvider.primitive(true))) {
+                        if (!context.primitive(context.getJsonProvider().primitive(true))) {
                             return;
                         }
                         if (jp.getCurrentName() != null) {
@@ -139,7 +130,7 @@ public class JacksonSurfer extends AbstractSurfer {
                         }
                         break;
                     case VALUE_FALSE:
-                        if (!context.primitive(jsonProvider.primitive(false))) {
+                        if (!context.primitive(context.getJsonProvider().primitive(false))) {
                             return;
                         }
                         if (jp.getCurrentName() != null) {
@@ -149,7 +140,7 @@ public class JacksonSurfer extends AbstractSurfer {
                         }
                         break;
                     case VALUE_NULL:
-                        if (!context.primitive(jsonProvider.primitiveNull())) {
+                        if (!context.primitive(context.getJsonProvider().primitiveNull())) {
                             return;
                         }
                         if (jp.getCurrentName() != null) {
@@ -161,9 +152,9 @@ public class JacksonSurfer extends AbstractSurfer {
                 }
             }
         } catch (IOException e) {
-            this.getErrorHandlingStrategy().handleParsingException(e);
+            context.getErrorHandlingStrategy().handleParsingException(e);
         } catch (ParseException e) {
-            this.getErrorHandlingStrategy().handleParsingException(e);
+            context.getErrorHandlingStrategy().handleParsingException(e);
         }
     }
 

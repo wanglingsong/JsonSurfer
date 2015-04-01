@@ -24,33 +24,13 @@
 
 package org.jsfr.json;
 
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
-import java.io.IOException;
 import java.io.Reader;
 
-public class JsonSimpleSurfer extends AbstractSurfer {
+/**
+ * Created by Leo on 2015/4/2.
+ */
+public interface JsonParserAdapter {
 
-    public JsonSimpleSurfer() {
-        super(new JsonSimpleProvider());
-    }
-
-    public JsonSimpleSurfer(JsonProvider jsonProvider) {
-        super(jsonProvider);
-    }
-
-    @Override
-    public void surf(Reader reader, SurfingContext context) {
-        ensureSetting(context);
-        JSONParser parser = new JSONParser();
-        try {
-            parser.parse(reader, context);
-        } catch (ParseException e) {
-            this.getErrorHandlingStrategy().handleParsingException(e);
-        } catch (IOException e) {
-            this.getErrorHandlingStrategy().handleParsingException(e);
-        }
-    }
+    void parse(Reader reader, SurfingContext context);
 
 }
