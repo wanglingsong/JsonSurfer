@@ -100,7 +100,7 @@ public class JacksonProvider implements JsonProvider<ObjectNode, ArrayNode, Json
             if (OM.canDeserialize(OM.getTypeFactory().constructType(tClass))) {
                 return OM.treeToValue(value, tClass);
             } else {
-                return (T) value;
+                return tClass.cast(value);
             }
         } catch (JsonProcessingException e) {
             throw new JsonSurfingException(e);

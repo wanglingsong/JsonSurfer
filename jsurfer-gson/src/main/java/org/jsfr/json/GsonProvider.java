@@ -99,7 +99,7 @@ public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonEle
         if (DEFAULT_GSON.getAdapter(tClass) != null) {
             return DEFAULT_GSON.fromJson(value, tClass);
         } else {
-            return (T) value;
+            return tClass.cast(value);
         }
     }
 

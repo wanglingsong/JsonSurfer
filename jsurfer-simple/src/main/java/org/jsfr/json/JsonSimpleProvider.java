@@ -88,7 +88,7 @@ public class JsonSimpleProvider implements JsonProvider<JSONObject, JSONArray, O
 
     @Override
     public <T> T cast(Object value, Class<T> tClass) {
-        return (T) value;
+        return tClass.cast(value);
     }
 
 

@@ -68,6 +68,7 @@ public abstract class AbstractSurfer implements JsonSurfer {
         return listener.getCollection();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T collectOne(Reader reader, Class<T> tClass, JsonPath... paths) {
         CollectOneListener listener = new CollectOneListener();
@@ -77,7 +78,7 @@ public abstract class AbstractSurfer implements JsonSurfer {
         }
         surf(reader, builder.build());
         Object value = listener.getValue();
-        return (T) jsonProvider.cast(value, tClass);
+        return tClass.cast(jsonProvider.cast(value, tClass));
     }
 
     @Override

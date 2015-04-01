@@ -90,7 +90,7 @@ public class JavaCollectionProvider implements JsonProvider<Map<String, Object>,
 
     @Override
     public <T> T cast(Object value, Class<T> tClass) {
-        return (T) value;
+        return tClass.cast(value);
     }
 
 }
