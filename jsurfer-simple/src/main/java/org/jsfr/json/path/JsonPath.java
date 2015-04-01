@@ -89,6 +89,11 @@ public class JsonPath {
             return this;
         }
 
+        public Builder slicing(Integer lower, Integer upper) {
+            jsonPath.operators.push(new ArraySlicing(lower, upper));
+            return this;
+        }
+
         public JsonPath build() {
             if (jsonPath.operators.peek().getType() == PathOperator.Type.DEEP_SCAN) {
                 throw new IllegalStateException("deep-scan shouldn't be the last operator.");

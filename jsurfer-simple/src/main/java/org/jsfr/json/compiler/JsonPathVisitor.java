@@ -32,6 +32,24 @@ public interface JsonPathVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSearch(JsonPathParser.SearchContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link JsonPathParser#anyChild}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAnyChild(JsonPathParser.AnyChildContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link JsonPathParser#anyIndex}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAnyIndex(JsonPathParser.AnyIndexContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link JsonPathParser#any}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAny(JsonPathParser.AnyContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link JsonPathParser#childNode}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -56,23 +74,11 @@ public interface JsonPathVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitIndexes(JsonPathParser.IndexesContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link JsonPathParser#anyChild}.
+	 * Visit a parse tree produced by {@link JsonPathParser#slicing}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAnyChild(JsonPathParser.AnyChildContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link JsonPathParser#anyIndex}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAnyIndex(JsonPathParser.AnyIndexContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link JsonPathParser#any}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAny(JsonPathParser.AnyContext ctx);
+	T visitSlicing(JsonPathParser.SlicingContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link JsonPathParser#filter}.
 	 * @param ctx the parse tree

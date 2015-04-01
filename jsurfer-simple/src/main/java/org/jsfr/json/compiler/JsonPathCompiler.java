@@ -27,6 +27,7 @@ package org.jsfr.json.compiler;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jsfr.json.path.JsonPath;
 
@@ -94,6 +95,27 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
     }
 
     @Override
+    public Void visitSlicing(JsonPathParser.SlicingContext ctx) {
+        Integer left = null;
+        Integer right;
+        Integer temp = null;
+        for (ParseTree node:ctx.children) {
+            if (node instanceof TerminalNode) {
+                TerminalNode tNode = (TerminalNode) node;
+                if (((TerminalNode) node).getSymbol().getType() == JsonPathParser.COLON) {
+                    left = temp;
+                    temp = null;
+                } else if (tNode.getSymbol().getType() == JsonPathParser.NUM) {
+                    temp = Integer.parseInt(tNode.getText());
+                }
+            }
+        }
+        right = temp;
+        builder.slicing(left, right);
+        return super.visitSlicing(ctx);
+    }
+
+    @Override
     public Void visitAnyChild(JsonPathParser.AnyChildContext ctx) {
         builder.anyChild();
         return super.visitAnyChild(ctx);
@@ -144,6 +166,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
 
     public static void main(String[] s) {
         JsonPath path = compile("$..abc.c.d[1].e[2,3,6]");
+        System.out.println(path);
     }
 
 }

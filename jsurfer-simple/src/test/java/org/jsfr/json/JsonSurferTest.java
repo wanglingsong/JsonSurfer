@@ -158,6 +158,25 @@ public class JsonSurferTest {
     }
 
     @Test
+    public void testArraySlicing() throws Exception {
+        Builder builder = context();
+        JsonPathListener mock1 = mock(JsonPathListener.class);
+        builder.bind("$[:2]", mock1);
+        JsonPathListener mock2 = mock(JsonPathListener.class);
+        builder.bind("$[0:2]", mock2);
+        JsonPathListener mock3 = mock(JsonPathListener.class);
+        builder.bind("$[2:]", mock3);
+        JsonPathListener mock4 = mock(JsonPathListener.class);
+        builder.bind("$[:]", mock4);
+
+        surfer.surf(new InputStreamReader(Resources.getResource("array.json").openStream()), builder.build());
+        verify(mock1, times(2)).onValue(anyObject(), any(ParsingContext.class));
+        verify(mock2, times(2)).onValue(anyObject(), any(ParsingContext.class));
+        verify(mock3, times(3)).onValue(anyObject(), any(ParsingContext.class));
+        verify(mock4, times(5)).onValue(anyObject(), any(ParsingContext.class));
+    }
+
+    @Test
     public void testParsingArray() throws Exception {
         Builder builder = context();
         JsonPathListener wholeArray = mock(JsonPathListener.class);
