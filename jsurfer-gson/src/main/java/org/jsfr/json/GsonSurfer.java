@@ -24,15 +24,13 @@
 
 package org.jsfr.json;
 
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import org.json.simple.parser.ParseException;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Stack;
-
-import org.jsfr.json.exception.JsonSurfingException;
-import org.json.simple.parser.ParseException;
-
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
 
 public class GsonSurfer extends AbstractSurfer {
 
@@ -53,7 +51,7 @@ public class GsonSurfer extends AbstractSurfer {
 
     @Override
     public void surf(Reader reader, SurfingContext context) {
-        ensureJsonProvider(context);
+        ensureSetting(context);
         try {
             JsonReader jsonReader = new JsonReader(reader);
             Stack<EntryType> entryStack = new Stack<EntryType>();
@@ -170,9 +168,9 @@ public class GsonSurfer extends AbstractSurfer {
                 }
             }
         } catch (IOException e) {
-            throw new JsonSurfingException(e);
+            this.getErrorHandlingStrategy().handleParsingException(e);
         } catch (ParseException e) {
-            throw new JsonSurfingException(e);
+            this.getErrorHandlingStrategy().handleParsingException(e);
         }
     }
 

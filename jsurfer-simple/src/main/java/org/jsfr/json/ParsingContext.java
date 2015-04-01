@@ -33,6 +33,6 @@ public interface ParsingContext {
 
     boolean isStopped();
 
-    String getPath();
+    String currentPath();
 
 }

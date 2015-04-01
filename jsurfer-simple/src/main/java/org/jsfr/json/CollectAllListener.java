@@ -46,7 +46,7 @@ class CollectAllListener<T> implements JsonPathListener {
     }
 
     @Override
-    public void onValue(Object value, ParsingContext context) {
+    public void onValue(Object value, ParsingContext context) throws Exception{
         collection.add((T) jsonProvider.cast(value, tClass));
     }
 

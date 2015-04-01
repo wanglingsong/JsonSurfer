@@ -24,20 +24,19 @@
 
 package org.jsfr.json;
 
+import org.jsfr.json.exception.JsonSurfingException;
+
 /**
- * Created by Leo on 2015/3/30.
+ * Created by Leo on 2015/4/1.
  */
-public class CollectOneListener implements JsonPathListener {
-
-    private Object value;
-
-    public Object getValue() {
-        return value;
+public class DefaultErrorHandlingStrategy implements ErrorHandlingStrategy {
+    @Override
+    public void handleParsingException(Exception e) {
+        throw new JsonSurfingException("Parser is probably stopped", e);
     }
 
     @Override
-    public void onValue(Object value, ParsingContext context) throws Exception{
-        this.value = value;
-        context.stopParsing();
+    public void handleExceptionFromListener(Exception e, ParsingContext context) {
+        throw new JsonSurfingException("You can suppress these exceptions by a customized error handling strategy", e);
     }
 }

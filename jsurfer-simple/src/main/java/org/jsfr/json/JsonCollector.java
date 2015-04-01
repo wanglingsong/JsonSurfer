@@ -34,21 +34,28 @@ import java.util.Collection;
  */
 class JsonCollector extends JsonGenerator {
 
+    private ErrorHandlingStrategy errorHandlingStrategy;
     private Collection<JsonPathListener> jsonPathListeners;
     private ParsingContext context;
 
-    public JsonCollector(Collection<JsonPathListener> jsonPathListeners, ParsingContext context) {
+    public JsonCollector(Collection<JsonPathListener> jsonPathListeners, ParsingContext context, ErrorHandlingStrategy errorHandlingStrategy) {
         this.jsonPathListeners = jsonPathListeners;
         this.context = context;
+        this.errorHandlingStrategy = errorHandlingStrategy;
     }
 
     @Override
     public boolean endObject() throws ParseException, IOException {
         super.endObject();
         if (getStackSize() == 1) {
+            Object result = getResult();
             for (JsonPathListener jsonPathListener : jsonPathListeners) {
                 if (!context.isStopped()) {
-                    jsonPathListener.onValue(getResult(), context);
+                    try {
+                        jsonPathListener.onValue(result, context);
+                    } catch (Exception e) {
+                        errorHandlingStrategy.handleExceptionFromListener(e, context);
+                    }
                 }
             }
             this.clear();
@@ -64,7 +71,11 @@ class JsonCollector extends JsonGenerator {
             Object result = getResult();
             for (JsonPathListener jsonPathListener : jsonPathListeners) {
                 if (!context.isStopped()) {
-                    jsonPathListener.onValue(result, context);
+                    try {
+                        jsonPathListener.onValue(result, context);
+                    } catch (Exception e) {
+                        errorHandlingStrategy.handleExceptionFromListener(e, context);
+                    }
                 }
             }
             this.clear();
@@ -80,7 +91,11 @@ class JsonCollector extends JsonGenerator {
             Object result = getResult();
             for (JsonPathListener jsonPathListener : jsonPathListeners) {
                 if (!context.isStopped()) {
-                    jsonPathListener.onValue(result, context);
+                    try {
+                        jsonPathListener.onValue(result, context);
+                    } catch (Exception e) {
+                        errorHandlingStrategy.handleExceptionFromListener(e, context);
+                    }
                 }
             }
             this.clear();
@@ -94,6 +109,7 @@ class JsonCollector extends JsonGenerator {
         super.clear();
         this.context = null;
         this.jsonPathListeners = null;
+        this.errorHandlingStrategy = null;
     }
 
 

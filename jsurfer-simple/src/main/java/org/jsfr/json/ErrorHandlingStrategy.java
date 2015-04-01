@@ -25,19 +25,12 @@
 package org.jsfr.json;
 
 /**
- * Created by Leo on 2015/3/30.
+ * Created by Leo on 2015/4/1.
  */
-public class CollectOneListener implements JsonPathListener {
+public interface ErrorHandlingStrategy {
 
-    private Object value;
+    void handleParsingException(Exception e);
 
-    public Object getValue() {
-        return value;
-    }
+    void handleExceptionFromListener(Exception e, ParsingContext context);
 
-    @Override
-    public void onValue(Object value, ParsingContext context) throws Exception{
-        this.value = value;
-        context.stopParsing();
-    }
 }

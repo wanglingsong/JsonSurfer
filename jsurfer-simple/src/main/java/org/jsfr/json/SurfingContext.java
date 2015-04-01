@@ -121,6 +121,12 @@ public class SurfingContext implements ParsingContext, ContentHandler {
             return this;
         }
 
+        public Builder withErrorStrategy(ErrorHandlingStrategy errorHandlingStrategy) {
+            check();
+            context.errorHandlingStrategy = errorHandlingStrategy;
+            return this;
+        }
+
     }
 
     private static class IndefinitePathBinding extends Binding implements Comparable<IndefinitePathBinding> {
@@ -161,6 +167,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
     private boolean stopped = false;
     private boolean skipOverlappedPath = false;
     private JsonProvider jsonProvider;
+    private ErrorHandlingStrategy errorHandlingStrategy;
     private JsonPosition currentPosition;
     private int minDepth = Integer.MAX_VALUE;
     private int maxDepth = -1;
@@ -224,7 +231,11 @@ public class SurfingContext implements ParsingContext, ContentHandler {
                                 if (isStopped()) {
                                     break;
                                 }
-                                listener.onValue(primitive, this);
+                                try {
+                                    listener.onValue(primitive, this);
+                                } catch (Exception e) {
+                                    errorHandlingStrategy.handleExceptionFromListener(e, this);
+                                }
                             }
                         } else {
                             if (listeners == null) {
@@ -248,7 +259,11 @@ public class SurfingContext implements ParsingContext, ContentHandler {
                                 if (isStopped()) {
                                     break;
                                 }
-                                listener.onValue(primitive, this);
+                                try {
+                                    listener.onValue(primitive, this);
+                                } catch (Exception e) {
+                                    errorHandlingStrategy.handleExceptionFromListener(e, this);
+                                }
                             }
                         } else {
                             if (listeners == null) {
@@ -262,7 +277,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         }
 
         if (listeners != null) {
-            JsonCollector collector = new JsonCollector(listeners, this);
+            JsonCollector collector = new JsonCollector(listeners, this, errorHandlingStrategy);
             collector.setProvider(jsonProvider);
             if (initializeCollector) {
                 collector.startJSON();
@@ -341,7 +356,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
     }
 
     @Override
-    public String getPath() {
+    public String currentPath() {
         return this.currentPosition.toString();
     }
 
@@ -355,11 +370,19 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         return this.stopped;
     }
 
+    JsonProvider getJsonProvider() {
+        return jsonProvider;
+    }
+
     void setJsonProvider(JsonProvider jsonProvider) {
         this.jsonProvider = jsonProvider;
     }
 
-    JsonProvider getJsonProvider() {
-        return jsonProvider;
+    ErrorHandlingStrategy getErrorHandlingStrategy() {
+        return errorHandlingStrategy;
+    }
+
+    void setErrorHandlingStrategy(ErrorHandlingStrategy errorHandlingStrategy) {
+        this.errorHandlingStrategy = errorHandlingStrategy;
     }
 }

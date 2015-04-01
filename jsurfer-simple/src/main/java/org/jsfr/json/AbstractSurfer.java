@@ -41,6 +41,8 @@ public abstract class AbstractSurfer implements JsonSurfer {
 
     protected JsonProvider jsonProvider;
 
+    private ErrorHandlingStrategy errorHandlingStrategy = new DefaultErrorHandlingStrategy();
+
     public AbstractSurfer(JsonProvider jsonProvider) {
         this.jsonProvider = jsonProvider;
     }
@@ -98,10 +100,20 @@ public abstract class AbstractSurfer implements JsonSurfer {
         return collectOne(reader, Object.class, paths);
     }
 
-    protected void ensureJsonProvider(SurfingContext context) {
+    protected void ensureSetting(SurfingContext context) {
         if (context.getJsonProvider() == null) {
             context.setJsonProvider(jsonProvider);
         }
+        if (context.getErrorHandlingStrategy() == null) {
+            context.setErrorHandlingStrategy(errorHandlingStrategy);
+        }
     }
 
+    public ErrorHandlingStrategy getErrorHandlingStrategy() {
+        return errorHandlingStrategy;
+    }
+
+    public void setErrorHandlingStrategy(ErrorHandlingStrategy errorHandlingStrategy) {
+        this.errorHandlingStrategy = errorHandlingStrategy;
+    }
 }

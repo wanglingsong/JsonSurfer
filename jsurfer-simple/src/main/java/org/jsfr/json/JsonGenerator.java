@@ -128,8 +128,7 @@ class JsonGenerator implements ContentHandler {
     }
 
     public void clear() {
-        if (valueStack != null) {
-            this.valueStack.clear();
-        }
+        this.valueStack = null;
+        this.provider = null;
     }
 }

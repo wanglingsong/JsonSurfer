@@ -27,7 +27,6 @@ package org.jsfr.json;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import org.jsfr.json.exception.JsonSurfingException;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
@@ -48,7 +47,7 @@ public class JacksonSurfer extends AbstractSurfer {
 
     @Override
     public void surf(Reader reader, SurfingContext context) {
-        ensureJsonProvider(context);
+        ensureSetting(context);
         try {
             JsonFactory f = new JsonFactory();
             JsonParser jp = f.createParser(reader);
@@ -162,9 +161,9 @@ public class JacksonSurfer extends AbstractSurfer {
                 }
             }
         } catch (IOException e) {
-            throw new JsonSurfingException(e);
+            this.getErrorHandlingStrategy().handleParsingException(e);
         } catch (ParseException e) {
-            throw new JsonSurfingException(e);
+            this.getErrorHandlingStrategy().handleParsingException(e);
         }
     }
 

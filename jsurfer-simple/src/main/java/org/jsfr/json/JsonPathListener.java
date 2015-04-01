@@ -26,6 +26,6 @@ package org.jsfr.json;
 
 public interface JsonPathListener {
 
-    void onValue(Object value, ParsingContext context);
+    void onValue(Object value, ParsingContext context) throws Exception;
 
 }
