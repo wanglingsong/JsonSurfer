@@ -36,7 +36,7 @@ public class JsonSimpleParser implements JsonParserAdapter {
     public void parse(Reader reader, SurfingContext context) {
         JSONParser parser = new JSONParser();
         try {
-            parser.parse(reader, context);
+            parser.parse(reader, new JsonSimpleHandlerAdapter(context));
         } catch (ParseException e) {
             context.getErrorHandlingStrategy().handleParsingException(e);
         } catch (IOException e) {

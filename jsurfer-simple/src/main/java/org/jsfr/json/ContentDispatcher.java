@@ -24,52 +24,50 @@
 
 package org.jsfr.json;
 
-import org.json.simple.parser.ContentHandler;
-import org.json.simple.parser.ParseException;
-
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
  * Created by Administrator on 2015/3/21.
  */
-class ContentDispatcher implements ContentHandler {
+class ContentDispatcher implements JsonSaxHandler {
 
-    LinkedList<ContentHandler> receiver = new LinkedList<ContentHandler>();
+    LinkedList<JsonSaxHandler> receiver = new LinkedList<JsonSaxHandler>();
 
     public boolean isEmpty() {
         return this.receiver.isEmpty();
     }
 
     @Override
-    public void startJSON() throws ParseException, IOException {
-        if (receiver.isEmpty()) {
-            return;
-        }
-        for (ContentHandler observer : receiver) {
-            observer.startJSON();
-        }
-    }
-
-    @Override
-    public void endJSON() throws ParseException, IOException {
-        if (receiver.isEmpty()) {
-            return;
-        }
-        for (ContentHandler observer : receiver) {
-            observer.endJSON();
-        }
-    }
-
-    @Override
-    public boolean startObject() throws ParseException, IOException {
+    public boolean startJSON() {
         if (receiver.isEmpty()) {
             return true;
         }
-        Iterator<ContentHandler> itr = receiver.iterator();
+        for (JsonSaxHandler observer : receiver) {
+            observer.startJSON();
+        }
+        return true;
+    }
+
+    @Override
+    public boolean endJSON() {
+        if (receiver.isEmpty()) {
+            return true;
+        }
+        for (JsonSaxHandler observer : receiver) {
+            observer.endJSON();
+        }
+        return true;
+    }
+
+    @Override
+    public boolean startObject() {
+        if (receiver.isEmpty()) {
+            return true;
+        }
+        Iterator<JsonSaxHandler> itr = receiver.iterator();
         while (itr.hasNext()) {
-            ContentHandler observer = itr.next();
+            JsonSaxHandler observer = itr.next();
             if (!observer.startObject()) {
                 itr.remove();
             }
@@ -78,13 +76,13 @@ class ContentDispatcher implements ContentHandler {
     }
 
     @Override
-    public boolean endObject() throws ParseException, IOException {
+    public boolean endObject() {
         if (receiver.isEmpty()) {
             return true;
         }
-        Iterator<ContentHandler> itr = receiver.iterator();
+        Iterator<JsonSaxHandler> itr = receiver.iterator();
         while (itr.hasNext()) {
-            ContentHandler observer = itr.next();
+            JsonSaxHandler observer = itr.next();
             if (!observer.endObject()) {
                 itr.remove();
             }
@@ -93,13 +91,13 @@ class ContentDispatcher implements ContentHandler {
     }
 
     @Override
-    public boolean startObjectEntry(String key) throws ParseException, IOException {
+    public boolean startObjectEntry(String key) {
         if (receiver.isEmpty()) {
             return true;
         }
-        Iterator<ContentHandler> itr = receiver.iterator();
+        Iterator<JsonSaxHandler> itr = receiver.iterator();
         while (itr.hasNext()) {
-            ContentHandler observer = itr.next();
+            JsonSaxHandler observer = itr.next();
             if (!observer.startObjectEntry(key)) {
                 itr.remove();
             }
@@ -108,28 +106,13 @@ class ContentDispatcher implements ContentHandler {
     }
 
     @Override
-    public boolean endObjectEntry() throws ParseException, IOException {
+    public boolean startArray() {
         if (receiver.isEmpty()) {
             return true;
         }
-        Iterator<ContentHandler> itr = receiver.iterator();
+        Iterator<JsonSaxHandler> itr = receiver.iterator();
         while (itr.hasNext()) {
-            ContentHandler observer = itr.next();
-            if (!observer.endObjectEntry()) {
-                itr.remove();
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public boolean startArray() throws ParseException, IOException {
-        if (receiver.isEmpty()) {
-            return true;
-        }
-        Iterator<ContentHandler> itr = receiver.iterator();
-        while (itr.hasNext()) {
-            ContentHandler observer = itr.next();
+            JsonSaxHandler observer = itr.next();
             if (!observer.startArray()) {
                 itr.remove();
             }
@@ -138,13 +121,13 @@ class ContentDispatcher implements ContentHandler {
     }
 
     @Override
-    public boolean endArray() throws ParseException, IOException {
+    public boolean endArray() {
         if (receiver.isEmpty()) {
             return true;
         }
-        Iterator<ContentHandler> itr = receiver.iterator();
+        Iterator<JsonSaxHandler> itr = receiver.iterator();
         while (itr.hasNext()) {
-            ContentHandler observer = itr.next();
+            JsonSaxHandler observer = itr.next();
             if (!observer.endArray()) {
                 itr.remove();
             }
@@ -153,13 +136,13 @@ class ContentDispatcher implements ContentHandler {
     }
 
     @Override
-    public boolean primitive(Object value) throws ParseException, IOException {
+    public boolean primitive(Object value) {
         if (receiver.isEmpty()) {
             return true;
         }
-        Iterator<ContentHandler> itr = receiver.iterator();
+        Iterator<JsonSaxHandler> itr = receiver.iterator();
         while (itr.hasNext()) {
-            ContentHandler observer = itr.next();
+            JsonSaxHandler observer = itr.next();
             if (!observer.primitive(value)) {
                 itr.remove();
             }
@@ -167,7 +150,7 @@ class ContentDispatcher implements ContentHandler {
         return true;
     }
 
-    public void addReceiver(ContentHandler contentHandler) {
+    public void addReceiver(JsonSaxHandler contentHandler) {
         receiver.add(contentHandler);
     }
 }

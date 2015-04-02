@@ -36,19 +36,10 @@ public class GsonParser implements JsonParserAdapter {
 
     public final static GsonParser INSTANCE = new GsonParser();
 
-    private enum EntryType {
-        ROOT,
-        OBJECT,
-        ARRAY,
-        PRIMITIVE
-    }
-
     @Override
     public void parse(Reader reader, SurfingContext context) {
         try {
             JsonReader jsonReader = new JsonReader(reader);
-            Stack<EntryType> entryStack = new Stack<EntryType>();
-            entryStack.push(EntryType.ROOT);
             // TODO to correct behavior
 
             context.startJSON();
@@ -66,12 +57,6 @@ public class GsonParser implements JsonParserAdapter {
                         if (!context.endArray()) {
                             return;
                         }
-                        if (entryStack.peek() == EntryType.ARRAY) {
-                            if (!context.endObjectEntry()) {
-                                return;
-                            }
-                            entryStack.pop();
-                        }
                         break;
                     case BEGIN_OBJECT:
                         jsonReader.beginObject();
@@ -84,26 +69,11 @@ public class GsonParser implements JsonParserAdapter {
                         if (!context.endObject()) {
                             return;
                         }
-                        if (entryStack.peek() == EntryType.OBJECT) {
-                            if (!context.endObjectEntry()) {
-                                return;
-                            }
-                            entryStack.pop();
-                        }
                         break;
                     case NAME:
                         String name = jsonReader.nextName();
                         if (!context.startObjectEntry(name)) {
                             return;
-                        }
-                        JsonToken peek = jsonReader.peek();
-                        if (peek == JsonToken.STRING || peek == JsonToken.BOOLEAN || peek == JsonToken.NUMBER
-                            || peek == JsonToken.NULL) {
-                            entryStack.push(EntryType.PRIMITIVE);
-                        } else if (peek == JsonToken.BEGIN_OBJECT) {
-                            entryStack.push(EntryType.OBJECT);
-                        } else if (peek == JsonToken.BEGIN_ARRAY) {
-                            entryStack.push(EntryType.ARRAY);
                         }
                         break;
                     case STRING:
@@ -111,23 +81,11 @@ public class GsonParser implements JsonParserAdapter {
                         if (!context.primitive(context.getJsonProvider().primitive(s))) {
                             return;
                         }
-                        if (entryStack.peek() == EntryType.PRIMITIVE) {
-                            if (!context.endObjectEntry()) {
-                                return;
-                            }
-                            entryStack.pop();
-                        }
                         break;
                     case NUMBER:
                         double n = jsonReader.nextDouble();
                         if (!context.primitive(context.getJsonProvider().primitive(n))) {
                             return;
-                        }
-                        if (entryStack.peek() == EntryType.PRIMITIVE) {
-                            if (!context.endObjectEntry()) {
-                                return;
-                            }
-                            entryStack.pop();
                         }
                         break;
                     case BOOLEAN:
@@ -135,34 +93,19 @@ public class GsonParser implements JsonParserAdapter {
                         if (!context.primitive(context.getJsonProvider().primitive(b))) {
                             return;
                         }
-                        if (entryStack.peek() == EntryType.PRIMITIVE) {
-                            if (!context.endObjectEntry()) {
-                                return;
-                            }
-                            entryStack.pop();
-                        }
                         break;
                     case NULL:
                         jsonReader.nextNull();
                         if (!context.primitive(context.getJsonProvider().primitiveNull())) {
                             return;
                         }
-                        if (entryStack.peek() == EntryType.PRIMITIVE) {
-                            if (!context.endObjectEntry()) {
-                                return;
-                            }
-                            entryStack.pop();
-                        }
                         break;
                     case END_DOCUMENT:
                         context.endJSON();
-                        entryStack.clear();
                         return;
                 }
             }
         } catch (IOException e) {
-            context.getErrorHandlingStrategy().handleParsingException(e);
-        } catch (ParseException e) {
             context.getErrorHandlingStrategy().handleParsingException(e);
         }
     }

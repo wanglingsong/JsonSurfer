@@ -25,32 +25,25 @@
 package org.jsfr.json;
 
 /**
- * Created by Administrator on 2015/3/25.
+ * Created by Leo on 2015/4/2.
  */
-public interface JsonProvider<O, A, P> {
+public interface JsonSaxHandler {
 
-    O createObject();
+    boolean startJSON();
 
-    A createArray();
+    boolean endJSON();
 
-    boolean isObject(Object object);
+    boolean startObject();
 
-    boolean isArray(Object array);
+    boolean startObjectEntry(String key);
 
-    void consumeObjectEntry(O object, String key, P value);
+    boolean endObject();
 
-    void consumeArrayElement(A array, P value);
+    boolean startArray();
 
-    P primitive(boolean value);
+    boolean endArray();
 
-    P primitive(int value);
+    boolean primitive(Object object);
 
-    P primitive(double value);
-
-    P primitive(String value);
-
-    P primitiveNull();
-
-    <T> T cast(P value, Class<T> tClass);
 
 }

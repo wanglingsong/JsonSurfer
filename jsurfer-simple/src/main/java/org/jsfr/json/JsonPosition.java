@@ -68,7 +68,7 @@ class JsonPosition extends JsonPath {
         }
     }
 
-    void stepOverNextIndex() {
+    void stepIntoArray() {
         Stack<ArrayIndex> stack = arrayNodeCache.get();
         ArrayIndex node = null;
         if (stack != null && !stack.isEmpty()) {
@@ -105,6 +105,10 @@ class JsonPosition extends JsonPath {
 
     private void createArrayNodeCache() {
         arrayNodeCache = new SoftReference<Stack<ArrayIndex>>(new Stack<ArrayIndex>());
+    }
+
+    PathOperator.Type peekType() {
+        return operators.peek().getType();
     }
 
 }

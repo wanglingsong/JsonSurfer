@@ -24,15 +24,12 @@
 
 package org.jsfr.json;
 
-import org.json.simple.parser.ParseException;
-
-import java.io.IOException;
 import java.util.Collection;
 
 /**
  * Created by Administrator on 2015/3/21.
  */
-class JsonCollector extends JsonGenerator {
+class JsonCollector extends JsonDomBuilder {
 
     private ErrorHandlingStrategy errorHandlingStrategy;
     private Collection<JsonPathListener> jsonPathListeners;
@@ -45,10 +42,10 @@ class JsonCollector extends JsonGenerator {
     }
 
     @Override
-    public boolean endObject() throws ParseException, IOException {
+    public boolean endObject() {
         super.endObject();
-        if (getStackSize() == 1) {
-            Object result = getResult();
+        if (isInRoot()) {
+            Object result = getCurrentNode();
             for (JsonPathListener jsonPathListener : jsonPathListeners) {
                 if (!context.isStopped()) {
                     try {
@@ -65,10 +62,10 @@ class JsonCollector extends JsonGenerator {
     }
 
     @Override
-    public boolean endArray() throws ParseException, IOException {
+    public boolean endArray() {
         super.endArray();
-        if (getStackSize() == 1) {
-            Object result = getResult();
+        if (isInRoot()) {
+            Object result = getCurrentNode();
             for (JsonPathListener jsonPathListener : jsonPathListeners) {
                 if (!context.isStopped()) {
                     try {
@@ -85,10 +82,10 @@ class JsonCollector extends JsonGenerator {
     }
 
     @Override
-    public boolean primitive(Object value) throws ParseException, IOException {
+    public boolean primitive(Object value) {
         super.primitive(value);
-        if (getStackSize() == 1) {
-            Object result = getResult();
+        if (isInRoot()) {
+            Object result = getCurrentNode();
             for (JsonPathListener jsonPathListener : jsonPathListeners) {
                 if (!context.isStopped()) {
                     try {

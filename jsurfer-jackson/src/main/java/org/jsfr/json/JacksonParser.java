@@ -27,7 +27,6 @@ package org.jsfr.json;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -61,11 +60,6 @@ public class JacksonParser implements JsonParserAdapter {
                         if (!context.endObject()) {
                             return;
                         }
-                        if (jp.getCurrentName() != null) {
-                            if (!context.endObjectEntry()) {
-                                return;
-                            }
-                        }
                         break;
                     case START_ARRAY:
                         if (!context.startArray()) {
@@ -75,11 +69,6 @@ public class JacksonParser implements JsonParserAdapter {
                     case END_ARRAY:
                         if (!context.endArray()) {
                             return;
-                        }
-                        if (jp.getCurrentName() != null) {
-                            if (!context.endObjectEntry()) {
-                                return;
-                            }
                         }
                         break;
                     case FIELD_NAME:
@@ -93,67 +82,35 @@ public class JacksonParser implements JsonParserAdapter {
                         if (!context.primitive(context.getJsonProvider().primitive(jp.getText()))) {
                             return;
                         }
-                        if (jp.getCurrentName() != null) {
-                            if (!context.endObjectEntry()) {
-                                return;
-                            }
-                        }
                         break;
                     case VALUE_NUMBER_INT:
                         if (!context.primitive(context.getJsonProvider().primitive(jp.getIntValue()))) {
                             return;
-                        }
-                        if (jp.getCurrentName() != null) {
-                            if (!context.endObjectEntry()) {
-                                return;
-                            }
                         }
                         break;
                     case VALUE_NUMBER_FLOAT:
                         if (!context.primitive(context.getJsonProvider().primitive(jp.getDoubleValue()))) {
                             return;
                         }
-                        if (jp.getCurrentName() != null) {
-                            if (!context.endObjectEntry()) {
-                                return;
-                            }
-                        }
                         break;
                     case VALUE_TRUE:
                         if (!context.primitive(context.getJsonProvider().primitive(true))) {
                             return;
-                        }
-                        if (jp.getCurrentName() != null) {
-                            if (!context.endObjectEntry()) {
-                                return;
-                            }
                         }
                         break;
                     case VALUE_FALSE:
                         if (!context.primitive(context.getJsonProvider().primitive(false))) {
                             return;
                         }
-                        if (jp.getCurrentName() != null) {
-                            if (!context.endObjectEntry()) {
-                                return;
-                            }
-                        }
                         break;
                     case VALUE_NULL:
                         if (!context.primitive(context.getJsonProvider().primitiveNull())) {
                             return;
                         }
-                        if (jp.getCurrentName() != null) {
-                            if (!context.endObjectEntry()) {
-                                return;
-                            }
-                        }
                         break;
                 }
             }
         } catch (IOException e) {
-            context.getErrorHandlingStrategy().handleParsingException(e);
-        } catch (ParseException e) {
             context.getErrorHandlingStrategy().handleParsingException(e);
         }
     }

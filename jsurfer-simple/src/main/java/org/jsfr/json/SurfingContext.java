@@ -28,10 +28,7 @@ import org.jsfr.json.path.ArrayIndex;
 import org.jsfr.json.path.JsonPath;
 import org.jsfr.json.path.PathOperator;
 import org.jsfr.json.path.PathOperator.Type;
-import org.json.simple.parser.ContentHandler;
-import org.json.simple.parser.ParseException;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,7 +37,7 @@ import java.util.Map;
 
 import static org.jsfr.json.compiler.JsonPathCompiler.compile;
 
-public class SurfingContext implements ParsingContext, ContentHandler {
+public class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     public static class Builder {
 
@@ -178,19 +175,20 @@ public class SurfingContext implements ParsingContext, ContentHandler {
     private ContentDispatcher dispatcher = new ContentDispatcher();
 
     @Override
-    public void startJSON() throws ParseException, IOException {
+    public boolean startJSON() {
         if (stopped) {
-            return;
+            return true;
         }
         currentPosition = JsonPosition.start();
         doMatching(false, false, null);
         dispatcher.startJSON();
+        return true;
     }
 
     @Override
-    public void endJSON() throws ParseException, IOException {
+    public boolean endJSON() {
         if (stopped) {
-            return;
+            return true;
         }
         dispatcher.endJSON();
         // clear resources
@@ -198,10 +196,11 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         currentPosition = null;
         indefinitePathLookup = null;
         definitePathLookup = null;
+        return true;
     }
 
     @Override
-    public boolean startObject() throws ParseException, IOException {
+    public boolean startObject() {
         if (stopped) {
             return false;
         }
@@ -214,7 +213,7 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         return true;
     }
 
-    private void doMatching(boolean initializeCollector, boolean onPrimitive, Object primitive) throws IOException, ParseException {
+    private void doMatching(boolean initializeCollector, boolean onPrimitive, Object primitive) {
         // skip matching if "skipOverlappedPath" is enable
         if (skipOverlappedPath && !this.dispatcher.isEmpty()) {
             return;
@@ -287,16 +286,19 @@ public class SurfingContext implements ParsingContext, ContentHandler {
     }
 
     @Override
-    public boolean endObject() throws ParseException, IOException {
+    public boolean endObject() {
         if (stopped) {
             return false;
+        }
+        if (currentPosition.peekType() == Type.OBJECT) {
+            currentPosition.stepOut();
         }
         dispatcher.endObject();
         return true;
     }
 
     @Override
-    public boolean startObjectEntry(String key) throws ParseException, IOException {
+    public boolean startObjectEntry(String key) {
         if (stopped) {
             return false;
         }
@@ -306,18 +308,9 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         return true;
     }
 
-    @Override
-    public boolean endObjectEntry() throws ParseException, IOException {
-        if (stopped) {
-            return false;
-        }
-        currentPosition.stepOut();
-        dispatcher.endObjectEntry();
-        return true;
-    }
 
     @Override
-    public boolean startArray() throws ParseException, IOException {
+    public boolean startArray() {
         if (stopped) {
             return false;
         }
@@ -326,23 +319,26 @@ public class SurfingContext implements ParsingContext, ContentHandler {
             ((ArrayIndex) top).increaseArrayIndex();
             doMatching(true, false, null);
         }
-        currentPosition.stepOverNextIndex();
+        currentPosition.stepIntoArray();
         dispatcher.startArray();
         return true;
     }
 
     @Override
-    public boolean endArray() throws ParseException, IOException {
+    public boolean endArray() {
         if (stopped) {
             return false;
         }
         currentPosition.stepOut();
+        if (currentPosition.peekType() == Type.OBJECT) {
+            currentPosition.stepOut();
+        }
         dispatcher.endArray();
         return true;
     }
 
     @Override
-    public boolean primitive(final Object value) throws ParseException, IOException {
+    public boolean primitive(final Object value) {
         if (stopped) {
             return false;
         }
@@ -350,6 +346,8 @@ public class SurfingContext implements ParsingContext, ContentHandler {
         if (top.getType() == Type.ARRAY) {
             ((ArrayIndex) top).increaseArrayIndex();
             doMatching(true, true, value);
+        } else if (top.getType() == Type.OBJECT) {
+            currentPosition.stepOut();
         }
         dispatcher.primitive(value);
         return true;
