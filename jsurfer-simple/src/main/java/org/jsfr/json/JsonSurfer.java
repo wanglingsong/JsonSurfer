@@ -43,6 +43,18 @@ public class JsonSurfer {
     private JsonParserAdapter jsonParserAdapter;
     private ErrorHandlingStrategy errorHandlingStrategy;
 
+    public static JsonSurfer simple() {
+        return new JsonSurfer(new JsonSimpleParser(), new JsonSimpleProvider());
+    }
+
+    public static JsonSurfer gson() {
+        return new JsonSurfer(new GsonParser(), new GsonProvider());
+    }
+
+    public static JsonSurfer jackson() {
+        return new JsonSurfer(new JacksonParser(), new JacksonProvider());
+    }
+
     public JsonSurfer(JsonParserAdapter jsonParserAdapter, JsonProvider jsonProvider) {
         this.jsonParserAdapter = jsonParserAdapter;
         this.jsonProvider = jsonProvider;
@@ -70,7 +82,7 @@ public class JsonSurfer {
 
     public <T> Collection<T> collectAll(Reader reader, Class<T> tClass, JsonPath... paths) {
         CollectAllListener<T> listener = new CollectAllListener<T>(jsonProvider, tClass);
-        Builder builder = builder().withJsonProvider(jsonProvider).skipOverlappedPath();
+        Builder builder = builder().skipOverlappedPath();
         for (JsonPath jsonPath : paths) {
             builder.bind(jsonPath, listener);
         }
@@ -81,7 +93,7 @@ public class JsonSurfer {
     @SuppressWarnings("unchecked")
     public <T> T collectOne(Reader reader, Class<T> tClass, JsonPath... paths) {
         CollectOneListener listener = new CollectOneListener();
-        Builder builder = builder().withJsonProvider(jsonProvider).skipOverlappedPath();
+        Builder builder = builder().skipOverlappedPath();
         for (JsonPath jsonPath : paths) {
             builder.bind(jsonPath, listener);
         }
