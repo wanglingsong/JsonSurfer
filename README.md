@@ -42,9 +42,7 @@ Jsonsurfer is good at processing **big and complicated json** data with three ma
 </dependency>
 ```
 
-
-* JsonSurfer relies on third party library for parsing json and has dedicated maven projects built for them. e.g json-simple, gson or jackson
-* Pluggable json parser and model provider
+* JsonSurfer is flexible. With pluggable interface, you can choose your json library for parsing and modeling. For example:
 ```java
         // use json-simple parser (Json-Simple dependency is included by default)
         // transform json into json-simple model i.e.org.json.simple.JSONObject or org.json.simple.JSONArray
