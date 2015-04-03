@@ -12,7 +12,7 @@ Jsonsurfer is good at processing **big and complicated json** data with three ma
 
 * Stoppable
 
-    JsonSurfer is built on [json-simple](https://code.google.com/p/json-simple/)'s Stoppable SAX-like interface that allows the processor to stop itself if necessary.
+    JsonSurfer is built on stoppable SAX-like interface that allows the processor to stop itself if necessary.
     
 ## Getting started
 
@@ -29,27 +29,29 @@ Jsonsurfer is good at processing **big and complicated json** data with three ma
 | `.<name>`                 | child             | YES       |
 | `['<name>' (, '<name>')]` | child/children    | YES       |
 | `[<number> (, <number>)]` | index/indices     | YES       |
-| `[start:end]`             | array slice       | Not yet   |
+| `[start:end]`             | array slice       | Yes       |
 | `[?(<expression>)]`       | expression        | Not yet   |
 
 * JsonSurfer relies on third party library for parsing json and has dedicated maven projects built for them. e.g json-simple, gson or jackson
-* Pluggable json model provider
+* Pluggable json parser and model provider
 ```java
-        // use json-simple parser
-        JsonSimpleSurfer loader = new JsonSimpleSurfer();
+        // use json-simple parser (Json-Simple dependency is included by default)
         // transform json into json-simple model i.e.org.json.simple.JSONObject or org.json.simple.JSONArray
-        Builder builder = context().withJsonProvider(new JsonSimpleProvider()); 
+        JsonSurfer surfer = new JsonSurfer(new JsonSimpleParser(), new JsonSimpleProvider());
+        // or 
+        JsonSurfer surfer = JsonSurfer.simple();
 ```
 ```java
-        // use gson parser
-        GsonSurfer loader = new GsonSurfer();
+        // use gson parser (You need to explicitly declare Gson dependency in you pom)
         // transform json into gson model i.e.com.google.gson.JsonElement
-        Builder builder = context().withJsonProvider(new GsonProvider());
+        JsonSurfer surfer = new JsonSurfer(new GsonParser(), new GsonProvider());
+        // or 
+        JsonSurfer surfer = JsonSurfer.gson();
 ```
-* JsonSurfer offer a Java DSL for building JsonPath. More details in the code examples section.
+* JsonPath binding. More details in the code examples section.
 ```java
-        // equivalent to $.builders.*.properties
-        builder.bind(root().child("builders").anyChild().child("properties"), printListener).skipOverlappedPath();
+        // Find all properties within builders objects
+        builder.bind("$.builders.*.properties", printListener).skipOverlappedPath();
 ```
 * Stop parsing on the fly. Refer to [Stoppable parsing](#stoppable-parsing)
 
@@ -107,9 +109,9 @@ $.store.book[*].author
                 System.out.println(value);
             }
         };
-        GsonSurfer surfer = new GsonSurfer();
-        SurfingContext.Builder builder = BuilderFactory.context().withJsonProvider(new GsonProvider());
-        builder.bind(root().child("store").child("book").anyIndex().child("author"), print);
+        JsonSurfer surfer = JsonSurfer.gson();
+        SurfingContext.Builder builder = BuilderFactory.context();
+        builder.bind("$.store.book[*].author", print);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
 ```
 Output
@@ -124,7 +126,7 @@ Output
 $..author
 ```
 ```java
-        builder.bind(root().scan().child("author"), print);
+        builder.bind("$..author", print);
 ```
 Output
 ```
@@ -138,7 +140,7 @@ Output
 $.store.*
 ```
 ```java
-        builder.bind(root().child("store").any(), print);
+        builder.bind("$.store.*", print);
 ```
 Output
 ```
@@ -150,7 +152,7 @@ Output
 $.store..price
 ```
 ```java
-        builder.bind(root().child("store").scan().child("price"), print);
+        builder.bind("$.store..price", print);
 ```
 Output
 ```
@@ -165,7 +167,7 @@ Output
 $..book[2]
 ```
 ```java
-        builder.bind(root().scan().child("book").index(2), print);
+        builder.bind("$..book[2]", print);
 ```
 Output
 ```
@@ -176,7 +178,7 @@ Output
 $..book[0,1]
 ```
 ```java
-        builder.bind(root().scan().child("book").indexes(0,1), print);
+        builder.bind("$..book[0,1]", print);
 ```
 Output
 ```
@@ -189,7 +191,7 @@ The parsing is stopped when the first book found and printed.
 $..book[0,1]
 ```
 ```java
-        builder.bind(root().scan().child("book").indexes(0, 1), new JsonPathListener() {
+        builder.bind("$..book[0,1]", new JsonPathListener() {
             @Override
             public void onValue(Object value, ParsingContext parsingContext) {
                 parsingContext.stopParsing();
