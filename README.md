@@ -1,5 +1,4 @@
 # JsonSurfer - Let's surf on Json!
-![](https://travis-ci.org/jsurfer/JsonSurfer.svg?branch=master)
 ## Why JsonSurfer
 Jsonsurfer is good at processing **big and complicated json** data with three major features.
 * Streaming
@@ -29,8 +28,20 @@ Jsonsurfer is good at processing **big and complicated json** data with three ma
 | `.<name>`                 | child             | YES       |
 | `['<name>' (, '<name>')]` | child/children    | YES       |
 | `[<number> (, <number>)]` | index/indices     | YES       |
-| `[start:end]`             | array slice       | Yes       |
+| `[start:end]`             | array slice       | YES       |
 | `[?(<expression>)]`       | expression        | Not yet   |
+
+* JsonSurfer is available in cetral maven repository.
+
+![](https://travis-ci.org/jsurfer/JsonSurfer.svg?branch=master)
+```xml
+<dependency>
+    <groupId>com.github.jsurfer</groupId>
+    <artifactId>jsurfer-simple</artifactId>
+    <version>1.2.1</version>
+</dependency>
+```
+
 
 * JsonSurfer relies on third party library for parsing json and has dedicated maven projects built for them. e.g json-simple, gson or jackson
 * Pluggable json parser and model provider
