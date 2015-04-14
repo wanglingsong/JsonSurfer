@@ -29,10 +29,25 @@ package org.jsfr.json;
  */
 public interface ParsingContext {
 
+
+    /**
+     * Stop the parsing
+     */
     void stopParsing();
 
+    /**
+     * @return Whether parsing is stopped
+     */
     boolean isStopped();
 
-    String currentPath();
+    /**
+     * @return The current JsonPath
+     */
+    String getJsonPath();
+
+    /**
+     * @return Return the current entry key. Return null if the context is not in a json object
+     */
+    String getKey();
 
 }

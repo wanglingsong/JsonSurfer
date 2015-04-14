@@ -31,6 +31,10 @@ import java.io.Reader;
  */
 public interface JsonParserAdapter {
 
+    /**
+     * @param reader
+     * @param context
+     */
     void parse(Reader reader, SurfingContext context);
 
 }

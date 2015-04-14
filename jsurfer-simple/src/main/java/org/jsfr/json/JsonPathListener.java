@@ -24,8 +24,16 @@
 
 package org.jsfr.json;
 
+/**
+ * JsonPathListener binds to JsonPath
+ */
 public interface JsonPathListener {
 
+    /**
+     * @param value the value of json node that matches bound JsonPath
+     * @param context parsing context
+     * @throws Exception
+     */
     void onValue(Object value, ParsingContext context) throws Exception;
 
 }

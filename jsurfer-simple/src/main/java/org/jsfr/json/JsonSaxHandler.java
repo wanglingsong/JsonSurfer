@@ -29,21 +29,46 @@ package org.jsfr.json;
  */
 public interface JsonSaxHandler {
 
+    /**
+     * @return Return false to stop the parsing immediately
+     */
     boolean startJSON();
 
+    /**
+     * @return Return false to stop the parsing immediately
+     */
     boolean endJSON();
 
+    /**
+     * @return Return false to stop the parsing immediately
+     */
     boolean startObject();
 
+    /**
+     * @param key
+     * @return Return false to stop the parsing immediately
+     */
     boolean startObjectEntry(String key);
 
+    /**
+     * @return Return false to stop the parsing immediately
+     */
     boolean endObject();
 
+    /**
+     * @return Return false to stop the parsing immediately
+     */
     boolean startArray();
 
+    /**
+     * @return Return false to stop the parsing immediately
+     */
     boolean endArray();
 
+    /**
+     * @param object The primitive
+     * @return Return false to stop the parsing immediately
+     */
     boolean primitive(Object object);
-
 
 }

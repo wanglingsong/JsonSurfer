@@ -25,6 +25,7 @@
 package org.jsfr.json;
 
 import org.jsfr.json.path.ArrayIndex;
+import org.jsfr.json.path.ChildNode;
 import org.jsfr.json.path.JsonPath;
 import org.jsfr.json.path.PathOperator;
 import org.jsfr.json.path.PathOperator.Type;
@@ -37,6 +38,9 @@ import java.util.Map;
 
 import static org.jsfr.json.compiler.JsonPathCompiler.compile;
 
+/**
+ * SurfingContext is not thread-safe
+ */
 public class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     public static class Builder {
@@ -354,8 +358,17 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
     }
 
     @Override
-    public String currentPath() {
+    public String getJsonPath() {
         return this.currentPosition.toString();
+    }
+
+    @Override
+    public String getKey() {
+        PathOperator peek = currentPosition.peek();
+        if (peek.getType() == Type.OBJECT) {
+            return ((ChildNode) peek).getKey();
+        }
+        return null;
     }
 
     @Override

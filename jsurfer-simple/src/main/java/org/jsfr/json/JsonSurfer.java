@@ -35,7 +35,8 @@ import static org.jsfr.json.compiler.JsonPathCompiler.compile;
 
 
 /**
- * Created by Leo on 2015/3/30.
+ * JsonSurfer traverses the whole json DOM tree, compare the path of each node with registered JsonPath
+ * and return the matched value immediately. JsonSurfer is fully streaming which means that it doesn't construct the DOM tree in memory.
  */
 public class JsonSurfer {
 
@@ -43,43 +44,75 @@ public class JsonSurfer {
     private JsonParserAdapter jsonParserAdapter;
     private ErrorHandlingStrategy errorHandlingStrategy;
 
+    /**
+     * @return New JsonSurfer using JsonSimple parser and provider. JsonSimple dependency is included by default.
+     */
     public static JsonSurfer simple() {
         return new JsonSurfer(new JsonSimpleParser(), new JsonSimpleProvider());
     }
 
+    /**
+     * @return New JsonSurfer using Gson parser and provider. You need to explicitly declare gson dependency.
+     */
     public static JsonSurfer gson() {
         return new JsonSurfer(new GsonParser(), new GsonProvider());
     }
 
+    /**
+     * @return New JsonSurfer using Jackson parser and provider. You need to explicitly declare Jackson dependency.
+     */
     public static JsonSurfer jackson() {
         return new JsonSurfer(new JacksonParser(), new JacksonProvider());
     }
 
+    /**
+     * @param jsonParserAdapter
+     * @param jsonProvider
+     */
     public JsonSurfer(JsonParserAdapter jsonParserAdapter, JsonProvider jsonProvider) {
         this.jsonParserAdapter = jsonParserAdapter;
         this.jsonProvider = jsonProvider;
         this.errorHandlingStrategy = new DefaultErrorHandlingStrategy();
     }
 
+    /**
+     * @param jsonParserAdapter
+     * @param jsonProvider
+     * @param errorHandlingStrategy
+     */
     public JsonSurfer(JsonParserAdapter jsonParserAdapter, JsonProvider jsonProvider, ErrorHandlingStrategy errorHandlingStrategy) {
         this.jsonProvider = jsonProvider;
         this.jsonParserAdapter = jsonParserAdapter;
         this.errorHandlingStrategy = errorHandlingStrategy;
     }
 
-    public Collection<Object> collectAll(Reader reader, JsonPath... paths) {
-        return collectAll(reader, Object.class, paths);
-    }
-
+    /**
+     * @param reader Json source
+     * @param context SurfingContext that holds JsonPath binding
+     */
     public void surf(Reader reader, SurfingContext context) {
         ensureSetting(context);
         jsonParserAdapter.parse(reader, context);
     }
 
-    public Object collectOne(Reader reader, JsonPath... paths) {
-        return collectOne(reader, Object.class, paths);
+    /**
+     * Collect all matched value into a collection
+     * @param reader
+     * @param paths JsonPath
+     * @return All matched value
+     */
+    public Collection<Object> collectAll(Reader reader, JsonPath... paths) {
+        return collectAll(reader, Object.class, paths);
     }
 
+    /**
+     * Collect all matched value into a collection
+     * @param reader
+     * @param tClass
+     * @param paths
+     * @param <T>
+     * @return
+     */
     public <T> Collection<T> collectAll(Reader reader, Class<T> tClass, JsonPath... paths) {
         CollectAllListener<T> listener = new CollectAllListener<T>(jsonProvider, tClass);
         Builder builder = builder().skipOverlappedPath();
@@ -90,6 +123,46 @@ public class JsonSurfer {
         return listener.getCollection();
     }
 
+    /**
+     * Collect all matched value into a collection
+     * @param reader
+     * @param tClass
+     * @param paths
+     * @param <T>
+     * @return
+     */
+    public <T> Collection<T> collectAll(Reader reader, Class<T> tClass, String... paths) {
+        return collectAll(reader, tClass, compile(paths));
+    }
+
+    /**
+     * Collect all matched value into a collection
+     * @param reader
+     * @param paths
+     * @return
+     */
+    public Collection<Object> collectAll(Reader reader, String... paths) {
+        return collectAll(reader, Object.class, paths);
+    }
+
+    /**
+     * Collect the first matched value and stop parsing immediately
+     * @param reader
+     * @param paths
+     * @return Matched value
+     */
+    public Object collectOne(Reader reader, JsonPath... paths) {
+        return collectOne(reader, Object.class, paths);
+    }
+
+    /**
+     * Collect the first matched value and stop parsing immediately
+     * @param reader
+     * @param tClass
+     * @param paths
+     * @param <T>
+     * @return
+     */
     @SuppressWarnings("unchecked")
     public <T> T collectOne(Reader reader, Class<T> tClass, JsonPath... paths) {
         CollectOneListener listener = new CollectOneListener();
@@ -102,18 +175,24 @@ public class JsonSurfer {
         return tClass.cast(jsonProvider.cast(value, tClass));
     }
 
-    public <T> Collection<T> collectAll(Reader reader, Class<T> tClass, String... paths) {
-        return collectAll(reader, tClass, compile(paths));
-    }
-
+    /**
+     * Collect the first matched value and stop parsing immediately
+     * @param reader
+     * @param tClass
+     * @param paths
+     * @param <T>
+     * @return
+     */
     public <T> T collectOne(Reader reader, Class<T> tClass, String... paths) {
         return collectOne(reader, tClass, compile(paths));
     }
 
-    public Collection<Object> collectAll(Reader reader, String... paths) {
-        return collectAll(reader, Object.class, paths);
-    }
-
+    /**
+     * Collect the first matched value and stop parsing immediately
+     * @param reader
+     * @param paths
+     * @return
+     */
     public Object collectOne(Reader reader, String... paths) {
         return collectOne(reader, Object.class, paths);
     }
@@ -127,11 +206,4 @@ public class JsonSurfer {
         }
     }
 
-    public ErrorHandlingStrategy getErrorHandlingStrategy() {
-        return errorHandlingStrategy;
-    }
-
-    public void setErrorHandlingStrategy(ErrorHandlingStrategy errorHandlingStrategy) {
-        this.errorHandlingStrategy = errorHandlingStrategy;
-    }
 }
