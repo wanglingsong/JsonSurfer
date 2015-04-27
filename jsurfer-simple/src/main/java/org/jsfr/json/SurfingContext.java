@@ -87,6 +87,27 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
             }
         }
 
+        public <T> Builder bind(String jsonPath, final Class<T> tClass, TypedJsonPathListener<T>... typedListeners) {
+            bind(compile(jsonPath), tClass, typedListeners);
+            return this;
+        }
+
+        public <T> Builder bind(JsonPath jsonPath, final Class<T> tClass, TypedJsonPathListener<T>... typedListeners) {
+            JsonPathListener[] listeners = new JsonPathListener[typedListeners.length];
+            int i = 0;
+            for (final TypedJsonPathListener<T> typedListener : typedListeners) {
+                listeners[i++] = new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext parsingContext) throws Exception {
+                        ;
+                        typedListener.onTypedValue((T) context.getJsonProvider().cast(value, tClass), parsingContext);
+                    }
+                };
+            }
+            bind(jsonPath, listeners);
+            return this;
+        }
+
         public Builder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners) {
             check();
             if (!jsonPath.isDefinite()) {

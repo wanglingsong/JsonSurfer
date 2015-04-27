@@ -28,6 +28,7 @@ import org.jsfr.json.SurfingContext.Builder;
 import org.jsfr.json.path.JsonPath;
 
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.Collection;
 
 import static org.jsfr.json.SurfingContext.Builder.builder;
@@ -86,8 +87,12 @@ public class JsonSurfer {
         this.errorHandlingStrategy = errorHandlingStrategy;
     }
 
+    public void surf(String json, SurfingContext context) {
+        surf(new StringReader(json), context);
+    }
+
     /**
-     * @param reader Json source
+     * @param reader  Json source
      * @param context SurfingContext that holds JsonPath binding
      */
     public void surf(Reader reader, SurfingContext context) {
@@ -95,18 +100,28 @@ public class JsonSurfer {
         jsonParserAdapter.parse(reader, context);
     }
 
+    public Collection<Object> collectAll(String json, JsonPath... paths) {
+        return collectAll(new StringReader(json), paths);
+    }
+
     /**
      * Collect all matched value into a collection
+     *
      * @param reader
-     * @param paths JsonPath
+     * @param paths  JsonPath
      * @return All matched value
      */
     public Collection<Object> collectAll(Reader reader, JsonPath... paths) {
         return collectAll(reader, Object.class, paths);
     }
 
+    public <T> Collection<T> collectAll(String json, Class<T> tClass, JsonPath... paths) {
+        return collectAll(new StringReader(json), tClass, paths);
+    }
+
     /**
      * Collect all matched value into a collection
+     *
      * @param reader
      * @param tClass
      * @param paths
@@ -115,7 +130,7 @@ public class JsonSurfer {
      */
     public <T> Collection<T> collectAll(Reader reader, Class<T> tClass, JsonPath... paths) {
         CollectAllListener<T> listener = new CollectAllListener<T>(jsonProvider, tClass);
-        Builder builder = builder().skipOverlappedPath();
+        Builder builder = builder();
         for (JsonPath jsonPath : paths) {
             builder.bind(jsonPath, listener);
         }
@@ -123,8 +138,13 @@ public class JsonSurfer {
         return listener.getCollection();
     }
 
+    public <T> Collection<T> collectAll(String json, Class<T> tClass, String... paths) {
+        return collectAll(new StringReader(json), tClass, paths);
+    }
+
     /**
      * Collect all matched value into a collection
+     *
      * @param reader
      * @param tClass
      * @param paths
@@ -135,8 +155,13 @@ public class JsonSurfer {
         return collectAll(reader, tClass, compile(paths));
     }
 
+    public Collection<Object> collectAll(String json, String... paths) {
+        return collectAll(new StringReader(json), paths);
+    }
+
     /**
      * Collect all matched value into a collection
+     *
      * @param reader
      * @param paths
      * @return
@@ -145,8 +170,13 @@ public class JsonSurfer {
         return collectAll(reader, Object.class, paths);
     }
 
+    public Object collectOne(String json, JsonPath... paths) {
+        return collectOne(new StringReader(json), paths);
+    }
+
     /**
      * Collect the first matched value and stop parsing immediately
+     *
      * @param reader
      * @param paths
      * @return Matched value
@@ -155,8 +185,13 @@ public class JsonSurfer {
         return collectOne(reader, Object.class, paths);
     }
 
+    public <T> T collectOne(String json, Class<T> tClass, JsonPath... paths) {
+        return collectOne(new StringReader(json), tClass, paths);
+    }
+
     /**
      * Collect the first matched value and stop parsing immediately
+     *
      * @param reader
      * @param tClass
      * @param paths
@@ -175,8 +210,13 @@ public class JsonSurfer {
         return tClass.cast(jsonProvider.cast(value, tClass));
     }
 
+    public <T> T collectOne(String json, Class<T> tClass, String... paths) {
+        return collectOne(new StringReader(json), tClass, paths);
+    }
+
     /**
      * Collect the first matched value and stop parsing immediately
+     *
      * @param reader
      * @param tClass
      * @param paths
@@ -187,8 +227,13 @@ public class JsonSurfer {
         return collectOne(reader, tClass, compile(paths));
     }
 
+    public Object collectOne(String json, String... paths) {
+        return collectOne(new StringReader(json), paths);
+    }
+
     /**
      * Collect the first matched value and stop parsing immediately
+     *
      * @param reader
      * @param paths
      * @return
