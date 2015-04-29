@@ -38,11 +38,11 @@ Jsonsurfer is good at processing **big and complicated json** data with three ma
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-simple</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
 </dependency>
 ```
 
-* JsonSurfer is flexible. With pluggable interface, you can choose your json library for parsing and modeling. For example:
+* JsonSurfer provides flexible plug-in interface, you can choose your json library for parsing and modeling. For example:
 ```java
         // use json-simple parser (Json-Simple dependency is included by default)
         // transform json into json-simple model i.e.org.json.simple.JSONObject or org.json.simple.JSONArray
@@ -64,6 +64,31 @@ Jsonsurfer is good at processing **big and complicated json** data with three ma
 ```
 * Stop parsing on the fly. Refer to [Stoppable parsing](#stoppable-parsing)
 
+### Main APIs
+
+#### "Surfer" on Json DOM tree and fire matched value to the registered listeners
+```java
+        JsonSurfer jsonSurfer = JsonSurfer.gson();
+        SurfingContext.Builder builder = SurfingContext.builder();
+        builder.bind("$.store.book[*]", new JsonPathListener() {
+            @Override
+            public void onValue(Object value, ParsingContext context) throws Exception {
+                System.out.println(value);
+            }
+        });
+        jsonSurfer.surf(sample, builder.build());
+```
+
+#### Collect the first matched value
+```java
+        JsonSurfer jsonSurfer = JsonSurfer.gson();
+        Object singleResult = jsonSurfer.collectOne(sample, "$.store.book[0]");
+```
+#### Colllect every matched value
+```java
+        JsonSurfer jsonSurfer = JsonSurfer.gson();
+        Collection<Object> multipleResults = jsonSurfer.collectAll(sample, "$.store.book[*]");
+```
 ### Code Examples
 
 Sample Json:
