@@ -43,18 +43,18 @@ import static org.jsfr.json.compiler.JsonPathCompiler.compile;
  */
 public class SurfingContext implements ParsingContext, JsonSaxHandler {
 
+    public static Builder builder() {
+        Builder builder = new Builder();
+        builder.context = new SurfingContext();
+        return builder;
+    }
+
     public static class Builder {
 
         private SurfingContext context;
         private Map<Integer, ArrayList<Binding>> definiteBindings = new HashMap<Integer, ArrayList<Binding>>();
         private ArrayList<IndefinitePathBinding> indefiniteBindings = new ArrayList<IndefinitePathBinding>();
 
-
-        public static Builder builder() {
-            Builder builder = new Builder();
-            builder.context = new SurfingContext();
-            return builder;
-        }
 
         public SurfingContext build() {
             if (!context.built) {

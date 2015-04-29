@@ -29,7 +29,7 @@ import org.jsfr.json.path.JsonPath;
 public class BuilderFactory {
 
     public static SurfingContext.Builder context() {
-        return SurfingContext.Builder.builder();
+        return SurfingContext.builder();
     }
 
     public static JsonPath.Builder root() {

@@ -31,7 +31,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.Collection;
 
-import static org.jsfr.json.SurfingContext.Builder.builder;
+import static org.jsfr.json.SurfingContext.builder;
 import static org.jsfr.json.compiler.JsonPathCompiler.compile;
 
 
