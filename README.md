@@ -33,7 +33,7 @@ Jsonsurfer is good at processing **big and complicated json** data with three ma
 
 * JsonSurfer is available in cetral maven repository.
 
-![](https://travis-ci.org/jsurfer/JsonSurfer.svg?branch=master)
+![](https://travis-ci.org/jsurfer/JsonSurfer.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/jsurfer/JsonSurfer/badge.svg)](https://coveralls.io/r/jsurfer/JsonSurfer)
 ```xml
 <dependency>
     <groupId>com.github.jsurfer</groupId>
