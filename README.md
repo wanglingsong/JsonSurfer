@@ -1,8 +1,10 @@
 # JsonSurfer - Let's surf on Json!
-## Why JsonSurfer
 
 [![Join the chat at https://gitter.im/jsurfer/JsonSurfer](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jsurfer/JsonSurfer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-Jsonsurfer is good at processing **big and complicated json** data with three major features.
+
+## Why JsonSurfer
+
+Jsonsurfer is dedicated in processing **big and complicated json** data with three major features.
 * Streaming
 
     No need to deserialize entire json into memory
