@@ -73,7 +73,7 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 #### "Surfer" on Json DOM tree and fire matched value to the registered listeners
 ```java
         JsonSurfer jsonSurfer = JsonSurfer.gson();
-        SurfingContext.Builder builder = SurfingContext.builder();
+        SurfingConfiguration.Builder builder = SurfingConfiguration.builder();
         builder.bind("$.store.book[*]", new JsonPathListener() {
             @Override
             public void onValue(Object value, ParsingContext context) throws Exception {
@@ -148,7 +148,7 @@ $.store.book[*].author
             }
         };
         JsonSurfer surfer = JsonSurfer.gson();
-        SurfingContext.Builder builder = BuilderFactory.context();
+        SurfingConfiguration.Builder builder = BuilderFactory.context();
         builder.bind("$.store.book[*].author", print);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
 ```
