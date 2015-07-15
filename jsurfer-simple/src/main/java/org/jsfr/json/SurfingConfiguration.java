@@ -189,10 +189,12 @@ public class SurfingConfiguration {
         return skipOverlappedPath;
     }
 
+    // TODO remove it
     Binding[][] getDefinitePathLookup() {
         return definitePathLookup;
     }
 
+    // TODO remove it
     IndefinitePathBinding[] getIndefinitePathLookup() {
         return indefinitePathLookup;
     }
@@ -211,5 +213,15 @@ public class SurfingConfiguration {
 
     void setErrorHandlingStrategy(ErrorHandlingStrategy errorHandlingStrategy) {
         this.errorHandlingStrategy = errorHandlingStrategy;
+    }
+
+    public boolean withinRange(int currentDepth) {
+        // TODO
+        return false;
+    }
+
+    public Binding[] getDefinitePathBind(int currentDepth) {
+        // TODO
+        return null;
     }
 }

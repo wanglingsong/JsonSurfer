@@ -41,7 +41,7 @@ import static org.jsfr.json.compiler.JsonPathCompiler.compile;
 /**
  * SurfingContext is not thread-safe
  */
-public class SurfingContext implements ParsingContext, JsonSaxHandler {
+class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     private boolean stopped = false;
     private JsonPosition currentPosition;
@@ -124,7 +124,9 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
                 }
             }
         }
+        // TODO use config.withinRange(currentDepth)
         if (config.getDefinitePathLookup() != null && !(currentDepth < config.getMinDepth() || currentDepth > config.getMaxDepth())) {
+            // TODO use config.getDefinitePathBind(currentDepth) instead
             SurfingConfiguration.Binding[] bindings = config.getDefinitePathLookup()[currentDepth - config.getMinDepth()];
             if (bindings != null) {
                 for (SurfingConfiguration.Binding binding : bindings) {
