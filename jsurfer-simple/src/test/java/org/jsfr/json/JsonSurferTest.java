@@ -27,7 +27,7 @@ package org.jsfr.json;
 import com.google.common.io.Resources;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
-import org.jsfr.json.SurfingContext.Builder;
+import org.jsfr.json.SurfingConfiguration.Builder;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;

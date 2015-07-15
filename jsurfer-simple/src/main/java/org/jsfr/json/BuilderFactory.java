@@ -28,8 +28,8 @@ import org.jsfr.json.path.JsonPath;
 
 public class BuilderFactory {
 
-    public static SurfingContext.Builder context() {
-        return SurfingContext.builder();
+    public static SurfingConfiguration.Builder context() {
+        return SurfingConfiguration.builder();
     }
 
     public static JsonPath.Builder root() {

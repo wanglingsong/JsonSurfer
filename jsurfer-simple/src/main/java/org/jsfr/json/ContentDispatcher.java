@@ -32,7 +32,7 @@ import java.util.LinkedList;
  */
 class ContentDispatcher implements JsonSaxHandler {
 
-    LinkedList<JsonSaxHandler> receiver = new LinkedList<JsonSaxHandler>();
+    private LinkedList<JsonSaxHandler> receiver = new LinkedList<JsonSaxHandler>();
 
     public boolean isEmpty() {
         return this.receiver.isEmpty();

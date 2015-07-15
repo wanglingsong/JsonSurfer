@@ -43,161 +43,14 @@ import static org.jsfr.json.compiler.JsonPathCompiler.compile;
  */
 public class SurfingContext implements ParsingContext, JsonSaxHandler {
 
-    public static Builder builder() {
-        Builder builder = new Builder();
-        builder.context = new SurfingContext();
-        return builder;
-    }
-
-    public static class Builder {
-
-        private SurfingContext context;
-        private Map<Integer, ArrayList<Binding>> definiteBindings = new HashMap<Integer, ArrayList<Binding>>();
-        private ArrayList<IndefinitePathBinding> indefiniteBindings = new ArrayList<IndefinitePathBinding>();
-
-
-        public SurfingContext build() {
-            if (!context.built) {
-                if (!indefiniteBindings.isEmpty()) {
-                    Collections.sort(indefiniteBindings);
-                    context.indefinitePathLookup = indefiniteBindings.toArray(new IndefinitePathBinding[indefiniteBindings.size()]);
-                }
-                if (!definiteBindings.isEmpty()) {
-                    context.definitePathLookup = new Binding[context.maxDepth - context.minDepth + 1][];
-                    for (Map.Entry<Integer, ArrayList<Binding>> entry : definiteBindings.entrySet()) {
-                        context.definitePathLookup[entry.getKey() - context.minDepth] = entry.getValue().toArray(new Binding[entry.getValue().size()]);
-                    }
-                }
-                context.built = true;
-            }
-            return context;
-        }
-
-        public Builder bind(String path, JsonPathListener... jsonPathListeners) {
-            return bind(compile(path), jsonPathListeners);
-        }
-
-        public Builder bind(JsonPath.Builder builder, JsonPathListener... jsonPathListeners) {
-            return bind(builder.build(), jsonPathListeners);
-        }
-
-        private void check() {
-            if (context.built) {
-                throw new IllegalStateException("The JsonSurfer is already built");
-            }
-        }
-
-        public <T> Builder bind(String jsonPath, final Class<T> tClass, TypedJsonPathListener<T>... typedListeners) {
-            bind(compile(jsonPath), tClass, typedListeners);
-            return this;
-        }
-
-        public <T> Builder bind(JsonPath jsonPath, final Class<T> tClass, TypedJsonPathListener<T>... typedListeners) {
-            JsonPathListener[] listeners = new JsonPathListener[typedListeners.length];
-            int i = 0;
-            for (final TypedJsonPathListener<T> typedListener : typedListeners) {
-                listeners[i++] = new JsonPathListener() {
-                    @Override
-                    public void onValue(Object value, ParsingContext parsingContext) throws Exception {
-                        ;
-                        typedListener.onTypedValue((T) context.getJsonProvider().cast(value, tClass), parsingContext);
-                    }
-                };
-            }
-            bind(jsonPath, listeners);
-            return this;
-        }
-
-        public Builder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners) {
-            check();
-            if (!jsonPath.isDefinite()) {
-                int minimumDepth = jsonPath.minimumPathDepth();
-                indefiniteBindings.add(new IndefinitePathBinding(jsonPath, jsonPathListeners, minimumDepth));
-            } else {
-                int depth = jsonPath.pathDepth();
-                if (depth > context.maxDepth) {
-                    context.maxDepth = depth;
-                }
-                if (depth < context.minDepth) {
-                    context.minDepth = depth;
-                }
-                ArrayList<Binding> bindings = definiteBindings.get(depth);
-                if (bindings == null) {
-                    bindings = new ArrayList<Binding>();
-                    definiteBindings.put(depth, bindings);
-                }
-                bindings.add(new Binding(jsonPath, jsonPathListeners));
-            }
-            return this;
-        }
-
-        public Builder skipOverlappedPath() {
-            check();
-            context.skipOverlappedPath = true;
-            return this;
-        }
-
-        public Builder withJsonProvider(JsonProvider provider) {
-            check();
-            context.jsonProvider = provider;
-            return this;
-        }
-
-        public Builder withErrorStrategy(ErrorHandlingStrategy errorHandlingStrategy) {
-            check();
-            context.errorHandlingStrategy = errorHandlingStrategy;
-            return this;
-        }
-
-    }
-
-    private static class IndefinitePathBinding extends Binding implements Comparable<IndefinitePathBinding> {
-
-        private int minimumPathDepth;
-
-        public IndefinitePathBinding(JsonPath jsonPath, JsonPathListener[] listeners, int minimumPathDepth) {
-            super(jsonPath, listeners);
-            this.minimumPathDepth = minimumPathDepth;
-        }
-
-        @Override
-        public int compareTo(IndefinitePathBinding o) {
-            if (minimumPathDepth < o.minimumPathDepth) {
-                return -1;
-            } else if (minimumPathDepth > o.minimumPathDepth) {
-                return 1;
-            } else {
-                return 0;
-            }
-        }
-
-    }
-
-    private static class Binding {
-
-        public Binding(JsonPath jsonPath, JsonPathListener[] listeners) {
-            this.jsonPath = jsonPath;
-            this.listeners = listeners;
-        }
-
-        protected JsonPath jsonPath;
-        protected JsonPathListener[] listeners;
-
-    }
-
-    private boolean built = false;
     private boolean stopped = false;
-    private boolean skipOverlappedPath = false;
-    private JsonProvider jsonProvider;
-    private ErrorHandlingStrategy errorHandlingStrategy;
     private JsonPosition currentPosition;
-    private int minDepth = Integer.MAX_VALUE;
-    private int maxDepth = -1;
-    private Binding[][] definitePathLookup;
-    // sorted by minimum path depth
-    private IndefinitePathBinding[] indefinitePathLookup;
-
     private ContentDispatcher dispatcher = new ContentDispatcher();
+    private SurfingConfiguration config;
+
+    public SurfingContext(SurfingConfiguration config) {
+        this.config = config;
+    }
 
     @Override
     public boolean startJSON() {
@@ -219,8 +72,6 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
         // clear resources
         currentPosition.clear();
         currentPosition = null;
-        indefinitePathLookup = null;
-        definitePathLookup = null;
         return true;
     }
 
@@ -240,14 +91,14 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     private void doMatching(boolean initializeCollector, boolean onPrimitive, Object primitive) {
         // skip matching if "skipOverlappedPath" is enable
-        if (skipOverlappedPath && !this.dispatcher.isEmpty()) {
+        if (config.isSkipOverlappedPath() && !this.dispatcher.isEmpty()) {
             return;
         }
         LinkedList<JsonPathListener> listeners = null;
 
         int currentDepth = currentPosition.pathDepth();
-        if (indefinitePathLookup != null) {
-            for (IndefinitePathBinding binding : indefinitePathLookup) {
+        if (config.getIndefinitePathLookup() != null) {
+            for (SurfingConfiguration.IndefinitePathBinding binding : config.getIndefinitePathLookup()) {
                 if (binding.minimumPathDepth <= currentDepth) {
                     if (binding.jsonPath.match(currentPosition)) {
                         if (onPrimitive) {
@@ -258,7 +109,7 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
                                 try {
                                     listener.onValue(primitive, this);
                                 } catch (Exception e) {
-                                    errorHandlingStrategy.handleExceptionFromListener(e, this);
+                                    config.getErrorHandlingStrategy().handleExceptionFromListener(e, this);
                                 }
                             }
                         } else {
@@ -273,10 +124,10 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
                 }
             }
         }
-        if (definitePathLookup != null && !(currentDepth < minDepth || currentDepth > maxDepth)) {
-            Binding[] bindings = definitePathLookup[currentDepth - minDepth];
+        if (config.getDefinitePathLookup() != null && !(currentDepth < config.getMinDepth() || currentDepth > config.getMaxDepth())) {
+            SurfingConfiguration.Binding[] bindings = config.getDefinitePathLookup()[currentDepth - config.getMinDepth()];
             if (bindings != null) {
-                for (Binding binding : bindings) {
+                for (SurfingConfiguration.Binding binding : bindings) {
                     if (binding.jsonPath.match(currentPosition)) {
                         if (onPrimitive) {
                             for (JsonPathListener listener : binding.listeners) {
@@ -286,7 +137,7 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
                                 try {
                                     listener.onValue(primitive, this);
                                 } catch (Exception e) {
-                                    errorHandlingStrategy.handleExceptionFromListener(e, this);
+                                    config.getErrorHandlingStrategy().handleExceptionFromListener(e, this);
                                 }
                             }
                         } else {
@@ -301,8 +152,8 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
         }
 
         if (listeners != null) {
-            JsonCollector collector = new JsonCollector(listeners, this, errorHandlingStrategy);
-            collector.setProvider(jsonProvider);
+            JsonCollector collector = new JsonCollector(listeners, this, config.getErrorHandlingStrategy());
+            collector.setProvider(config.getJsonProvider());
             if (initializeCollector) {
                 collector.startJSON();
             }
@@ -403,18 +254,11 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
     }
 
     JsonProvider getJsonProvider() {
-        return jsonProvider;
-    }
-
-    void setJsonProvider(JsonProvider jsonProvider) {
-        this.jsonProvider = jsonProvider;
+        return this.config.getJsonProvider();
     }
 
     ErrorHandlingStrategy getErrorHandlingStrategy() {
-        return errorHandlingStrategy;
+        return this.config.getErrorHandlingStrategy();
     }
 
-    void setErrorHandlingStrategy(ErrorHandlingStrategy errorHandlingStrategy) {
-        this.errorHandlingStrategy = errorHandlingStrategy;
-    }
 }

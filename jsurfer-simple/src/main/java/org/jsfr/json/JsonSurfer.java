@@ -24,14 +24,13 @@
 
 package org.jsfr.json;
 
-import org.jsfr.json.SurfingContext.Builder;
 import org.jsfr.json.path.JsonPath;
 
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Collection;
 
-import static org.jsfr.json.SurfingContext.builder;
+import static org.jsfr.json.SurfingConfiguration.builder;
 import static org.jsfr.json.compiler.JsonPathCompiler.compile;
 
 
@@ -87,17 +86,17 @@ public class JsonSurfer {
         this.errorHandlingStrategy = errorHandlingStrategy;
     }
 
-    public void surf(String json, SurfingContext context) {
-        surf(new StringReader(json), context);
+    public void surf(String json, SurfingConfiguration configuration) {
+        surf(new StringReader(json), configuration);
     }
 
     /**
      * @param reader  Json source
-     * @param context SurfingContext that holds JsonPath binding
+     * @param configuration SurfingConfiguration that holds JsonPath binding
      */
-    public void surf(Reader reader, SurfingContext context) {
-        ensureSetting(context);
-        jsonParserAdapter.parse(reader, context);
+    public void surf(Reader reader, SurfingConfiguration configuration) {
+        ensureSetting(configuration);
+        jsonParserAdapter.parse(reader, new SurfingContext(configuration));
     }
 
     public Collection<Object> collectAll(String json, JsonPath... paths) {
@@ -130,7 +129,7 @@ public class JsonSurfer {
      */
     public <T> Collection<T> collectAll(Reader reader, Class<T> tClass, JsonPath... paths) {
         CollectAllListener<T> listener = new CollectAllListener<T>(jsonProvider, tClass);
-        Builder builder = builder();
+        SurfingConfiguration.Builder builder = builder();
         for (JsonPath jsonPath : paths) {
             builder.bind(jsonPath, listener);
         }
@@ -201,7 +200,7 @@ public class JsonSurfer {
     @SuppressWarnings("unchecked")
     public <T> T collectOne(Reader reader, Class<T> tClass, JsonPath... paths) {
         CollectOneListener listener = new CollectOneListener();
-        Builder builder = builder().skipOverlappedPath();
+        SurfingConfiguration.Builder builder = builder().skipOverlappedPath();
         for (JsonPath jsonPath : paths) {
             builder.bind(jsonPath, listener);
         }
@@ -242,12 +241,12 @@ public class JsonSurfer {
         return collectOne(reader, Object.class, paths);
     }
 
-    private void ensureSetting(SurfingContext context) {
-        if (context.getJsonProvider() == null) {
-            context.setJsonProvider(jsonProvider);
+    private void ensureSetting(SurfingConfiguration configuration) {
+        if (configuration.getJsonProvider() == null) {
+            configuration.setJsonProvider(jsonProvider);
         }
-        if (context.getErrorHandlingStrategy() == null) {
-            context.setErrorHandlingStrategy(errorHandlingStrategy);
+        if (configuration.getErrorHandlingStrategy() == null) {
+            configuration.setErrorHandlingStrategy(errorHandlingStrategy);
         }
     }
 
