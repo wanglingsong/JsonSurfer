@@ -97,37 +97,33 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         LinkedList<JsonPathListener> listeners = null;
 
         int currentDepth = currentPosition.pathDepth();
-        if (config.getIndefinitePathLookup() != null) {
-            for (SurfingConfiguration.IndefinitePathBinding binding : config.getIndefinitePathLookup()) {
-                if (binding.minimumPathDepth <= currentDepth) {
-                    if (binding.jsonPath.match(currentPosition)) {
-                        if (onPrimitive) {
-                            for (JsonPathListener listener : binding.listeners) {
-                                if (isStopped()) {
-                                    break;
-                                }
-                                try {
-                                    listener.onValue(primitive, this);
-                                } catch (Exception e) {
-                                    config.getErrorHandlingStrategy().handleExceptionFromListener(e, this);
-                                }
+        for (SurfingConfiguration.IndefinitePathBinding binding : config.getIndefinitePathLookup()) {
+            if (binding.minimumPathDepth <= currentDepth) {
+                if (binding.jsonPath.match(currentPosition)) {
+                    if (onPrimitive) {
+                        for (JsonPathListener listener : binding.listeners) {
+                            if (isStopped()) {
+                                break;
                             }
-                        } else {
-                            if (listeners == null) {
-                                listeners = new LinkedList<JsonPathListener>();
+                            try {
+                                listener.onValue(primitive, this);
+                            } catch (Exception e) {
+                                config.getErrorHandlingStrategy().handleExceptionFromListener(e, this);
                             }
-                            Collections.addAll(listeners, binding.listeners);
                         }
+                    } else {
+                        if (listeners == null) {
+                            listeners = new LinkedList<JsonPathListener>();
+                        }
+                        Collections.addAll(listeners, binding.listeners);
                     }
-                } else {
-                    break;
                 }
+            } else {
+                break;
             }
         }
-        // TODO use config.withinRange(currentDepth)
-        if (config.getDefinitePathLookup() != null && !(currentDepth < config.getMinDepth() || currentDepth > config.getMaxDepth())) {
-            // TODO use config.getDefinitePathBind(currentDepth) instead
-            SurfingConfiguration.Binding[] bindings = config.getDefinitePathLookup()[currentDepth - config.getMinDepth()];
+        if (config.hasDefinitePath() && config.withinRange(currentDepth)) {
+            SurfingConfiguration.Binding[] bindings = config.getDefinitePathBind(currentDepth);
             if (bindings != null) {
                 for (SurfingConfiguration.Binding binding : bindings) {
                     if (binding.jsonPath.match(currentPosition)) {

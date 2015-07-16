@@ -27,6 +27,7 @@ package org.jsfr.json;
 import org.jsfr.json.path.JsonPath;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -87,7 +88,7 @@ public class SurfingConfiguration {
         public SurfingConfiguration build() {
             if (!indefiniteBindings.isEmpty()) {
                 Collections.sort(indefiniteBindings);
-                configuration.indefinitePathLookup = indefiniteBindings.toArray(new IndefinitePathBinding[indefiniteBindings.size()]);
+                configuration.indefinitePathLookup = Collections.unmodifiableList(indefiniteBindings);
             }
             if (!definiteBindings.isEmpty()) {
                 configuration.definitePathLookup = new Binding[configuration.maxDepth - configuration.minDepth + 1][];
@@ -172,7 +173,7 @@ public class SurfingConfiguration {
     private Binding[][] definitePathLookup;
 
     // sorted by minimum path depth
-    private IndefinitePathBinding[] indefinitePathLookup;
+    private Collection<IndefinitePathBinding> indefinitePathLookup = Collections.emptyList();
 
     private JsonProvider jsonProvider;
     private ErrorHandlingStrategy errorHandlingStrategy;
@@ -189,13 +190,11 @@ public class SurfingConfiguration {
         return skipOverlappedPath;
     }
 
-    // TODO remove it
-    Binding[][] getDefinitePathLookup() {
-        return definitePathLookup;
+    public boolean hasDefinitePath() {
+        return definitePathLookup != null;
     }
 
-    // TODO remove it
-    IndefinitePathBinding[] getIndefinitePathLookup() {
+    public Collection<IndefinitePathBinding> getIndefinitePathLookup() {
         return indefinitePathLookup;
     }
 
@@ -216,12 +215,10 @@ public class SurfingConfiguration {
     }
 
     public boolean withinRange(int currentDepth) {
-        // TODO
-        return false;
+        return minDepth <= currentDepth && currentDepth <= maxDepth;
     }
 
     public Binding[] getDefinitePathBind(int currentDepth) {
-        // TODO
-        return null;
+        return this.definitePathLookup[currentDepth - minDepth];
     }
 }
