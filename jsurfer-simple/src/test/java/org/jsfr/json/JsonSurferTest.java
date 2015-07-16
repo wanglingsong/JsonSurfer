@@ -365,46 +365,6 @@ public class JsonSurferTest {
     }
 
     @Test
-    public void performanceTest() throws Exception {
-//        for (int i=0;i < 1000;i++) {
-        Builder builder = context();
-        final AtomicLong counter = new AtomicLong();
-        JsonPathListener printListener = new JsonPathListener() {
-
-            @Override
-            public void onValue(Object value, ParsingContext context) {
-                counter.incrementAndGet();
-                LOGGER.trace("value: {}", value);
-            }
-        };
-        builder.bind("$.builders.*.properties", printListener).skipOverlappedPath();
-        long start = System.currentTimeMillis();
-        surfer.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), builder.build());
-        LOGGER.info(this.getClass().getSimpleName() + " processes {} value in {} millisecond", counter.get(), System.currentTimeMillis()
-                - start);
-//        }
-    }
-
-    @Test
-    public void performanceTestWithDeepScanOperator() throws Exception {
-//        for (int i=0;i < 1000;i++) {
-        Builder builder = context();
-        final AtomicLong counter = new AtomicLong();
-        JsonPathListener printListener = new JsonPathListener() {
-            @Override
-            public void onValue(Object value, ParsingContext context) {
-                counter.incrementAndGet();
-                LOGGER.trace("value: {}", value);
-            }
-        };
-        builder.bind("$.builders..properties", printListener);
-        long start = System.currentTimeMillis();
-        surfer.surf(new InputStreamReader(Resources.getResource("allthethings.json").openStream()), builder.build());
-        LOGGER.info(this.getClass().getSimpleName() + " with deep scan processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);
-//        }
-    }
-
-    @Test
     public void testErrorStrategySuppressException() throws Exception {
         Builder builder = context();
         JsonPathListener mock = mock(JsonPathListener.class);

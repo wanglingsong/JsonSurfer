@@ -122,28 +122,26 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
                 break;
             }
         }
-        if (config.hasDefinitePath() && config.withinRange(currentDepth)) {
-            SurfingConfiguration.Binding[] bindings = config.getDefinitePathBind(currentDepth);
-            if (bindings != null) {
-                for (SurfingConfiguration.Binding binding : bindings) {
-                    if (binding.jsonPath.match(currentPosition)) {
-                        if (onPrimitive) {
-                            for (JsonPathListener listener : binding.listeners) {
-                                if (isStopped()) {
-                                    break;
-                                }
-                                try {
-                                    listener.onValue(primitive, this);
-                                } catch (Exception e) {
-                                    config.getErrorHandlingStrategy().handleExceptionFromListener(e, this);
-                                }
+        SurfingConfiguration.Binding[] bindings = config.getDefinitePathBind(currentDepth);
+        if (bindings != null) {
+            for (SurfingConfiguration.Binding binding : bindings) {
+                if (binding.jsonPath.match(currentPosition)) {
+                    if (onPrimitive) {
+                        for (JsonPathListener listener : binding.listeners) {
+                            if (isStopped()) {
+                                break;
                             }
-                        } else {
-                            if (listeners == null) {
-                                listeners = new LinkedList<JsonPathListener>();
+                            try {
+                                listener.onValue(primitive, this);
+                            } catch (Exception e) {
+                                config.getErrorHandlingStrategy().handleExceptionFromListener(e, this);
                             }
-                            Collections.addAll(listeners, binding.listeners);
                         }
+                    } else {
+                        if (listeners == null) {
+                            listeners = new LinkedList<JsonPathListener>();
+                        }
+                        Collections.addAll(listeners, binding.listeners);
                     }
                 }
             }

@@ -219,6 +219,10 @@ public class SurfingConfiguration {
     }
 
     public Binding[] getDefinitePathBind(int currentDepth) {
-        return this.definitePathLookup[currentDepth - minDepth];
+        if (this.definitePathLookup != null && withinRange(currentDepth)) {
+            return this.definitePathLookup[currentDepth - minDepth];
+        } else {
+            return null;
+        }
     }
 }
