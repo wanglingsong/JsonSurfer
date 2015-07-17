@@ -37,10 +37,21 @@ import java.io.Reader;
 public class JacksonParser implements JsonParserAdapter {
 
     @Override
-    public void parse(Reader reader, SurfingContext context) {
+    public void parse(Reader reader, final SurfingContext context) {
         try {
             JsonFactory f = new JsonFactory();
-            JsonParser jp = f.createParser(reader);
+            final JsonParser jp = f.createParser(reader);
+
+            AbstractPrimitiveHolder stringHolder = new AbstractPrimitiveHolder(context.getErrorHandlingStrategy()) {
+                @Override
+                public Object doGetValue() throws Exception {
+                    return context.getJsonProvider().primitive(jp.getText());
+                }
+                @Override
+                public void doSkipValue() throws Exception {
+                }
+            };
+
             context.startJSON();
             while (true) {
                 JsonToken token = jp.nextToken();
@@ -79,9 +90,11 @@ public class JacksonParser implements JsonParserAdapter {
                     case VALUE_EMBEDDED_OBJECT:
                         throw new IllegalStateException("Unexpected token");
                     case VALUE_STRING:
-                        if (!context.primitive(context.getJsonProvider().primitive(jp.getText()))) {
+                        stringHolder.init();
+                        if (!context.primitive(stringHolder)) {
                             return;
                         }
+                        stringHolder.skipValue();
                         break;
                     case VALUE_NUMBER_INT:
                         if (!context.primitive(context.getJsonProvider().primitive(jp.getIntValue()))) {

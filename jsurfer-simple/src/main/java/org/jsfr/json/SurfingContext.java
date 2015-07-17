@@ -26,15 +26,11 @@ package org.jsfr.json;
 
 import org.jsfr.json.path.ArrayIndex;
 import org.jsfr.json.path.ChildNode;
-import org.jsfr.json.path.JsonPath;
 import org.jsfr.json.path.PathOperator;
 import org.jsfr.json.path.PathOperator.Type;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 
 import static org.jsfr.json.compiler.JsonPathCompiler.compile;
 
@@ -90,6 +86,9 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     }
 
     private void doMatching(boolean initializeCollector, boolean onPrimitive, Object primitive) {
+
+        // TODO Refactor matching logic
+
         // skip matching if "skipOverlappedPath" is enable
         if (config.isSkipOverlappedPath() && !this.dispatcher.isEmpty()) {
             return;
@@ -211,6 +210,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     @Override
     public boolean primitive(final Object value) {
+        // TODO Refactor matching logic
         if (stopped) {
             return false;
         }
@@ -222,6 +222,23 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
             currentPosition.stepOut();
         }
         dispatcher.primitive(value);
+        return true;
+    }
+
+    public boolean primitive(PrimitiveHolder primitiveHolder) {
+        if (stopped) {
+            return false;
+        }
+        PathOperator top = currentPosition.peek();
+        if (top.getType() == Type.ARRAY) {
+            ((ArrayIndex) top).increaseArrayIndex();
+            doMatching(true, true, primitiveHolder.getValue());
+        } else if (top.getType() == Type.OBJECT) {
+            currentPosition.stepOut();
+        }
+        if (!dispatcher.isEmpty()) {
+            dispatcher.primitive(primitiveHolder.getValue());
+        }
         return true;
     }
 

@@ -71,9 +71,9 @@ public class GsonParserTest extends JsonSurferTest {
             Map element = gson.fromJson(reader, Map.class);
             Object value = ((Map) element.get("properties")).get("branch");
             counter.incrementAndGet();
-            JsonSurferTest.LOGGER.trace("JsonPath: {} value: {}", reader.getPath(), value);
+            LOGGER.trace("JsonPath: {} value: {}", reader.getPath(), value);
         }
-        JsonSurferTest.LOGGER.info("Gson processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);
+        LOGGER.info("Gson processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);
     }
 
     @Test
