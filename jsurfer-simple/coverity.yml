@@ -9,7 +9,9 @@ triage:
     - action: suppress
       issueKey: 5795887bb1b316b70597e2c98d4838b3
       comment: JsonPath won't be access by multiple threads
-
-filters:
-    # suppress occurrences of a matching issue type everywhere (implicit)
-    - issueType: "Missing super call"
+    - action: suppress
+      issueKey: 72adbd3fe13167b293c82168ccf11ad7
+      comment: Need to customize super call
+    - action: suppress
+      issueKey: 68fc8daf339d144b30db46764fe09ef8
+      comment: Need to customize super call
