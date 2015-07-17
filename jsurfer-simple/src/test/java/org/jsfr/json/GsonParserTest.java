@@ -30,7 +30,10 @@ import com.google.gson.stream.JsonReader;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -49,11 +52,15 @@ public class GsonParserTest extends JsonSurferTest {
         surfer = new JsonSurfer(GsonParser.INSTANCE, provider);
     }
 
+    private Reader read(String resourceName) throws IOException {
+        return new InputStreamReader(Resources.getResource(resourceName).openStream(), StandardCharsets.UTF_8);
+    }
+
     @Test
     public void testLargeJsonRawGson() throws Exception {
         final AtomicLong counter = new AtomicLong();
         Gson gson = new Gson();
-        JsonReader reader = new JsonReader(new InputStreamReader(Resources.getResource("allthethings.json").openStream(), "UTF-8"));
+        JsonReader reader = new JsonReader(read("allthethings.json"));
         long start = System.currentTimeMillis();
         reader.beginObject();
         reader.nextName();
@@ -71,14 +78,14 @@ public class GsonParserTest extends JsonSurferTest {
 
     @Test
     public void testGsonTypeBindingOne() throws Exception {
-        InputStreamReader reader = new InputStreamReader(Resources.getResource("sample.json").openStream());
+        Reader reader = read("sample.json");
         Book book = surfer.collectOne(reader, Book.class, "$..book[1]");
         assertEquals("Evelyn Waugh", book.getAuthor());
     }
 
     @Test
     public void testGsonTypeBindingCollection() throws Exception {
-        InputStreamReader reader = new InputStreamReader(Resources.getResource("sample.json").openStream());
+        Reader reader = read("sample.json");
         Collection<Book> book = surfer.collectAll(reader, Book.class, "$..book[0,1]");
         assertEquals(2, book.size());
         assertEquals("Nigel Rees", book.iterator().next().getAuthor());

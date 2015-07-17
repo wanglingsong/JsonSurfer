@@ -34,6 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -74,14 +75,14 @@ public class JacksonParserTest extends JsonSurferTest {
 
     @Test
     public void testJacksonTypeBindingOne() throws Exception {
-        InputStreamReader reader = new InputStreamReader(Resources.getResource("sample.json").openStream());
+        InputStreamReader reader = new InputStreamReader(Resources.getResource("sample.json").openStream(), StandardCharsets.UTF_8);
         Book book = surfer.collectOne(reader, Book.class, "$..book[1]");
         assertEquals("Evelyn Waugh", book.getAuthor());
     }
 
     @Test
     public void testJacksonTypeBindingCollection() throws Exception {
-        InputStreamReader reader = new InputStreamReader(Resources.getResource("sample.json").openStream());
+        InputStreamReader reader = new InputStreamReader(Resources.getResource("sample.json").openStream(), StandardCharsets.UTF_8);
         Collection<Book> book = surfer.collectAll(reader, Book.class, "$..book[0,1]");
         assertEquals(2, book.size());
         assertEquals("Nigel Rees", book.iterator().next().getAuthor());

@@ -1,0 +1,15 @@
+configurationVersion: 1
+
+stream: JsonSurfer
+
+triage:
+    - action: suppress
+      issueKey: 769e6ab834d42e27e7bf63f563e298c2
+      comment: No need to check mock class
+    - action: suppress
+      issueKey: 5795887bb1b316b70597e2c98d4838b3
+      comment: JsonPath won't be access by multiple threads
+
+filters:
+    # suppress occurrences of a matching issue type everywhere (implicit)
+    - issueType: "Missing super call"

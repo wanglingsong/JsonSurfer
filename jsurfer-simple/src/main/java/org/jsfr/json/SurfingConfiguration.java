@@ -29,6 +29,7 @@ import org.jsfr.json.path.JsonPath;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,7 +58,7 @@ public class SurfingConfiguration {
 
     }
 
-    public static class IndefinitePathBinding extends Binding implements Comparable<IndefinitePathBinding> {
+    public static class IndefinitePathBinding extends Binding {
 
         int minimumPathDepth;
 
@@ -66,18 +67,14 @@ public class SurfingConfiguration {
             this.minimumPathDepth = minimumPathDepth;
         }
 
-        @Override
-        public int compareTo(IndefinitePathBinding o) {
-            if (minimumPathDepth < o.minimumPathDepth) {
-                return -1;
-            } else if (minimumPathDepth > o.minimumPathDepth) {
-                return 1;
-            } else {
-                return 0;
-            }
-        }
-
     }
+
+    private static final Comparator<IndefinitePathBinding> INDEFINITE_BINDING_COMPARATOR = new Comparator<IndefinitePathBinding>() {
+        @Override
+        public int compare(IndefinitePathBinding o1, IndefinitePathBinding o2) {
+            return Integer.compare(o1.minimumPathDepth, o2.minimumPathDepth);
+        }
+    };
 
     public static class Builder {
 
@@ -87,7 +84,7 @@ public class SurfingConfiguration {
 
         public SurfingConfiguration build() {
             if (!indefiniteBindings.isEmpty()) {
-                Collections.sort(indefiniteBindings);
+                Collections.sort(indefiniteBindings, INDEFINITE_BINDING_COMPARATOR);
                 configuration.indefinitePathLookup = Collections.unmodifiableList(indefiniteBindings);
             }
             if (!definiteBindings.isEmpty()) {
