@@ -29,10 +29,6 @@ package org.jsfr.json;
  */
 public interface PrimitiveHolder {
 
-    void init();
-
     Object getValue();
-
-    void skipValue();
 
 }

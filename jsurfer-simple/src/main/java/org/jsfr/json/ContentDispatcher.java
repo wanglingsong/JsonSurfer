@@ -136,14 +136,14 @@ class ContentDispatcher implements JsonSaxHandler {
     }
 
     @Override
-    public boolean primitive(Object value) {
+    public boolean primitive(PrimitiveHolder primitiveHolder) {
         if (receiver.isEmpty()) {
             return true;
         }
         Iterator<JsonSaxHandler> itr = receiver.iterator();
         while (itr.hasNext()) {
             JsonSaxHandler observer = itr.next();
-            if (!observer.primitive(value)) {
+            if (!observer.primitive(primitiveHolder)) {
                 itr.remove();
             }
         }

@@ -1,8 +1,7 @@
-// Generated from JsonPath.g4 by ANTLR 4.5
+// Generated from JsonPath.g4 by ANTLR 4.5.1
 
 package org.jsfr.json.compiler;
 
-import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**

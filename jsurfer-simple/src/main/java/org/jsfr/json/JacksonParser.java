@@ -41,16 +41,39 @@ public class JacksonParser implements JsonParserAdapter {
         try {
             JsonFactory f = new JsonFactory();
             final JsonParser jp = f.createParser(reader);
+            final JsonProvider jsonProvider = context.getConfig().getJsonProvider();
 
-            AbstractPrimitiveHolder stringHolder = new AbstractPrimitiveHolder(context.getErrorHandlingStrategy()) {
+            AbstractPrimitiveHolder stringHolder = new AbstractPrimitiveHolder(context.getConfig()) {
                 @Override
                 public Object doGetValue() throws Exception {
-                    return context.getJsonProvider().primitive(jp.getText());
+                    return jsonProvider.primitive(jp.getText());
                 }
+
                 @Override
                 public void doSkipValue() throws Exception {
                 }
             };
+            AbstractPrimitiveHolder intHolder = new AbstractPrimitiveHolder(context.getConfig()) {
+                @Override
+                public Object doGetValue() throws Exception {
+                    return jsonProvider.primitive(jp.getIntValue());
+                }
+
+                @Override
+                public void doSkipValue() throws Exception {
+                }
+            };
+            AbstractPrimitiveHolder doubleHolder = new AbstractPrimitiveHolder(context.getConfig()) {
+                @Override
+                public Object doGetValue() throws Exception {
+                    return jsonProvider.primitive(jp.getDoubleValue());
+                }
+
+                @Override
+                public void doSkipValue() throws Exception {
+                }
+            };
+            StaticPrimitiveHolder staticPrimitiveHolder = new StaticPrimitiveHolder();
 
             context.startJSON();
             while (true) {
@@ -97,34 +120,38 @@ public class JacksonParser implements JsonParserAdapter {
                         stringHolder.skipValue();
                         break;
                     case VALUE_NUMBER_INT:
-                        if (!context.primitive(context.getJsonProvider().primitive(jp.getIntValue()))) {
+                        intHolder.init();
+                        if (!context.primitive(intHolder)) {
                             return;
                         }
+                        intHolder.skipValue();
                         break;
                     case VALUE_NUMBER_FLOAT:
-                        if (!context.primitive(context.getJsonProvider().primitive(jp.getDoubleValue()))) {
+                        doubleHolder.init();
+                        if (!context.primitive(doubleHolder)) {
                             return;
                         }
+                        doubleHolder.skipValue();
                         break;
                     case VALUE_TRUE:
-                        if (!context.primitive(context.getJsonProvider().primitive(true))) {
+                        if (!context.primitive(staticPrimitiveHolder.withValue(jsonProvider.primitive(true)))) {
                             return;
                         }
                         break;
                     case VALUE_FALSE:
-                        if (!context.primitive(context.getJsonProvider().primitive(false))) {
+                        if (!context.primitive(staticPrimitiveHolder.withValue(jsonProvider.primitive(false)))) {
                             return;
                         }
                         break;
                     case VALUE_NULL:
-                        if (!context.primitive(context.getJsonProvider().primitiveNull())) {
+                        if (!context.primitive(staticPrimitiveHolder.withValue(jsonProvider.primitiveNull()))) {
                             return;
                         }
                         break;
                 }
             }
         } catch (IOException e) {
-            context.getErrorHandlingStrategy().handleParsingException(e);
+            context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
         }
     }
 

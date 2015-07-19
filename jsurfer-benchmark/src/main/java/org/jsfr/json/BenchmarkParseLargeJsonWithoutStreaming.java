@@ -29,15 +29,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -48,88 +53,61 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by lwang on 16/7/2015.
+ * Created by Administrator on 2015/7/20 0020.
  */
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Threads(1)
 @Fork(1)
 @State(Scope.Benchmark)
-public class BenchmarkCollectSingleValue {
+public class BenchmarkParseLargeJsonWithoutStreaming {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkCollectSingleValue.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkParseLargeJsonWithoutStreaming.class);
 
     private Gson gson;
     private ObjectMapper om;
-    private JsonSurfer gsonSurfer;
-    private JsonSurfer jacksonSurfer;
-    private JsonSurfer simpleSurfer;
-    private SurfingConfiguration surfingConfiguration;
-    private CollectOneListener collectOneListener;
     private String json;
+    private Blackhole blackhole;
 
     @Setup
-    public void setup() throws Exception {
+    public void setup() throws IOException {
         gson = new GsonBuilder().create();
         om = new ObjectMapper();
-        gsonSurfer = JsonSurfer.gson();
-        jacksonSurfer = JsonSurfer.jackson();
-        simpleSurfer = JsonSurfer.simple();
-        collectOneListener = new CollectOneListener();
-        surfingConfiguration = SurfingConfiguration.builder().bind("$.store.book[3].author", collectOneListener).build();
-        json = Resources.toString(Resources.getResource("sample.json"), StandardCharsets.UTF_8);
+        blackhole = new Blackhole();
+        json = Resources.toString(Resources.getResource("allthethings.json"), StandardCharsets.UTF_8);
     }
 
     @Benchmark
-    public Object benchmarkGsonSurferCollectSingleValue() {
-        gsonSurfer.surf(json, surfingConfiguration);
-        Object value = collectOneListener.getValue();
-        LOGGER.trace("The author of the first book: {}", value);
-        return value;
+    public void benchmarkRawGson() {
+        JsonObject root = gson.fromJson(json, JsonObject.class);
+        JsonObject builders = root.getAsJsonObject("builders");
+        for (Map.Entry<String, JsonElement> entry : builders.entrySet()) {
+            JsonElement value = entry.getValue().getAsJsonObject().get("properties");
+            blackhole.consume(value);
+            LOGGER.trace("json element: {}", value);
+        }
     }
 
     @Benchmark
-    public Object benchmarkJacksonSurferCollectSingleValue() {
-        jacksonSurfer.surf(json, surfingConfiguration);
-        Object value = collectOneListener.getValue();
-        LOGGER.trace("The author of the first book: {}", value);
-        return value;
-    }
-
-    @Benchmark
-    public Object benchmarkSimpleSurferCollectSingleValue() {
-        simpleSurfer.surf(json, surfingConfiguration);
-        Object value = collectOneListener.getValue();
-        LOGGER.trace("The author of the first book: {}", value);
-        return value;
-    }
-
-    @Benchmark
-    public Object benchmarkGsonCollectSingleValue() {
-        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
-        String value = jsonObject.getAsJsonObject("store").getAsJsonArray("book").get(3).getAsJsonObject().getAsJsonPrimitive("author").getAsString();
-        LOGGER.trace("The author of the first book: {}", value);
-        return value;
-    }
-
-    @Benchmark
-    public Object benchmarkJacksonCollectSingleValue() throws IOException {
-        JsonNode jsonNode = om.readTree(json);
-        Iterator<JsonNode> books = jsonNode.get("store").get("book").elements();
-        books.next();
-        books.next();
-        books.next();
-        String value = books.next().get("author").asText();
-        LOGGER.trace("The author of the first book: {}", value);
-        return value;
+    public void benchmarkRawJackson() throws IOException {
+        JsonNode node = om.readTree(json);
+        Iterator<JsonNode> iterator = node.get("builders").elements();
+        while (iterator.hasNext()) {
+            JsonNode value = iterator.next().get("properties");
+            LOGGER.trace("json element: {}", value);
+            blackhole.consume(value);
+        }
     }
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(BenchmarkCollectSingleValue.class.getSimpleName())
+                .include(BenchmarkParseLargeJsonWithoutStreaming.class.getSimpleName())
                 .build();
         new Runner(opt).run();
     }

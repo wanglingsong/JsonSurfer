@@ -161,8 +161,8 @@ public class JsonDomBuilder implements JsonSaxHandler {
 
 
     @Override
-    public boolean primitive(Object value) {
-        consumePrimitive(value);
+    public boolean primitive(PrimitiveHolder primitiveHolder) {
+        consumePrimitive(primitiveHolder.getValue());
         return true;
     }
 

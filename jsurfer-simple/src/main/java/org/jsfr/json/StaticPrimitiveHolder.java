@@ -24,17 +24,21 @@
 
 package org.jsfr.json;
 
-import java.io.Reader;
-
 /**
- * Created by Leo on 2015/4/2.
+ * Created by Administrator on 2015/7/18 0018.
  */
-public interface JsonParserAdapter {
+public class StaticPrimitiveHolder implements PrimitiveHolder {
 
-    /**
-     * @param reader  reader
-     * @param context SurfingContext
-     */
-    void parse(Reader reader, SurfingContext context);
+    private Object value;
+
+    @Override
+    public Object getValue() {
+        return value;
+    }
+
+    public StaticPrimitiveHolder withValue(Object value) {
+        this.value = value;
+        return this;
+    }
 
 }

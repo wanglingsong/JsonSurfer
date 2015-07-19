@@ -45,7 +45,7 @@ public interface JsonSaxHandler {
     boolean startObject();
 
     /**
-     * @param key
+     * @param key Entry key
      * @return Return false to stop the parsing immediately
      */
     boolean startObjectEntry(String key);
@@ -66,9 +66,9 @@ public interface JsonSaxHandler {
     boolean endArray();
 
     /**
-     * @param object The primitive
+     * @param primitiveHolder PrimitiveHolder
      * @return Return false to stop the parsing immediately
      */
-    boolean primitive(Object object);
+    boolean primitive(PrimitiveHolder primitiveHolder);
 
 }

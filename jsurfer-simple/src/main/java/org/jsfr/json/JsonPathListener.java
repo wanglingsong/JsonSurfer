@@ -30,9 +30,9 @@ package org.jsfr.json;
 public interface JsonPathListener {
 
     /**
-     * @param value the value of json node that matches bound JsonPath
+     * @param value   the value of json node that matches bound JsonPath
      * @param context parsing context
-     * @throws Exception
+     * @throws Exception exception
      */
     void onValue(Object value, ParsingContext context) throws Exception;
 

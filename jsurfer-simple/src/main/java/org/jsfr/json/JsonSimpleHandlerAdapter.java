@@ -35,6 +35,7 @@ import java.io.IOException;
 public class JsonSimpleHandlerAdapter implements ContentHandler {
 
     private JsonSaxHandler jsonSaxHandler;
+    private StaticPrimitiveHolder staticPrimitiveHolder = new StaticPrimitiveHolder();
 
     public JsonSimpleHandlerAdapter(JsonSaxHandler jsonSaxHandler) {
         this.jsonSaxHandler = jsonSaxHandler;
@@ -82,6 +83,6 @@ public class JsonSimpleHandlerAdapter implements ContentHandler {
 
     @Override
     public boolean primitive(Object value) throws ParseException, IOException {
-        return jsonSaxHandler.primitive(value);
+        return jsonSaxHandler.primitive(staticPrimitiveHolder.withValue(value));
     }
 }

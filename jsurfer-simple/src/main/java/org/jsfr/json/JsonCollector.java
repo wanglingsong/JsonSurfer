@@ -82,7 +82,7 @@ class JsonCollector extends JsonDomBuilder {
     }
 
     @Override
-    public boolean primitive(Object value) {
+    public boolean primitive(PrimitiveHolder value) {
         super.primitive(value);
         if (isInRoot()) {
             Object result = getCurrentNode();

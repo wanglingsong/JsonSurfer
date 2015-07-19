@@ -66,8 +66,8 @@ public class JsonSurfer {
     }
 
     /**
-     * @param jsonParserAdapter
-     * @param jsonProvider
+     * @param jsonParserAdapter jsonParserAdapter
+     * @param jsonProvider      jsonProvider
      */
     public JsonSurfer(JsonParserAdapter jsonParserAdapter, JsonProvider jsonProvider) {
         this.jsonParserAdapter = jsonParserAdapter;
@@ -76,9 +76,9 @@ public class JsonSurfer {
     }
 
     /**
-     * @param jsonParserAdapter
-     * @param jsonProvider
-     * @param errorHandlingStrategy
+     * @param jsonParserAdapter     jsonParserAdapter
+     * @param jsonProvider          jsonProvider
+     * @param errorHandlingStrategy errorHandlingStrategy
      */
     public JsonSurfer(JsonParserAdapter jsonParserAdapter, JsonProvider jsonProvider, ErrorHandlingStrategy errorHandlingStrategy) {
         this.jsonProvider = jsonProvider;
@@ -91,7 +91,7 @@ public class JsonSurfer {
     }
 
     /**
-     * @param reader  Json source
+     * @param reader        Json source
      * @param configuration SurfingConfiguration that holds JsonPath binding
      */
     public void surf(Reader reader, SurfingConfiguration configuration) {
@@ -106,7 +106,7 @@ public class JsonSurfer {
     /**
      * Collect all matched value into a collection
      *
-     * @param reader
+     * @param reader Json reader
      * @param paths  JsonPath
      * @return All matched value
      */
@@ -121,11 +121,11 @@ public class JsonSurfer {
     /**
      * Collect all matched value into a collection
      *
-     * @param reader
-     * @param tClass
-     * @param paths
-     * @param <T>
-     * @return
+     * @param reader Json reader
+     * @param tClass type
+     * @param paths  JsonPath
+     * @param <T>    type
+     * @return typed value
      */
     public <T> Collection<T> collectAll(Reader reader, Class<T> tClass, JsonPath... paths) {
         CollectAllListener<T> listener = new CollectAllListener<T>(jsonProvider, tClass);
@@ -144,11 +144,11 @@ public class JsonSurfer {
     /**
      * Collect all matched value into a collection
      *
-     * @param reader
-     * @param tClass
-     * @param paths
-     * @param <T>
-     * @return
+     * @param reader Json reader
+     * @param tClass type
+     * @param paths  JsonPath
+     * @param <T>    type
+     * @return typed value
      */
     public <T> Collection<T> collectAll(Reader reader, Class<T> tClass, String... paths) {
         return collectAll(reader, tClass, compile(paths));
@@ -161,9 +161,9 @@ public class JsonSurfer {
     /**
      * Collect all matched value into a collection
      *
-     * @param reader
-     * @param paths
-     * @return
+     * @param reader Json reader
+     * @param paths  JsonPath
+     * @return values
      */
     public Collection<Object> collectAll(Reader reader, String... paths) {
         return collectAll(reader, Object.class, paths);
@@ -176,8 +176,8 @@ public class JsonSurfer {
     /**
      * Collect the first matched value and stop parsing immediately
      *
-     * @param reader
-     * @param paths
+     * @param reader json reader
+     * @param paths  JsonPath
      * @return Matched value
      */
     public Object collectOne(Reader reader, JsonPath... paths) {
@@ -191,11 +191,11 @@ public class JsonSurfer {
     /**
      * Collect the first matched value and stop parsing immediately
      *
-     * @param reader
-     * @param tClass
-     * @param paths
-     * @param <T>
-     * @return
+     * @param reader Json reader
+     * @param tClass type
+     * @param paths  JsonPath
+     * @param <T>    type
+     * @return typed value
      */
     @SuppressWarnings("unchecked")
     public <T> T collectOne(Reader reader, Class<T> tClass, JsonPath... paths) {
@@ -216,11 +216,11 @@ public class JsonSurfer {
     /**
      * Collect the first matched value and stop parsing immediately
      *
-     * @param reader
-     * @param tClass
-     * @param paths
-     * @param <T>
-     * @return
+     * @param reader Json reader
+     * @param tClass type
+     * @param paths  JsonPath
+     * @param <T>    type
+     * @return typed value
      */
     public <T> T collectOne(Reader reader, Class<T> tClass, String... paths) {
         return collectOne(reader, tClass, compile(paths));
@@ -233,9 +233,9 @@ public class JsonSurfer {
     /**
      * Collect the first matched value and stop parsing immediately
      *
-     * @param reader
-     * @param paths
-     * @return
+     * @param reader Json reader
+     * @param paths  JsonPath
+     * @return Value
      */
     public Object collectOne(Reader reader, String... paths) {
         return collectOne(reader, Object.class, paths);

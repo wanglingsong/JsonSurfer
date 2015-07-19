@@ -31,13 +31,12 @@ public abstract class AbstractPrimitiveHolder implements PrimitiveHolder {
 
     private boolean executed = false;
     private Object value;
-    private ErrorHandlingStrategy errorHandlingStrategy;
+    private SurfingConfiguration surfingConfiguration;
 
-    public AbstractPrimitiveHolder(ErrorHandlingStrategy errorHandlingStrategy) {
-        this.errorHandlingStrategy = errorHandlingStrategy;
+    public AbstractPrimitiveHolder(SurfingConfiguration surfingConfiguration) {
+        this.surfingConfiguration = surfingConfiguration;
     }
 
-    @Override
     public void init() {
         this.executed = false;
         this.value = null;
@@ -52,20 +51,19 @@ public abstract class AbstractPrimitiveHolder implements PrimitiveHolder {
             try {
                 value = doGetValue();
             } catch (Exception e) {
-                errorHandlingStrategy.handleParsingException(e);
+                surfingConfiguration.getErrorHandlingStrategy().handleParsingException(e);
             }
             return value;
         }
     }
 
-    @Override
     public void skipValue() {
         if (!executed) {
             this.executed = true;
             try {
                 doSkipValue();
             } catch (Exception e) {
-                errorHandlingStrategy.handleParsingException(e);
+                surfingConfiguration.getErrorHandlingStrategy().handleParsingException(e);
             }
         }
     }

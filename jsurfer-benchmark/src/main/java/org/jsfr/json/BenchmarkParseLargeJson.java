@@ -25,7 +25,18 @@
 package org.jsfr.json;
 
 import com.google.common.io.Resources;
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Threads;
+import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -58,7 +69,6 @@ public class BenchmarkParseLargeJson {
     private JsonSurfer simpleSurfer;
     private JsonSurfer gsonSurfer;
     private JsonSurfer jacksonSurfer;
-    private JsonPathListener blackHoleListener;
     private SurfingConfiguration surfingConfiguration;
     private String json;
 
@@ -67,7 +77,7 @@ public class BenchmarkParseLargeJson {
         simpleSurfer = JsonSurfer.simple();
         gsonSurfer = JsonSurfer.gson();
         jacksonSurfer = JsonSurfer.jackson();
-        blackHoleListener = new JsonPathListener() {
+        JsonPathListener blackHoleListener = new JsonPathListener() {
             private Blackhole blackhole = new Blackhole();
 
             @Override

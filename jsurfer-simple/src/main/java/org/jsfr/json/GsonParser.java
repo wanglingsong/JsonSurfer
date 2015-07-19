@@ -26,58 +26,60 @@ package org.jsfr.json;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
-import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Stack;
 
 public class GsonParser implements JsonParserAdapter {
 
     public final static GsonParser INSTANCE = new GsonParser();
 
     @Override
-    public void parse(Reader reader, final SurfingContext context) {
+    public void parse(Reader reader, SurfingContext context) {
         try {
-            final JsonReader jsonReader = new JsonReader(reader);
             // TODO to correct behavior
+            final JsonReader jsonReader = new JsonReader(reader);
+            final JsonProvider jsonProvider = context.getConfig().getJsonProvider();
+            AbstractPrimitiveHolder stringHolder = new AbstractPrimitiveHolder(context.getConfig()) {
+                @Override
+                public Object doGetValue() throws Exception {
+                    return jsonProvider.primitive(jsonReader.nextString());
+                }
 
-            AbstractPrimitiveHolder stringHolder = new AbstractPrimitiveHolder(context.getErrorHandlingStrategy()) {
-                @Override
-                public Object doGetValue() throws Exception {
-                    return context.getJsonProvider().primitive(jsonReader.nextString());
-                }
                 @Override
                 public void doSkipValue() throws Exception {
                     jsonReader.skipValue();
                 }
             };
-            AbstractPrimitiveHolder numberHolder = new AbstractPrimitiveHolder(context.getErrorHandlingStrategy()) {
+            AbstractPrimitiveHolder numberHolder = new AbstractPrimitiveHolder(context.getConfig()) {
                 @Override
                 public Object doGetValue() throws Exception {
-                    return context.getJsonProvider().primitive(jsonReader.nextDouble());
+                    return jsonProvider.primitive(jsonReader.nextDouble());
                 }
+
                 @Override
                 public void doSkipValue() throws Exception {
                     jsonReader.skipValue();
                 }
             };
-            AbstractPrimitiveHolder booleanHolder = new AbstractPrimitiveHolder(context.getErrorHandlingStrategy()) {
+            AbstractPrimitiveHolder booleanHolder = new AbstractPrimitiveHolder(context.getConfig()) {
                 @Override
                 public Object doGetValue() throws Exception {
-                    return context.getJsonProvider().primitive(jsonReader.nextBoolean());
+                    return jsonProvider.primitive(jsonReader.nextBoolean());
                 }
+
                 @Override
                 public void doSkipValue() throws Exception {
                     jsonReader.skipValue();
                 }
             };
-            AbstractPrimitiveHolder nullHolder = new AbstractPrimitiveHolder(context.getErrorHandlingStrategy()) {
+            AbstractPrimitiveHolder nullHolder = new AbstractPrimitiveHolder(context.getConfig()) {
                 @Override
                 public Object doGetValue() throws Exception {
                     jsonReader.nextNull();
-                    return context.getJsonProvider().primitiveNull();
+                    return jsonProvider.primitiveNull();
                 }
+
                 @Override
                 public void doSkipValue() throws Exception {
                     jsonReader.skipValue();
@@ -151,7 +153,7 @@ public class GsonParser implements JsonParserAdapter {
                 }
             }
         } catch (IOException e) {
-            context.getErrorHandlingStrategy().handleParsingException(e);
+            context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
         }
     }
 
