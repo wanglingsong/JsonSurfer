@@ -37,7 +37,7 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 
 * JsonSurfer is available in cetral maven repository.
 
-![](https://travis-ci.org/jsurfer/JsonSurfer.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/jsurfer/JsonSurfer/badge.svg)](https://coveralls.io/r/jsurfer/JsonSurfer) [![Code Advisor On Demand Status](https://badges.ondemand.coverity.com/jobs/lvrn48tff10r9deqacgilusk3g)](https://ondemand.coverity.com/jobs/lvrn48tff10r9deqacgilusk3g/results)
+![](https://travis-ci.org/jsurfer/JsonSurfer.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/jsurfer/JsonSurfer/badge.svg)](https://coveralls.io/r/jsurfer/JsonSurfer) [![Code Advisor On Demand Status](https://badges.ondemand.coverity.com/jobs/dfv3uai2st0tfb9g7a9gnfkksc)](https://ondemand.coverity.com/jobs/dfv3uai2st0tfb9g7a9gnfkksc/results)
 ```xml
 <dependency>
     <groupId>com.github.jsurfer</groupId>
