@@ -2,6 +2,8 @@
 
 [![Join the chat at https://gitter.im/jsurfer/JsonSurfer](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jsurfer/JsonSurfer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+![](https://travis-ci.org/jsurfer/JsonSurfer.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/jsurfer/JsonSurfer/badge.svg)](https://coveralls.io/r/jsurfer/JsonSurfer) [![Code Advisor On Demand Status](https://badges.ondemand.coverity.com/jobs/dfv3uai2st0tfb9g7a9gnfkksc)](https://ondemand.coverity.com/jobs/dfv3uai2st0tfb9g7a9gnfkksc/results)
+
 ## Why JsonSurfer
 
 Jsonsurfer is dedicated in processing **big and complicated json** data with three major features.
@@ -37,7 +39,6 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 
 * JsonSurfer is available in cetral maven repository.
 
-![](https://travis-ci.org/jsurfer/JsonSurfer.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/jsurfer/JsonSurfer/badge.svg)](https://coveralls.io/r/jsurfer/JsonSurfer) [![Code Advisor On Demand Status](https://badges.ondemand.coverity.com/jobs/dfv3uai2st0tfb9g7a9gnfkksc)](https://ondemand.coverity.com/jobs/dfv3uai2st0tfb9g7a9gnfkksc/results)
 ```xml
 <dependency>
     <groupId>com.github.jsurfer</groupId>
