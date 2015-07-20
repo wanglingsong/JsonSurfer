@@ -43,7 +43,7 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-simple</artifactId>
-    <version>1.2.2</version>
+    <version>1.2.3</version>
 </dependency>
 ```
 
