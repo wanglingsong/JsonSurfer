@@ -85,7 +85,7 @@ public class SurfingConfiguration {
         public SurfingConfiguration build() {
             if (!indefiniteBindings.isEmpty()) {
                 Collections.sort(indefiniteBindings, INDEFINITE_BINDING_COMPARATOR);
-                configuration.indefinitePathLookup = Collections.unmodifiableList(indefiniteBindings);
+                configuration.indefinitePathLookup = indefiniteBindings.toArray(new IndefinitePathBinding[indefiniteBindings.size()]);
             }
             if (!definiteBindings.isEmpty()) {
                 configuration.definitePathLookup = new Binding[configuration.maxDepth - configuration.minDepth + 1][];
@@ -170,7 +170,7 @@ public class SurfingConfiguration {
     private Binding[][] definitePathLookup;
 
     // sorted by minimum path depth
-    private Collection<IndefinitePathBinding> indefinitePathLookup = Collections.emptyList();
+    private IndefinitePathBinding[] indefinitePathLookup = new IndefinitePathBinding[0];
 
     private JsonProvider jsonProvider;
     private ErrorHandlingStrategy errorHandlingStrategy;
@@ -191,7 +191,7 @@ public class SurfingConfiguration {
         return definitePathLookup != null;
     }
 
-    public Collection<IndefinitePathBinding> getIndefinitePathLookup() {
+    public IndefinitePathBinding[] getIndefinitePathLookup() {
         return indefinitePathLookup;
     }
 
