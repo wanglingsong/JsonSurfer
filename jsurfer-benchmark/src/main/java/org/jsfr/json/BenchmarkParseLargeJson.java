@@ -26,11 +26,8 @@ package org.jsfr.json;
 
 import com.google.common.io.Resources;
 import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
@@ -44,6 +41,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import profilers.FlightRecordingProfiler;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -52,8 +50,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by lwang on 2015/7/16 0016.
  */
-@BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Threads(1)
@@ -73,13 +69,11 @@ public class BenchmarkParseLargeJson {
     private String json;
 
     @Setup
-    public void setup() throws IOException {
+    public void setup(final Blackhole blackhole) throws IOException {
         simpleSurfer = JsonSurfer.simple();
         gsonSurfer = JsonSurfer.gson();
         jacksonSurfer = JsonSurfer.jackson();
         JsonPathListener blackHoleListener = new JsonPathListener() {
-            private Blackhole blackhole = new Blackhole();
-
             @Override
             public void onValue(Object value, ParsingContext context) throws Exception {
                 LOGGER.trace("Properties: {}", value);
@@ -111,6 +105,7 @@ public class BenchmarkParseLargeJson {
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(BenchmarkParseLargeJson.class.getSimpleName())
+                .addProfiler(FlightRecordingProfiler.class)
                 .build();
         new Runner(opt).run();
     }

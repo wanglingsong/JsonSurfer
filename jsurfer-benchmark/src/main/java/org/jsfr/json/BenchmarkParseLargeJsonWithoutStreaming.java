@@ -32,11 +32,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -59,8 +56,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by Administrator on 2015/7/20 0020.
  */
-@BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Threads(1)
@@ -73,18 +68,16 @@ public class BenchmarkParseLargeJsonWithoutStreaming {
     private Gson gson;
     private ObjectMapper om;
     private String json;
-    private Blackhole blackhole;
 
     @Setup
     public void setup() throws IOException {
         gson = new GsonBuilder().create();
         om = new ObjectMapper();
-        blackhole = new Blackhole();
         json = Resources.toString(Resources.getResource("allthethings.json"), StandardCharsets.UTF_8);
     }
 
     @Benchmark
-    public void benchmarkRawGson() {
+    public void benchmarkRawGson(Blackhole blackhole) {
         JsonObject root = gson.fromJson(json, JsonObject.class);
         JsonObject builders = root.getAsJsonObject("builders");
         for (Map.Entry<String, JsonElement> entry : builders.entrySet()) {
@@ -95,7 +88,7 @@ public class BenchmarkParseLargeJsonWithoutStreaming {
     }
 
     @Benchmark
-    public void benchmarkRawJackson() throws IOException {
+    public void benchmarkRawJackson(Blackhole blackhole) throws IOException {
         JsonNode node = om.readTree(json);
         Iterator<JsonNode> iterator = node.get("builders").elements();
         while (iterator.hasNext()) {
