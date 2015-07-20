@@ -2,7 +2,7 @@
 
 [![Join the chat at https://gitter.im/jsurfer/JsonSurfer](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jsurfer/JsonSurfer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-![](https://travis-ci.org/jsurfer/JsonSurfer.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/jsurfer/JsonSurfer/badge.svg)](https://coveralls.io/r/jsurfer/JsonSurfer) [![Code Advisor On Demand Status](https://badges.ondemand.coverity.com/jobs/dfv3uai2st0tfb9g7a9gnfkksc)](https://ondemand.coverity.com/jobs/dfv3uai2st0tfb9g7a9gnfkksc/results)
+![](https://travis-ci.org/jsurfer/JsonSurfer.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/jsurfer/JsonSurfer/badge.svg)](https://coveralls.io/r/jsurfer/JsonSurfer) [![Code Advisor On Demand Status](https://badges.ondemand.coverity.com/jobs/pd8rg54te52incvj1i6vj6i3p0)](https://ondemand.coverity.com/jobs/pd8rg54te52incvj1i6vj6i3p0/results)
 
 ## Why JsonSurfer
 
