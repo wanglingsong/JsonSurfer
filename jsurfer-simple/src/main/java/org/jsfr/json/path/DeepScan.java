@@ -29,7 +29,9 @@ package org.jsfr.json.path;
  */
 public class DeepScan extends PathOperator {
 
-    protected DeepScan() {
+    public static final DeepScan SINGLETON = new DeepScan();
+
+    private DeepScan() {
         super(Type.DEEP_SCAN);
     }
 

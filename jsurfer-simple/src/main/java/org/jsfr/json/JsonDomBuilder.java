@@ -31,7 +31,7 @@ import java.util.Stack;
  */
 public class JsonDomBuilder implements JsonSaxHandler {
 
-    private static enum SCOPE {
+    private enum SCOPE {
         IN_OBJECT,
         IN_ARRAY,
         IN_ROOT

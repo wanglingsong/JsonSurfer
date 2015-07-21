@@ -81,7 +81,7 @@ public class BenchmarkParseLargeJsonWithoutStreaming {
         JsonObject root = gson.fromJson(json, JsonObject.class);
         JsonObject builders = root.getAsJsonObject("builders");
         for (Map.Entry<String, JsonElement> entry : builders.entrySet()) {
-            JsonElement value = entry.getValue().getAsJsonObject().get("properties");
+            JsonElement value = entry.getValue().getAsJsonObject().getAsJsonObject("properties").get("branch");
             blackhole.consume(value);
             LOGGER.trace("json element: {}", value);
         }
@@ -92,7 +92,7 @@ public class BenchmarkParseLargeJsonWithoutStreaming {
         JsonNode node = om.readTree(json);
         Iterator<JsonNode> iterator = node.get("builders").elements();
         while (iterator.hasNext()) {
-            JsonNode value = iterator.next().get("properties");
+            JsonNode value = iterator.next().get("properties").get("branch");
             LOGGER.trace("json element: {}", value);
             blackhole.consume(value);
         }

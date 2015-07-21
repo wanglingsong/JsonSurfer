@@ -76,16 +76,14 @@ public class JsonPath {
 
         public Builder scan() {
             jsonPath.definite = false;
-            // TODO Singleton
             if (!(jsonPath.operators.peek().getType() == PathOperator.Type.DEEP_SCAN)) {
-                jsonPath.operators.push(new DeepScan());
+                jsonPath.operators.push(DeepScan.SINGLETON);
             }
             return this;
         }
 
         public Builder any() {
-            // TODO Singleton
-            jsonPath.operators.push(new Wildcard());
+            jsonPath.operators.push(Wildcard.SINGLETON);
             return this;
         }
 

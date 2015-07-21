@@ -28,7 +28,10 @@ package org.jsfr.json.path;
  * Created by Administrator on 2015/3/25.
  */
 public class Wildcard extends PathOperator {
-    protected Wildcard() {
+
+    public static final Wildcard SINGLETON = new Wildcard();
+
+    private Wildcard() {
         super(Type.WILDCARD);
     }
 

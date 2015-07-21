@@ -32,10 +32,10 @@ import java.util.Collection;
 class JsonCollector extends JsonDomBuilder {
 
     private ErrorHandlingStrategy errorHandlingStrategy;
-    private Collection<JsonPathListener> jsonPathListeners;
+    private JsonPathListener[] jsonPathListeners;
     private ParsingContext context;
 
-    public JsonCollector(Collection<JsonPathListener> jsonPathListeners, ParsingContext context, ErrorHandlingStrategy errorHandlingStrategy) {
+    public JsonCollector(JsonPathListener[] jsonPathListeners, ParsingContext context, ErrorHandlingStrategy errorHandlingStrategy) {
         this.jsonPathListeners = jsonPathListeners;
         this.context = context;
         this.errorHandlingStrategy = errorHandlingStrategy;

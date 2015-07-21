@@ -24,7 +24,10 @@
 
 package org.jsfr.json;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
@@ -40,7 +43,9 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -60,6 +65,8 @@ public class BenchmarkParseLongText {
     private JsonSurfer simpleSurfer;
     private SurfingConfiguration surfingConfiguration;
     private CollectOneListener collectOneListener;
+    private Gson gson;
+    private ObjectMapper om;
     private String json;
 
     @Setup
@@ -69,11 +76,27 @@ public class BenchmarkParseLongText {
         simpleSurfer = JsonSurfer.simple();
         collectOneListener = new CollectOneListener();
         surfingConfiguration = SurfingConfiguration.builder().bind("$.findMe", collectOneListener).build();
+        gson = new GsonBuilder().create();
+        om = new ObjectMapper();
         json = Resources.toString(Resources.getResource("longText.json"), StandardCharsets.UTF_8);
     }
 
     @Benchmark
-    public Object benchmarGsonSurfer() {
+    public Object benchmarkGson() {
+        Object value = gson.fromJson(json, Map.class).get("findMe");
+        LOGGER.trace("Find me: {}", value);
+        return value;
+    }
+
+    @Benchmark
+    public Object benchmarkJackson() throws IOException {
+        Object value = om.readTree(json).get("findMe");
+        LOGGER.trace("Find me: {}", value);
+        return value;
+    }
+
+    @Benchmark
+    public Object benchmarkGsonSurfer() {
         gsonSurfer.surf(json, surfingConfiguration);
         Object value = collectOneListener.getValue();
         LOGGER.trace("Find me: {}", value);
@@ -81,7 +104,7 @@ public class BenchmarkParseLongText {
     }
 
     @Benchmark
-    public Object benchmarJacksonSurfer() {
+    public Object benchmarkJacksonSurfer() {
         jacksonSurfer.surf(json, surfingConfiguration);
         Object value = collectOneListener.getValue();
         LOGGER.trace("Find me: {}", value);
@@ -89,7 +112,7 @@ public class BenchmarkParseLongText {
     }
 
     @Benchmark
-    public Object benchmarSimpleSurfer() {
+    public Object benchmarkSimpleSurfer() {
         simpleSurfer.surf(json, surfingConfiguration);
         Object value = collectOneListener.getValue();
         LOGGER.trace("Find me: {}", value);

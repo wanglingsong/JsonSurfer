@@ -59,7 +59,7 @@ public class BenchmarkParseLargeJson {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkParseLargeJson.class);
 
-    @Param({"$.builders.*.properties", "$.builders..properties"})
+    @Param({"$.builders.*.properties.branch", "$.builders..properties.branch"})
     private String jsonPath;
 
     private JsonSurfer simpleSurfer;

@@ -127,7 +127,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         }
 
         if (listeners != null) {
-            JsonCollector collector = new JsonCollector(listeners, this, config.getErrorHandlingStrategy());
+            JsonCollector collector = new JsonCollector(listeners.toArray(new JsonPathListener[listeners.size()]), this, config.getErrorHandlingStrategy());
             collector.setProvider(config.getJsonProvider());
             if (initializeCollector) {
                 collector.startJSON();
