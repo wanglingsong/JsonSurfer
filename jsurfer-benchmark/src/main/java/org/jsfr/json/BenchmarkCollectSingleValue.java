@@ -84,7 +84,7 @@ public class BenchmarkCollectSingleValue {
     }
 
     @Benchmark
-    public Object benchmarkGsonSurferCollectSingleValue() {
+    public Object benchmarkGsonSurfer() {
         gsonSurfer.surf(json, surfingConfiguration);
         Object value = collectOneListener.getValue();
         LOGGER.trace("The author of the first book: {}", value);
@@ -92,7 +92,7 @@ public class BenchmarkCollectSingleValue {
     }
 
     @Benchmark
-    public Object benchmarkJacksonSurferCollectSingleValue() {
+    public Object benchmarkJacksonSurfer() {
         jacksonSurfer.surf(json, surfingConfiguration);
         Object value = collectOneListener.getValue();
         LOGGER.trace("The author of the first book: {}", value);
@@ -100,7 +100,7 @@ public class BenchmarkCollectSingleValue {
     }
 
     @Benchmark
-    public Object benchmarkSimpleSurferCollectSingleValue() {
+    public Object benchmarkSimpleSurfer() {
         simpleSurfer.surf(json, surfingConfiguration);
         Object value = collectOneListener.getValue();
         LOGGER.trace("The author of the first book: {}", value);
@@ -108,7 +108,7 @@ public class BenchmarkCollectSingleValue {
     }
 
     @Benchmark
-    public Object benchmarkGsonCollectSingleValue() {
+    public Object benchmarkGson() {
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
         String value = jsonObject.getAsJsonObject("store").getAsJsonArray("book").get(0).getAsJsonObject().getAsJsonPrimitive("author").getAsString();
         LOGGER.trace("The author of the first book: {}", value);
@@ -116,7 +116,7 @@ public class BenchmarkCollectSingleValue {
     }
 
     @Benchmark
-    public Object benchmarkJacksonCollectSingleValue() throws IOException {
+    public Object benchmarkJackson() throws IOException {
         JsonNode jsonNode = om.readTree(json);
         Iterator<JsonNode> books = jsonNode.get("store").get("book").elements();
         String value = books.next().get("author").asText();
