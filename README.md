@@ -23,6 +23,18 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 
 ### [What is JsonPath?](http://goessner.net/articles/JsonPath/)
 
+* JsonSurfer is fast !!! The benchmark is powered by [JMH](http://openjdk.java.net/projects/code-tools/jmh/)
+
+```
+Benchmark                                            Mode  Cnt       Score      Error  Units
+BenchmarkCollectSingleValue.benchmarkGson           thrpt   10  164451.503 ± 8299.919  ops/s
+BenchmarkCollectSingleValue.benchmarkGsonSurfer     thrpt   10  642046.424 ± 1356.375  ops/s
+BenchmarkCollectSingleValue.benchmarkJackson        thrpt   10  209379.817 ± 1597.369  ops/s
+BenchmarkCollectSingleValue.benchmarkJacksonSurfer  thrpt   10  457160.610 ± 2396.219  ops/s
+BenchmarkCollectSingleValue.benchmarkSimpleSurfer   thrpt   10  217048.771 ±  897.836  ops/s
+```
+
+
 * JsonSurfer supports imcomplete JsonPath feature at current version:
 
 | Operator                  |   Description     | Supported |
@@ -69,9 +81,9 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 ```
 * Stop parsing on the fly. Refer to [Stoppable parsing](#stoppable-parsing)
 
-### Main APIs
+### APIs:
 
-#### "Surfer" on Json DOM tree and fire matched value to the registered listeners
+#### "Surf" in Json DOM tree firing matched value to registered listeners
 ```java
         JsonSurfer jsonSurfer = JsonSurfer.gson();
         SurfingConfiguration.Builder builder = SurfingConfiguration.builder();
