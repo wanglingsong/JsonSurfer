@@ -28,7 +28,7 @@ import org.jsfr.json.path.JsonPath;
 
 public class BuilderFactory {
 
-    public static SurfingConfiguration.Builder context() {
+    public static SurfingConfiguration.Builder config() {
         return SurfingConfiguration.builder();
     }
 

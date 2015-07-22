@@ -40,9 +40,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicLong;
 
-import static org.jsfr.json.BuilderFactory.context;
+import static org.jsfr.json.BuilderFactory.config;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
@@ -75,7 +74,7 @@ public class JsonSurferTest {
 
     @Test
     public void testSampleJson() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind("$.store.book[0].category", mockListener)
                 .bind("$.store.book[0]", mockListener)
@@ -105,7 +104,7 @@ public class JsonSurferTest {
 
     @Test
     public void testStoppableParsing() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind("$.store.book[0,1,2]", mockListener)
                 .bind("$.store.book[3]", mockListener);
@@ -132,7 +131,7 @@ public class JsonSurferTest {
 
     @Test
     public void testChildNodeWildcard() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind("$.store.*", mockListener);
         surfer.surf(read("sample.json"), builder.build());
@@ -142,7 +141,7 @@ public class JsonSurferTest {
 
     @Test
     public void testAnyIndex() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind("$.store.book[*]", mockListener);
         surfer.surf(read("sample.json"), builder.build());
@@ -156,7 +155,7 @@ public class JsonSurferTest {
 
     @Test
     public void testWildcardCombination() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind("$.store.book[*].*", mockListener);
         surfer.surf(read("sample.json"), builder.build());
@@ -166,7 +165,7 @@ public class JsonSurferTest {
 
     @Test
     public void testArraySlicing() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         JsonPathListener mock1 = mock(JsonPathListener.class);
         builder.bind("$[:2]", mock1);
         JsonPathListener mock2 = mock(JsonPathListener.class);
@@ -185,7 +184,7 @@ public class JsonSurferTest {
 
     @Test
     public void testParsingArray() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         JsonPathListener wholeArray = mock(JsonPathListener.class);
         JsonPathListener stringElement = mock(JsonPathListener.class);
         JsonPathListener numberElement = mock(JsonPathListener.class);
@@ -219,7 +218,7 @@ public class JsonSurferTest {
 
     @Test
     public void testDeepScan() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind("$..author", mockListener);
         builder.bind("$..store..bicycle..color", mockListener);
@@ -234,7 +233,7 @@ public class JsonSurferTest {
 
     @Test
     public void testDeepScan2() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind("$..store..price", mockListener);
         surfer.surf(read("sample.json"), builder.build());
@@ -247,7 +246,7 @@ public class JsonSurferTest {
 
     @Test
     public void testAny() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind("$.store..bicycle..*", mockListener);
         surfer.surf(read("sample.json"), builder.build());
@@ -257,7 +256,7 @@ public class JsonSurferTest {
 
     @Test
     public void testFindEverything() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         builder.bind("$..*", new JsonPathListener() {
             @Override
             public void onValue(Object value, ParsingContext context) {
@@ -269,7 +268,7 @@ public class JsonSurferTest {
 
     @Test
     public void testIndexesAndChildrenOperator() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         JsonPathListener mockListener = mock(JsonPathListener.class);
         builder.bind("$..book[1,3][author,title]", mockListener);
         surfer.surf(read("sample.json"), builder.build());
@@ -309,49 +308,49 @@ public class JsonSurferTest {
 
     @Test
     public void testExample1() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         builder.bind("$.store.book[*].author", print);
         surfer.surf(read("sample.json"), builder.build());
     }
 
     @Test
     public void testExample2() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         builder.bind("$..author", print);
         surfer.surf(read("sample.json"), builder.build());
     }
 
     @Test
     public void testExample3() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         builder.bind("$.store.*", print);
         surfer.surf(read("sample.json"), builder.build());
     }
 
     @Test
     public void testExample4() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         builder.bind("$.store..price", print);
         surfer.surf(read("sample.json"), builder.build());
     }
 
     @Test
     public void testExample5() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         builder.bind("$..book[2]", print);
         surfer.surf(read("sample.json"), builder.build());
     }
 
     @Test
     public void testExample6() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         builder.bind("$..book[0,1]", print);
         surfer.surf(read("sample.json"), builder.build());
     }
 
     @Test
     public void testStoppable() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         builder.bind("$..book[0,1]", new JsonPathListener() {
             @Override
             public void onValue(Object value, ParsingContext parsingContext) {
@@ -365,7 +364,7 @@ public class JsonSurferTest {
     @Test
     public void testPlugableProvider() throws Exception {
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        Builder builder = context().withJsonProvider(new JavaCollectionProvider());
+        Builder builder = config().withJsonProvider(new JavaCollectionProvider());
         builder.bind("$.store", mockListener);
         surfer.surf(read("sample.json"), builder.build());
         verify(mockListener).onValue(isA(HashMap.class), any(ParsingContext.class));
@@ -373,7 +372,7 @@ public class JsonSurferTest {
 
     @Test
     public void testErrorStrategySuppressException() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         JsonPathListener mock = mock(JsonPathListener.class);
         builder.bind("$.store.book[*]", mock);
         builder.withErrorStrategy(new ErrorHandlingStrategy() {
@@ -394,7 +393,7 @@ public class JsonSurferTest {
 
     @Test
     public void testErrorStrategyThrowException() throws Exception {
-        Builder builder = context();
+        Builder builder = config();
         JsonPathListener mock = mock(JsonPathListener.class);
         builder.bind("$.store.book[*]", mock);
         doNothing().doThrow(Exception.class).doThrow(Exception.class).when(mock).onValue(anyObject(), any(ParsingContext.class));
