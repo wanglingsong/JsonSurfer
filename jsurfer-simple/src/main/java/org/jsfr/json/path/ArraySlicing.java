@@ -43,15 +43,19 @@ public class ArraySlicing extends PathOperator {
         if (!super.match(pathOperator)) {
             return false;
         }
-        int index = ((ArrayIndex) pathOperator).getArrayIndex();
-        if (lowerBound == null && upperBound == null) {
-            return true;
-        } else if (lowerBound == null) {
-            return index < upperBound;
-        } else if (upperBound == null) {
-            return index >= lowerBound;
+        if (pathOperator instanceof ArrayIndex) {
+            int index = ((ArrayIndex) pathOperator).getArrayIndex();
+            if (lowerBound == null && upperBound == null) {
+                return true;
+            } else if (lowerBound == null) {
+                return index < upperBound;
+            } else if (upperBound == null) {
+                return index >= lowerBound;
+            } else {
+                return lowerBound <= index && index < upperBound;
+            }
         } else {
-            return lowerBound <= index && index < upperBound;
+            throw new IllegalStateException("unexpected path operator: " + pathOperator);
         }
     }
 }

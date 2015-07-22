@@ -15,3 +15,6 @@ triage:
     - action: suppress
       issueKey: 68fc8daf339d144b30db46764fe09ef8
       comment: Need to customize super call
+    - action: suppress
+      issueKey: 202ea536f11493d23e4335a44a0caab9
+      comment: Ignored issue from auto-generated source
