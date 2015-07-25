@@ -33,7 +33,6 @@ public class ArraySlicing extends PathOperator {
     private Integer upperBound;
 
     protected ArraySlicing(Integer lowerBound, Integer upperBound) {
-        super(Type.ARRAY);
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
     }
@@ -57,5 +56,10 @@ public class ArraySlicing extends PathOperator {
         } else {
             throw new IllegalStateException("unexpected path operator: " + pathOperator);
         }
+    }
+
+    @Override
+    public Type getType() {
+        return Type.ARRAY;
     }
 }

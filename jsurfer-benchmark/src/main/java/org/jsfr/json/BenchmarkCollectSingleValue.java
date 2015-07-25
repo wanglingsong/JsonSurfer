@@ -44,6 +44,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import profilers.FlightRecordingProfiler;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -127,6 +128,7 @@ public class BenchmarkCollectSingleValue {
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(BenchmarkCollectSingleValue.class.getSimpleName())
+                .addProfiler(FlightRecordingProfiler.class)
                 .build();
         new Runner(opt).run();
     }

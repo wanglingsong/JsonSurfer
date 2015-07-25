@@ -33,7 +33,11 @@ public class Root extends PathOperator {
     }
 
     private Root() {
-        super(Type.ROOT);
+    }
+
+    @Override
+    public Type getType() {
+        return Type.ROOT;
     }
 
     @Override

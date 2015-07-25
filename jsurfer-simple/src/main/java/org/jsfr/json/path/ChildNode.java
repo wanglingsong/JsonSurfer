@@ -34,7 +34,6 @@ public class ChildNode extends PathOperator {
     private String key;
 
     public ChildNode(String key) {
-        super(Type.OBJECT);
         this.key = key;
     }
 
@@ -49,6 +48,11 @@ public class ChildNode extends PathOperator {
     @Override
     public boolean match(PathOperator pathOperator) {
         return super.match(pathOperator) && Objects.equals(key, ((ChildNode) pathOperator).key);
+    }
+
+    @Override
+    public Type getType() {
+        return Type.OBJECT;
     }
 
     @Override

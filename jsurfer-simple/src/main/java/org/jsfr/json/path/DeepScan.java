@@ -32,12 +32,16 @@ public class DeepScan extends PathOperator {
     public static final DeepScan SINGLETON = new DeepScan();
 
     private DeepScan() {
-        super(Type.DEEP_SCAN);
     }
 
     @Override
     public boolean match(PathOperator pathOperator) {
         return true;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.DEEP_SCAN;
     }
 
     @Override

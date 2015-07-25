@@ -37,7 +37,6 @@ public class GsonParser implements JsonParserAdapter {
     @Override
     public void parse(Reader reader, SurfingContext context) {
         try {
-            // TODO to correct behavior
             final JsonReader jsonReader = new JsonReader(reader);
             final JsonProvider jsonProvider = context.getConfig().getJsonProvider();
             AbstractPrimitiveHolder stringHolder = new AbstractPrimitiveHolder(context.getConfig()) {

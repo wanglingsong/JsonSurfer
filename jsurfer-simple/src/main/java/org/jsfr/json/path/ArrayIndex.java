@@ -32,7 +32,6 @@ public class ArrayIndex extends PathOperator {
     private int arrayIndex = -1;
 
     public ArrayIndex() {
-        super(Type.ARRAY);
     }
 
     public ArrayIndex(int arrayIndex) {
@@ -59,6 +58,11 @@ public class ArrayIndex extends PathOperator {
     @Override
     public boolean match(PathOperator pathOperator) {
         return super.match(pathOperator) && arrayIndex == ((ArrayIndex) pathOperator).arrayIndex;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.ARRAY;
     }
 
     @Override

@@ -34,13 +34,18 @@ public class ArrayIndexes extends PathOperator {
     private HashSet<Integer> indexes;
 
     protected ArrayIndexes(HashSet<Integer> indexes) {
-        super(Type.ARRAY);
         this.indexes = indexes;
     }
 
     @Override
     public boolean match(PathOperator pathOperator) {
         return super.match(pathOperator) && indexes.contains(((ArrayIndex) pathOperator).getArrayIndex());
+    }
+
+    @Override
+    public Type getType() {
+        return Type.ARRAY;
+
     }
 
     @Override

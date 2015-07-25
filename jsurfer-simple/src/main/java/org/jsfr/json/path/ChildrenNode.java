@@ -34,13 +34,17 @@ public class ChildrenNode extends PathOperator {
     private HashSet<String> children;
 
     public ChildrenNode(HashSet<String> children) {
-        super(Type.OBJECT);
         this.children = children;
     }
 
     @Override
     public boolean match(PathOperator pathOperator) {
         return super.match(pathOperator) && pathOperator instanceof ChildNode && children.contains(((ChildNode) pathOperator).getKey());
+    }
+
+    @Override
+    public Type getType() {
+        return Type.OBJECT;
     }
 
     @Override

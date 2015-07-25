@@ -24,7 +24,6 @@
 
 package org.jsfr.json;
 
-import org.jsfr.json.path.ArrayIndex;
 import org.jsfr.json.path.ChildNode;
 import org.jsfr.json.path.PathOperator;
 import org.jsfr.json.path.PathOperator.Type;
@@ -52,7 +51,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
             return true;
         }
         currentPosition = JsonPosition.start();
-        doMatching(false, null);
+        doMatching(config, currentPosition, dispatcher, null);
         dispatcher.startJSON();
         return true;
     }
@@ -74,21 +73,18 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (stopped) {
             return false;
         }
-        PathOperator top = currentPosition.peek();
-        if (top.getType() == Type.ARRAY) {
-            ((ArrayIndex) top).increaseArrayIndex();
-            doMatching(true, null);
+        if (currentPosition.accumulateArrayIndex()) {
+            doMatching(config, currentPosition, dispatcher, null);
         }
+        currentPosition.stepIntoObject();
         dispatcher.startObject();
         return true;
     }
 
-    private void doMatching(boolean initializeCollector, PrimitiveHolder primitiveHolder) {
-
-        // TODO Refactor matching logic
+    private void doMatching(SurfingConfiguration config, JsonPosition currentPosition, ContentDispatcher dispatcher, PrimitiveHolder primitiveHolder) {
 
         // skip matching if "skipOverlappedPath" is enable
-        if (config.isSkipOverlappedPath() && !this.dispatcher.isEmpty()) {
+        if (config.isSkipOverlappedPath() && !dispatcher.isEmpty()) {
             return;
         }
         LinkedList<JsonPathListener> listeners = null;
@@ -129,9 +125,6 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (listeners != null) {
             JsonCollector collector = new JsonCollector(listeners.toArray(new JsonPathListener[listeners.size()]), this, config.getErrorHandlingStrategy());
             collector.setProvider(config.getJsonProvider());
-            if (initializeCollector) {
-                collector.startJSON();
-            }
             dispatcher.addReceiver(collector);
         }
     }
@@ -154,9 +147,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (stopped) {
             return false;
         }
-        if (currentPosition.peekType() == Type.OBJECT) {
-            currentPosition.stepOut();
-        }
+        currentPosition.stepOutObject();
         dispatcher.endObject();
         return true;
     }
@@ -166,9 +157,9 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (stopped) {
             return false;
         }
-        currentPosition.stepIntoChild(key);
         dispatcher.startObjectEntry(key);
-        doMatching(true, null);
+        currentPosition.updateObjectEntry(key);
+        doMatching(config, currentPosition, dispatcher, null);
         return true;
     }
 
@@ -178,10 +169,8 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (stopped) {
             return false;
         }
-        PathOperator top = currentPosition.peek();
-        if (top.getType() == Type.ARRAY) {
-            ((ArrayIndex) top).increaseArrayIndex();
-            doMatching(true, null);
+        if (currentPosition.accumulateArrayIndex()) {
+            doMatching(config, currentPosition, dispatcher, null);
         }
         currentPosition.stepIntoArray();
         dispatcher.startArray();
@@ -193,10 +182,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (stopped) {
             return false;
         }
-        currentPosition.stepOut();
-        if (currentPosition.peekType() == Type.OBJECT) {
-            currentPosition.stepOut();
-        }
+        currentPosition.stepOutArray();
         dispatcher.endArray();
         return true;
     }
@@ -206,12 +192,8 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (stopped) {
             return false;
         }
-        PathOperator top = currentPosition.peek();
-        if (top.getType() == Type.ARRAY) {
-            ((ArrayIndex) top).increaseArrayIndex();
-            doMatching(true, primitiveHolder);
-        } else if (top.getType() == Type.OBJECT) {
-            currentPosition.stepOut();
+        if (currentPosition.accumulateArrayIndex()) {
+            doMatching(config, currentPosition, dispatcher, primitiveHolder);
         }
         dispatcher.primitive(primitiveHolder);
         return true;

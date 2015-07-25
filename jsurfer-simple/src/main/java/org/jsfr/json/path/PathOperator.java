@@ -24,7 +24,7 @@
 
 package org.jsfr.json.path;
 
-public class PathOperator {
+public abstract class PathOperator {
 
     public enum Type {
         ROOT,
@@ -34,18 +34,11 @@ public class PathOperator {
         DEEP_SCAN
     }
 
-    private Type type;
 
-    protected PathOperator(Type type) {
-        this.type = type;
-    }
-
-    public Type getType() {
-        return type;
-    }
+    abstract public Type getType();
 
     public boolean match(PathOperator pathOperator) {
-        return type == pathOperator.type;
+        return getType() == pathOperator.getType();
     }
 
 }

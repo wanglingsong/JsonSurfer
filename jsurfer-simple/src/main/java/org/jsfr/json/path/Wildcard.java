@@ -32,12 +32,16 @@ public class Wildcard extends PathOperator {
     public static final Wildcard SINGLETON = new Wildcard();
 
     private Wildcard() {
-        super(Type.WILDCARD);
     }
 
     @Override
     public boolean match(PathOperator pathOperator) {
         return true;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.WILDCARD;
     }
 
     @Override

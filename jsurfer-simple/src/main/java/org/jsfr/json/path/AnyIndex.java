@@ -36,7 +36,11 @@ public class AnyIndex extends PathOperator {
     }
 
     private AnyIndex() {
-        super(Type.ARRAY);
+    }
+
+    @Override
+    public Type getType() {
+        return Type.ARRAY;
     }
 
     @Override

@@ -49,22 +49,30 @@ class JsonPosition extends JsonPath {
         return newPath;
     }
 
-    void stepOut() {
+    void stepIntoObject() {
+        Stack<ChildNode> stack = childNodeCache.get();
+        ChildNode node = null;
+        if (stack != null && !stack.isEmpty()) {
+            node = stack.pop();
+            node.setKey(null);
+        }
+        if (node == null) {
+            node = new ChildNode(null);
+        }
+        operators.push(node);
+    }
+
+    void updateObjectEntry(String key) {
+        ((ChildNode)operators.peek()).setKey(key);
+    }
+
+    void stepOutObject() {
         PathOperator node = operators.pop();
-        if (node.getType() == PathOperator.Type.OBJECT) {
-            Stack<ChildNode> stack = childNodeCache.get();
-            if (stack != null) {
-                stack.push((ChildNode) node);
-            } else {
-                createChildNodeCache();
-            }
-        } else if (node.getType() == PathOperator.Type.ARRAY) {
-            Stack<ArrayIndex> stack = arrayNodeCache.get();
-            if (stack != null) {
-                stack.push((ArrayIndex) node);
-            } else {
-                createArrayNodeCache();
-            }
+        Stack<ChildNode> stack = childNodeCache.get();
+        if (stack != null) {
+            stack.push((ChildNode) node);
+        } else {
+            createChildNodeCache();
         }
     }
 
@@ -81,22 +89,30 @@ class JsonPosition extends JsonPath {
         operators.push(node);
     }
 
-    void stepIntoChild(String key) {
-        Stack<ChildNode> stack = childNodeCache.get();
-        ChildNode node = null;
-        if (stack != null && !stack.isEmpty()) {
-            node = stack.pop();
-            node.setKey(key);
+    boolean accumulateArrayIndex() {
+        PathOperator top = this.peek();
+        if (top.getType() == PathOperator.Type.ARRAY) {
+            ((ArrayIndex) top).increaseArrayIndex();
+            return true;
         }
-        if (node == null) {
-            node = new ChildNode(key);
+        return false;
+    }
+
+    void stepOutArray() {
+        PathOperator node = operators.pop();
+        Stack<ArrayIndex> stack = arrayNodeCache.get();
+        if (stack != null) {
+            stack.push((ArrayIndex) node);
+        } else {
+            createArrayNodeCache();
         }
-        operators.push(node);
     }
 
     void clear() {
         operators.clear();
         operators = null;
+        childNodeCache = null;
+        arrayNodeCache = null;
     }
 
     private void createChildNodeCache() {
@@ -105,10 +121,6 @@ class JsonPosition extends JsonPath {
 
     private void createArrayNodeCache() {
         arrayNodeCache = new SoftReference<Stack<ArrayIndex>>(new Stack<ArrayIndex>());
-    }
-
-    PathOperator.Type peekType() {
-        return operators.peek().getType();
     }
 
 }

@@ -36,11 +36,15 @@ public class AnyChild extends PathOperator {
     }
 
     private AnyChild() {
-        super(Type.OBJECT);
     }
 
     @Override
     public String toString() {
         return ".*";
+    }
+
+    @Override
+    public Type getType() {
+        return Type.OBJECT;
     }
 }
