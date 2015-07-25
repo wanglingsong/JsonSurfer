@@ -46,8 +46,13 @@ public interface ParsingContext {
     String getJsonPath();
 
     /**
-     * @return Return the current entry key. Return null if the context is not in a json object
+     * @return The current field name. Null if current position is not in json object
      */
-    String getKey();
+    String getCurrentFieldName();
+
+    /**
+     * @return The current index of json array. -1 if current position is not in json array
+     */
+    int getCurrentArrayIndex();
 
 }

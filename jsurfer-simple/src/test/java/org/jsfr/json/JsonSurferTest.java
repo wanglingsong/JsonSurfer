@@ -307,6 +307,26 @@ public class JsonSurferTest {
     }
 
     @Test
+    public void testGetCurrentFieldName() throws Exception {
+        surfer.surf(read("sample.json"), config().bind("$.store.book[0].title", new JsonPathListener() {
+            @Override
+            public void onValue(Object value, ParsingContext context) throws Exception {
+                assertEquals(context.getCurrentFieldName(), "title");
+            }
+        }).build());
+    }
+
+    @Test
+    public void testGetCurrentArrayIndex() throws Exception {
+        surfer.surf(read("sample.json"), config().bind("$.store.book[3]", new JsonPathListener() {
+            @Override
+            public void onValue(Object value, ParsingContext context) throws Exception {
+                assertEquals(context.getCurrentArrayIndex(), 3);
+            }
+        }).build());
+    }
+
+    @Test
     public void testExample1() throws Exception {
         Builder builder = config();
         builder.bind("$.store.book[*].author", print);

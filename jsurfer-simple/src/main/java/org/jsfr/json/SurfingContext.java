@@ -24,6 +24,7 @@
 
 package org.jsfr.json;
 
+import org.jsfr.json.path.ArrayIndex;
 import org.jsfr.json.path.ChildNode;
 import org.jsfr.json.path.PathOperator;
 import org.jsfr.json.path.PathOperator.Type;
@@ -205,12 +206,23 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     }
 
     @Override
-    public String getKey() {
-        PathOperator peek = currentPosition.peek();
-        if (peek.getType() == Type.OBJECT) {
-            return ((ChildNode) peek).getKey();
+    public String getCurrentFieldName() {
+        PathOperator top = this.currentPosition.peek();
+        if (top.getType() == Type.OBJECT) {
+            return ((ChildNode)top).getKey();
+        } else {
+            return null;
         }
-        return null;
+    }
+
+    @Override
+    public int getCurrentArrayIndex() {
+        PathOperator top = this.currentPosition.peek();
+        if (top.getType() == Type.ARRAY) {
+            return ((ArrayIndex)top).getArrayIndex();
+        } else {
+            return -1;
+        }
     }
 
     @Override
