@@ -55,7 +55,7 @@ BenchmarkCollectSingleValue.benchmarkSimpleSurfer   thrpt   10  217048.771 ±  8
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-simple</artifactId>
-    <version>1.2.3</version>
+    <version>1.2.4</version>
 </dependency>
 ```
 
@@ -161,7 +161,7 @@ $.store.book[*].author
             }
         };
         JsonSurfer surfer = JsonSurfer.gson();
-        SurfingConfiguration.Builder builder = BuilderFactory.context();
+        SurfingConfiguration.Builder builder = BuilderFactory.config();
         builder.bind("$.store.book[*].author", print);
         surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
 ```
