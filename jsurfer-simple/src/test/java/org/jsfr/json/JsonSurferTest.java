@@ -47,6 +47,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.mock;
@@ -100,6 +101,17 @@ public class JsonSurferTest {
         provider.consumeObjectEntry(bicycle, "color", provider.primitive("red"));
         provider.consumeObjectEntry(bicycle, "price", provider.primitive(19.95d));
         verify(mockListener).onValue(eq(bicycle), any(ParsingContext.class));
+    }
+
+    @Test
+    public void testSample2() throws Exception {
+
+        Builder builder = config();
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        builder.bind("$.aiRuleEditorOriginal.+.barrierLevel", mockListener);
+        surfer.surf(read("sample2.json"), builder.build());
+        verify(mockListener).onValue(eq("0.8065"), any(ParsingContext.class));
+
     }
 
     @Test

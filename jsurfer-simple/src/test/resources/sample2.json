@@ -1,0 +1,43 @@
+[ {
+  "alternativeTermsheetLabels" : [ "DE" ],
+  "alternativeTermsheetUrls" : [ "http://cpss.swissbank.com/cpss/app/externalTermsheetView?documentId=17250684&mode=pdf" ],
+  "backToBackAccount" : null,
+  "barrierBreachDate" : null,
+  "barrierBreachState" : "No",
+  "barrierLevel" : null,
+  "barrierObservationType" : "Continuous",
+  "barrierPrice" : "30.0",
+  "bondFloorAtIssue" : null,
+  "bonusAmount" : null,
+  "bookingModel" : "",
+  "brandName" : "Capped Bonus Certificate",
+  "branding" : "UBS",
+  "businessDay" : "",
+  "businessDayConvention" : "",
+  "calculationAgent" : {
+    "cconsol" : "59999",
+    "countryOfDomicile" : "GB",
+    "id" : "14542e34-df3d-4c84-98b7-dba33d154ebb",
+    "lastModified" : "2014-04-03T02:46:06.722Z",
+    "name" : "UBS AG London",
+    "owner" : null,
+    "typeName" : "LegalEntity",
+    "typeAlias" : "Legal-Entity"
+  },
+  "capLevel" : "1.0484",
+  "capPrice" : "39.0",
+  "aiRuleEditorOriginal" : {
+    "+" : {
+      "barrierLevel" : "0.8065",
+      "calculationAgent" : {
+        "cconsol" : "49314"
+      }
+    },
+    "-" : {
+      "calculationAgent" : {
+        "typeAlias" : "Legal-Entity"
+      }
+    }
+  }
+
+} ]
