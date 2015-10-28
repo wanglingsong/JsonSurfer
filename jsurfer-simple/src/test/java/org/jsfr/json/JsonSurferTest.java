@@ -108,9 +108,9 @@ public class JsonSurferTest {
 
         Builder builder = config();
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        builder.bind("$.aiRuleEditorOriginal.+.barrierLevel", mockListener);
+        builder.bind("$[0].aiRuleEditorOriginal.+.barrierLevel", mockListener);
         surfer.surf(read("sample2.json"), builder.build());
-        verify(mockListener).onValue(eq("0.8065"), any(ParsingContext.class));
+        verify(mockListener).onValue(eq(provider.primitive("0.8065")), any(ParsingContext.class));
 
     }
 

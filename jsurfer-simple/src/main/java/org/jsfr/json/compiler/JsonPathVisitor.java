@@ -49,18 +49,6 @@ public interface JsonPathVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitAny(JsonPathParser.AnyContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link JsonPathParser#childNode}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitChildNode(JsonPathParser.ChildNodeContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link JsonPathParser#childrenNode}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitChildrenNode(JsonPathParser.ChildrenNodeContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link JsonPathParser#index}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -78,6 +66,18 @@ public interface JsonPathVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitSlicing(JsonPathParser.SlicingContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link JsonPathParser#childNode}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitChildNode(JsonPathParser.ChildNodeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link JsonPathParser#childrenNode}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitChildrenNode(JsonPathParser.ChildrenNodeContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link JsonPathParser#filter}.
 	 * @param ctx the parse tree

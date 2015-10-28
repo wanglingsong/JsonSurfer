@@ -49,6 +49,6 @@ public class ChildrenNode extends PathOperator {
 
     @Override
     public String toString() {
-        return super.toString();
+        return children.toString();
     }
 }
