@@ -41,6 +41,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     private JsonPosition currentPosition;
     private ContentDispatcher dispatcher = new ContentDispatcher();
     private SurfingConfiguration config;
+    private PrimitiveHolder currentValue;
 
     public SurfingContext(SurfingConfiguration config) {
         this.config = config;
@@ -193,6 +194,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (stopped) {
             return false;
         }
+        this.currentValue = primitiveHolder;
         if (currentPosition.accumulateArrayIndex()) {
             doMatching(config, currentPosition, dispatcher, primitiveHolder);
         }
@@ -213,6 +215,11 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public PrimitiveHolder getCurrentValue() {
+        return this.currentValue;
     }
 
     @Override

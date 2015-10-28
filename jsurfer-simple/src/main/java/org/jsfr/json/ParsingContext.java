@@ -51,6 +51,11 @@ public interface ParsingContext {
     String getCurrentFieldName();
 
     /**
+     * @return The current primitive value holder
+     */
+    PrimitiveHolder getCurrentValue();
+
+    /**
      * @return The current index of json array. -1 if current position is not in json array
      */
     int getCurrentArrayIndex();

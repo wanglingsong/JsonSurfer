@@ -31,4 +31,9 @@ public interface PrimitiveHolder {
 
     Object getValue();
 
+    /**
+     * @param value  hack to override the holding value
+     */
+    void setValue(Object value);
+
 }

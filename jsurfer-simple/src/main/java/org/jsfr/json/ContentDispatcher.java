@@ -151,6 +151,6 @@ class ContentDispatcher implements JsonSaxHandler {
     }
 
     public void addReceiver(JsonSaxHandler contentHandler) {
-        receiver.add(contentHandler);
+        receiver.addFirst(contentHandler);
     }
 }

@@ -57,6 +57,12 @@ public abstract class AbstractPrimitiveHolder implements PrimitiveHolder {
         }
     }
 
+    @Override
+    public void setValue(Object value) {
+        this.executed = true;
+        this.value = value;
+    }
+
     public void skipValue() {
         if (!executed) {
             this.executed = true;

@@ -29,7 +29,17 @@ package org.jsfr.json;
  */
 public class CollectOneListener implements JsonPathListener {
 
+    private boolean shallStopImmediately;
+
     private Object value;
+
+    public CollectOneListener() {
+        this(true);
+    }
+
+    public CollectOneListener(boolean shallStopImmediately) {
+        this.shallStopImmediately = shallStopImmediately;
+    }
 
     public Object getValue() {
         return value;
@@ -38,6 +48,9 @@ public class CollectOneListener implements JsonPathListener {
     @Override
     public void onValue(Object value, ParsingContext context) throws Exception{
         this.value = value;
-        context.stopParsing();
+        if (shallStopImmediately) {
+            context.stopParsing();
+        }
     }
+
 }

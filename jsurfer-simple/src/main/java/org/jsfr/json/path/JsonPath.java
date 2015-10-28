@@ -25,7 +25,9 @@
 package org.jsfr.json.path;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Stack;
 
@@ -144,6 +146,10 @@ public class JsonPath {
 
     public PathOperator peek() {
         return operators.peek();
+    }
+
+    public List<PathOperator> getOperators() {
+        return Collections.unmodifiableList(operators);
     }
 
     public int pathDepth() {
