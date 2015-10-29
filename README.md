@@ -55,7 +55,7 @@ BenchmarkCollectSingleValue.benchmarkSimpleSurfer   thrpt   10  217048.771 ±  8
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-simple</artifactId>
-    <version>1.2.4</version>
+    <version>1.2.5</version>
 </dependency>
 ```
 
