@@ -33,6 +33,10 @@ import java.io.Reader;
 
 public class JacksonParser implements JsonParserAdapter {
 
+    public static final JacksonParser INSTANCE = new JacksonParser();
+
+    private JacksonParser(){};
+
     @Override
     public void parse(Reader reader, final SurfingContext context) {
         try {

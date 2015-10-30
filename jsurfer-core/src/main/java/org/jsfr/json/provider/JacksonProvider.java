@@ -34,17 +34,28 @@ import org.jsfr.json.exception.JsonSurfingException;
 
 public class JacksonProvider implements JsonProvider<ObjectNode, ArrayNode, JsonNode> {
 
-    private static ObjectMapper OM = new ObjectMapper();
-    private static JsonNodeFactory FACTORY = OM.getNodeFactory();
+    public static final JacksonProvider INSTANCE = new JacksonProvider();
+
+    private ObjectMapper om;
+    private JsonNodeFactory factory;
+
+    public JacksonProvider() {
+        this(new ObjectMapper());
+    }
+
+    public JacksonProvider(ObjectMapper om) {
+        this.om = om;
+        this.factory = om.getNodeFactory();
+    }
 
     @Override
     public ObjectNode createObject() {
-        return FACTORY.objectNode();
+        return factory.objectNode();
     }
 
     @Override
     public ArrayNode createArray() {
-        return FACTORY.arrayNode();
+        return factory.arrayNode();
     }
 
     @Override
@@ -79,34 +90,34 @@ public class JacksonProvider implements JsonProvider<ObjectNode, ArrayNode, Json
 
     @Override
     public JsonNode primitive(boolean value) {
-        return FACTORY.booleanNode(value);
+        return factory.booleanNode(value);
     }
 
     @Override
     public JsonNode primitive(int value) {
-        return FACTORY.numberNode(value);
+        return factory.numberNode(value);
     }
 
     @Override
     public JsonNode primitive(double value) {
-        return FACTORY.numberNode(value);
+        return factory.numberNode(value);
     }
 
     @Override
     public JsonNode primitive(String value) {
-        return FACTORY.textNode(value);
+        return factory.textNode(value);
     }
 
     @Override
     public JsonNode primitiveNull() {
-        return FACTORY.nullNode();
+        return factory.nullNode();
     }
 
     @Override
     public <T> T cast(JsonNode value, Class<T> tClass) {
         try {
-            if (OM.canDeserialize(OM.getTypeFactory().constructType(tClass))) {
-                return OM.treeToValue(value, tClass);
+            if (om.canDeserialize(om.getTypeFactory().constructType(tClass))) {
+                return om.treeToValue(value, tClass);
             } else {
                 return tClass.cast(value);
             }

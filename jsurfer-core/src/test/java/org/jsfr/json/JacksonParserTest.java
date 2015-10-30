@@ -50,7 +50,7 @@ public class JacksonParserTest extends JsonSurferTest {
     @Before
     public void setUp() throws Exception {
         provider = new JacksonProvider();
-        surfer = new JsonSurfer(new JacksonParser(), provider);
+        surfer = JsonSurfer.jackson();
     }
 
     @Test

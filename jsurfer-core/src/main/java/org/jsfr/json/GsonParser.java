@@ -34,6 +34,8 @@ public class GsonParser implements JsonParserAdapter {
 
     public final static GsonParser INSTANCE = new GsonParser();
 
+    private GsonParser(){}
+
     @Override
     public void parse(Reader reader, SurfingContext context) {
         try {

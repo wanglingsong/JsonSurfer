@@ -50,7 +50,7 @@ public class GsonParserTest extends JsonSurferTest {
     @Before
     public void setUp() throws Exception {
         provider = GsonProvider.INSTANCE;
-        surfer = new JsonSurfer(GsonParser.INSTANCE, provider);
+        surfer = JsonSurfer.gson();
     }
 
     private Reader read(String resourceName) throws IOException {

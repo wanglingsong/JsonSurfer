@@ -71,8 +71,8 @@ public class JsonSurferTest {
 
     @Before
     public void setUp() throws Exception {
-        provider = new JsonSimpleProvider();
-        surfer = new JsonSurfer(new JsonSimpleParser(), provider);
+        provider = JsonSimpleProvider.INSTANCE;
+        surfer = JsonSurfer.simple();
     }
 
     @Test
@@ -163,8 +163,8 @@ public class JsonSurferTest {
                 .onValue(anyObject(), any(ParsingContext.class));
     }
 
-    private Reader read(String resourceName) throws IOException {
-        return new InputStreamReader(Resources.getResource(resourceName).openStream(), StandardCharsets.UTF_8);
+    private String read(String resourceName) throws IOException {
+        return Resources.toString(Resources.getResource(resourceName), StandardCharsets.UTF_8);
     }
 
     @Test

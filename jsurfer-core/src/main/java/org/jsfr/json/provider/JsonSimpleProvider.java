@@ -28,6 +28,11 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 public class JsonSimpleProvider implements JsonProvider<JSONObject, JSONArray, Object> {
+
+    public static final JsonSimpleProvider INSTANCE = new JsonSimpleProvider();
+
+    private JsonSimpleProvider(){};
+
     @Override
     public JSONObject createObject() {
         return new JSONObject();

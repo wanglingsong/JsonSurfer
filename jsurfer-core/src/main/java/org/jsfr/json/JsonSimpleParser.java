@@ -30,6 +30,10 @@ import java.io.Reader;
 
 public class JsonSimpleParser implements JsonParserAdapter {
 
+    public static final JsonSimpleParser INSTANCE = new JsonSimpleParser();
+
+    private JsonSimpleParser(){};
+
     @Override
     public void parse(Reader reader, SurfingContext context) {
         JSONParser parser = new JSONParser();

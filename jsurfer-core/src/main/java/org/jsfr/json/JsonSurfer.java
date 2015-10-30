@@ -52,21 +52,21 @@ public class JsonSurfer {
      * @return New JsonSurfer using JsonSimple parser and provider. JsonSimple dependency is included by default.
      */
     public static JsonSurfer simple() {
-        return new JsonSurfer(new JsonSimpleParser(), new JsonSimpleProvider());
+        return new JsonSurfer(JsonSimpleParser.INSTANCE, JsonSimpleProvider.INSTANCE);
     }
 
     /**
      * @return New JsonSurfer using Gson parser and provider. You need to explicitly declare gson dependency.
      */
     public static JsonSurfer gson() {
-        return new JsonSurfer(new GsonParser(), new GsonProvider());
+        return new JsonSurfer(GsonParser.INSTANCE, GsonProvider.INSTANCE);
     }
 
     /**
      * @return New JsonSurfer using Jackson parser and provider. You need to explicitly declare Jackson dependency.
      */
     public static JsonSurfer jackson() {
-        return new JsonSurfer(new JacksonParser(), new JacksonProvider());
+        return new JsonSurfer(JacksonParser.INSTANCE, JacksonProvider.INSTANCE);
     }
 
     /**
@@ -74,9 +74,7 @@ public class JsonSurfer {
      * @param jsonProvider      jsonProvider
      */
     public JsonSurfer(JsonParserAdapter jsonParserAdapter, JsonProvider jsonProvider) {
-        this.jsonParserAdapter = jsonParserAdapter;
-        this.jsonProvider = jsonProvider;
-        this.errorHandlingStrategy = new DefaultErrorHandlingStrategy();
+        this(jsonParserAdapter, jsonProvider, new DefaultErrorHandlingStrategy());
     }
 
     /**
