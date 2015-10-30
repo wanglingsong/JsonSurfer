@@ -162,7 +162,7 @@
     </build>
 
     <modules>
-        <module>jsurfer-simple</module>
+        <module>jsurfer-core</module>
     </modules>
 
     <dependencies>

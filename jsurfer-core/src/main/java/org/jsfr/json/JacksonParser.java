@@ -28,12 +28,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
-import java.io.IOException;
 import java.io.Reader;
 
-/**
- * Created by Leo on 2015/3/29.
- */
 public class JacksonParser implements JsonParserAdapter {
 
     @Override
@@ -150,7 +146,7 @@ public class JacksonParser implements JsonParserAdapter {
                         break;
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
         }
     }

@@ -27,7 +27,6 @@ package org.jsfr.json;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
-import java.io.IOException;
 import java.io.Reader;
 
 public class GsonParser implements JsonParserAdapter {
@@ -151,7 +150,7 @@ public class GsonParser implements JsonParserAdapter {
                         return;
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
         }
     }

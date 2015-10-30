@@ -25,9 +25,7 @@
 package org.jsfr.json;
 
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
-import java.io.IOException;
 import java.io.Reader;
 
 public class JsonSimpleParser implements JsonParserAdapter {
@@ -37,9 +35,7 @@ public class JsonSimpleParser implements JsonParserAdapter {
         JSONParser parser = new JSONParser();
         try {
             parser.parse(reader, new JsonSimpleHandlerAdapter(context));
-        } catch (ParseException e) {
-            context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
-        } catch (IOException e) {
+        } catch (Exception e) {
             context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
         }
     }

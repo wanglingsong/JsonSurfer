@@ -10,7 +10,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>jsurfer-simple</artifactId>
+    <artifactId>jsurfer-core</artifactId>
 
     <profiles>
         <profile>

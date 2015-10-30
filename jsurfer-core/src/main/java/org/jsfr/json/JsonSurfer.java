@@ -199,7 +199,7 @@ public class JsonSurfer {
      */
     @SuppressWarnings("unchecked")
     public <T> T collectOne(Reader reader, Class<T> tClass, JsonPath... paths) {
-        CollectOneListener listener = new CollectOneListener();
+        CollectOneListener listener = new CollectOneListener(true);
         SurfingConfiguration.Builder builder = builder().skipOverlappedPath();
         for (JsonPath jsonPath : paths) {
             builder.bind(jsonPath, listener);
