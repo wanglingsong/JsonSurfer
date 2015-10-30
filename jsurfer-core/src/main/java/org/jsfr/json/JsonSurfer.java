@@ -25,6 +25,10 @@
 package org.jsfr.json;
 
 import org.jsfr.json.path.JsonPath;
+import org.jsfr.json.provider.GsonProvider;
+import org.jsfr.json.provider.JacksonProvider;
+import org.jsfr.json.provider.JsonProvider;
+import org.jsfr.json.provider.JsonSimpleProvider;
 
 import java.io.Reader;
 import java.io.StringReader;

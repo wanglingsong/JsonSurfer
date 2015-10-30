@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json;
+package org.jsfr.json.provider;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -32,14 +32,19 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-/**
- * Created by Administrator on 2015/3/25.
- */
 public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonElement> {
 
     public final static GsonProvider INSTANCE = new GsonProvider();
 
-    private final static Gson DEFAULT_GSON = new GsonBuilder().create();
+    private Gson internalGson;
+
+    public GsonProvider() {
+        this.internalGson = new GsonBuilder().create();
+    }
+
+    public GsonProvider(Gson internalGson) {
+        this.internalGson = internalGson;
+    }
 
     @Override
     public JsonObject createObject() {
@@ -72,6 +77,16 @@ public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonEle
     }
 
     @Override
+    public Object resolve(JsonObject object, String key) {
+        return object.get(key);
+    }
+
+    @Override
+    public Object resolve(JsonArray array, int index) {
+        return array.get(index);
+    }
+
+    @Override
     public JsonElement primitive(boolean value) {
         return new JsonPrimitive(value);
     }
@@ -98,11 +113,12 @@ public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonEle
 
     @Override
     public <T> T cast(JsonElement value, Class<T> tClass) {
-        if (DEFAULT_GSON.getAdapter(tClass) != null) {
-            return DEFAULT_GSON.fromJson(value, tClass);
+        if (internalGson.getAdapter(tClass) != null) {
+            return internalGson.fromJson(value, tClass);
         } else {
             return tClass.cast(value);
         }
     }
+
 
 }

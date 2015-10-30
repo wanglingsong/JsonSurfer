@@ -22,16 +22,19 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json;
+package org.jsfr.json.provider;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-/**
- * Created by Leo on 2015/3/27.
- */
-public class JavaCollectionProvider implements JsonProvider<Map<String, Object>, ArrayList<Object>, Object> {
+public class JavaCollectionProvider implements JsonProvider<Map<String, Object>, List<Object>, Object> {
+
+    public static final JavaCollectionProvider INSTANCE = new JavaCollectionProvider();
+
+    private JavaCollectionProvider() {
+    }
 
     @Override
     public Map<String, Object> createObject() {
@@ -59,8 +62,18 @@ public class JavaCollectionProvider implements JsonProvider<Map<String, Object>,
     }
 
     @Override
-    public void consumeArrayElement(ArrayList<Object> array, Object value) {
+    public void consumeArrayElement(List<Object> array, Object value) {
         array.add(value);
+    }
+
+    @Override
+    public Object resolve(Map<String, Object> object, String key) {
+        return object.get(key);
+    }
+
+    @Override
+    public Object resolve(List<Object> array, int index) {
+        return array.get(index);
     }
 
     @Override

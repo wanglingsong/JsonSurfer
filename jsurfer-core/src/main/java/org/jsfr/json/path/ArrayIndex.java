@@ -24,6 +24,8 @@
 
 package org.jsfr.json.path;
 
+import org.jsfr.json.resolver.JsonPathResolver;
+
 /**
  * Created by Administrator on 2015/3/22.
  */
@@ -58,6 +60,11 @@ public class ArrayIndex extends PathOperator {
     @Override
     public boolean match(PathOperator pathOperator) {
         return super.match(pathOperator) && arrayIndex == ((ArrayIndex) pathOperator).arrayIndex;
+    }
+
+    @Override
+    public Object resolve(Object document, JsonPathResolver resolver) {
+        return resolver.resolve(document, arrayIndex);
     }
 
     @Override

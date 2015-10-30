@@ -24,14 +24,22 @@
 
 package org.jsfr.json.path;
 
+import org.jsfr.json.resolver.JsonPathResolver;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Stack;
 
-public class JsonPath {
+public class JsonPath implements Iterable<PathOperator>, Resolvable {
+
+    @Override
+    public Iterator<PathOperator> iterator() {
+        return this.getOperators().iterator();
+    }
 
     public static class Builder {
 
@@ -116,6 +124,18 @@ public class JsonPath {
 
     protected Stack<PathOperator> operators = new Stack<PathOperator>();
 
+    @Override
+    public Object resolve(Object document, JsonPathResolver resolver) {
+        if (!this.isDefinite()) {
+            throw new IllegalArgumentException("Indefinite JsonPath is not supported.");
+        }
+        Object current = document;
+        for (PathOperator pathOperator : this) {
+            current = pathOperator.resolve(current, resolver);
+        }
+        return current;
+    }
+
     public boolean match(JsonPath jsonPath) {
         PathOperator peek1 = operators.peek();
         PathOperator peek2 = jsonPath.operators.peek();
@@ -167,6 +187,7 @@ public class JsonPath {
     public boolean isDefinite() {
         return definite;
     }
+
 
     @Override
     public String toString() {

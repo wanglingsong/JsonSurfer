@@ -26,29 +26,8 @@ package org.jsfr.json.path;
 
 import org.jsfr.json.resolver.JsonPathResolver;
 
-public class Root extends PathOperator {
+public interface Resolvable {
 
-    private final static Root INSTANCE = new Root();
+    Object resolve(Object document, JsonPathResolver resolver);
 
-    public static Root instance() {
-        return INSTANCE;
-    }
-
-    private Root() {
-    }
-
-    @Override
-    public Object resolve(Object document, JsonPathResolver resolver) {
-        return document;
-    }
-
-    @Override
-    public Type getType() {
-        return Type.ROOT;
-    }
-
-    @Override
-    public String toString() {
-        return "$";
-    }
 }

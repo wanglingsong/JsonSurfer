@@ -30,6 +30,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
+import org.jsfr.json.provider.JacksonProvider;
 import org.junit.Before;
 import org.junit.Test;
 

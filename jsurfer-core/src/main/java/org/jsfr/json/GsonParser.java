@@ -26,6 +26,7 @@ package org.jsfr.json;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
+import org.jsfr.json.provider.JsonProvider;
 
 import java.io.Reader;
 

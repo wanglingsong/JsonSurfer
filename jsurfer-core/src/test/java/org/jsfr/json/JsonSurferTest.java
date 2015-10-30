@@ -28,6 +28,9 @@ import com.google.common.io.Resources;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.jsfr.json.SurfingConfiguration.Builder;
+import org.jsfr.json.provider.JavaCollectionProvider;
+import org.jsfr.json.provider.JsonProvider;
+import org.jsfr.json.provider.JsonSimpleProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -47,7 +50,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.isA;
 import static org.mockito.Mockito.mock;
@@ -396,7 +398,7 @@ public class JsonSurferTest {
     @Test
     public void testPlugableProvider() throws Exception {
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        Builder builder = config().withJsonProvider(new JavaCollectionProvider());
+        Builder builder = config().withJsonProvider(JavaCollectionProvider.INSTANCE);
         builder.bind("$.store", mockListener);
         surfer.surf(read("sample.json"), builder.build());
         verify(mockListener).onValue(isA(HashMap.class), any(ParsingContext.class));

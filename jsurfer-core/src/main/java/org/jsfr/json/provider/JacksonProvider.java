@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json;
+package org.jsfr.json.provider;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -32,13 +32,11 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jsfr.json.exception.JsonSurfingException;
 
-/**
- * Created by Leo on 2015/3/29.
- */
 public class JacksonProvider implements JsonProvider<ObjectNode, ArrayNode, JsonNode> {
 
     private static ObjectMapper OM = new ObjectMapper();
     private static JsonNodeFactory FACTORY = OM.getNodeFactory();
+
     @Override
     public ObjectNode createObject() {
         return FACTORY.objectNode();
@@ -67,6 +65,16 @@ public class JacksonProvider implements JsonProvider<ObjectNode, ArrayNode, Json
     @Override
     public void consumeArrayElement(ArrayNode array, JsonNode value) {
         array.add(value);
+    }
+
+    @Override
+    public Object resolve(ObjectNode object, String key) {
+        return object.get(key);
+    }
+
+    @Override
+    public Object resolve(ArrayNode array, int index) {
+        return array.get(index);
     }
 
     @Override

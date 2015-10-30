@@ -27,6 +27,7 @@ package org.jsfr.json;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import org.jsfr.json.provider.JsonProvider;
 
 import java.io.Reader;
 

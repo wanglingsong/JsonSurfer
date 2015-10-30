@@ -22,33 +22,34 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.path;
+package org.jsfr.json.provider;
 
 import org.jsfr.json.resolver.JsonPathResolver;
 
-public class Root extends PathOperator {
+public interface JsonProvider<O, A, P> extends JsonPathResolver<O, A> {
 
-    private final static Root INSTANCE = new Root();
+    O createObject();
 
-    public static Root instance() {
-        return INSTANCE;
-    }
+    A createArray();
 
-    private Root() {
-    }
+    boolean isObject(Object object);
 
-    @Override
-    public Object resolve(Object document, JsonPathResolver resolver) {
-        return document;
-    }
+    boolean isArray(Object array);
 
-    @Override
-    public Type getType() {
-        return Type.ROOT;
-    }
+    void consumeObjectEntry(O object, String key, P value);
 
-    @Override
-    public String toString() {
-        return "$";
-    }
+    void consumeArrayElement(A array, P value);
+
+    P primitive(boolean value);
+
+    P primitive(int value);
+
+    P primitive(double value);
+
+    P primitive(String value);
+
+    P primitiveNull();
+
+    <T> T cast(P value, Class<T> tClass);
+
 }

@@ -22,33 +22,12 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.path;
+package org.jsfr.json.resolver;
 
-import org.jsfr.json.resolver.JsonPathResolver;
+public interface JsonPathResolver<O, L> {
 
-public class Root extends PathOperator {
+    Object resolve(O object, String key);
 
-    private final static Root INSTANCE = new Root();
+    Object resolve(L array, int index);
 
-    public static Root instance() {
-        return INSTANCE;
-    }
-
-    private Root() {
-    }
-
-    @Override
-    public Object resolve(Object document, JsonPathResolver resolver) {
-        return document;
-    }
-
-    @Override
-    public Type getType() {
-        return Type.ROOT;
-    }
-
-    @Override
-    public String toString() {
-        return "$";
-    }
 }

@@ -22,14 +22,11 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json;
+package org.jsfr.json.provider;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-/**
- * Created by Administrator on 2015/3/25.
- */
 public class JsonSimpleProvider implements JsonProvider<JSONObject, JSONArray, Object> {
     @Override
     public JSONObject createObject() {
@@ -59,6 +56,16 @@ public class JsonSimpleProvider implements JsonProvider<JSONObject, JSONArray, O
     @Override
     public void consumeArrayElement(JSONArray array, Object value) {
         array.add(value);
+    }
+
+    @Override
+    public Object resolve(JSONObject object, String key) {
+        return object.get(key);
+    }
+
+    @Override
+    public Object resolve(JSONArray array, int index) {
+        return array.get(index);
     }
 
     @Override

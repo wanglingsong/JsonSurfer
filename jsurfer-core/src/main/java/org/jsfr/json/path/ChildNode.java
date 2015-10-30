@@ -24,6 +24,8 @@
 
 package org.jsfr.json.path;
 
+import org.jsfr.json.resolver.JsonPathResolver;
+
 import java.util.Objects;
 
 /**
@@ -48,6 +50,11 @@ public class ChildNode extends PathOperator {
     @Override
     public boolean match(PathOperator pathOperator) {
         return super.match(pathOperator) && Objects.equals(key, ((ChildNode) pathOperator).key);
+    }
+
+    @Override
+    public Object resolve(Object document, JsonPathResolver resolver) {
+        return resolver.resolve(document, key);
     }
 
     @Override

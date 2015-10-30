@@ -24,7 +24,9 @@
 
 package org.jsfr.json.path;
 
-public abstract class PathOperator {
+import org.jsfr.json.resolver.JsonPathResolver;
+
+public abstract class PathOperator implements Resolvable {
 
     public enum Type {
         ROOT,
@@ -39,6 +41,11 @@ public abstract class PathOperator {
 
     public boolean match(PathOperator pathOperator) {
         return getType() == pathOperator.getType();
+    }
+
+    @Override
+    public Object resolve(Object document, JsonPathResolver resolver) {
+        throw new UnsupportedOperationException("Not supported");
     }
 
 }

@@ -27,6 +27,7 @@ package org.jsfr.json;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import org.jsfr.json.provider.GsonProvider;
 import org.junit.Before;
 import org.junit.Test;
 

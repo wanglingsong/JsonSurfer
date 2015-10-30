@@ -22,33 +22,39 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.path;
+package org.jsfr.json.resolver;
 
-import org.jsfr.json.resolver.JsonPathResolver;
+import org.jsfr.json.exception.ResolveException;
 
-public class Root extends PathOperator {
+import java.lang.reflect.Field;
+import java.util.List;
 
-    private final static Root INSTANCE = new Root();
+public class PoJoResolver implements JsonPathResolver<Object, Object> {
 
-    public static Root instance() {
-        return INSTANCE;
-    }
-
-    private Root() {
+    @Override
+    public Object resolve(Object object, String field) {
+        Object value;
+        try {
+            Field declaredField = object.getClass().getDeclaredField(field);
+            declaredField.setAccessible(true);
+            value = declaredField.get(object);
+        } catch (IllegalAccessException e) {
+            throw new ResolveException("Failed to resolve field: " + field, e);
+        } catch (NoSuchFieldException e) {
+            throw new ResolveException("Failed to resolve field: " + field, e);
+        }
+        return value;
     }
 
     @Override
-    public Object resolve(Object document, JsonPathResolver resolver) {
-        return document;
+    public Object resolve(Object list, int index) {
+
+        if (list instanceof List) {
+            return ((List) list).get(index);
+        } else if (list.getClass().isArray()) {
+            // TODO should resolve array
+        }
+        throw new UnsupportedOperationException("Unsupported list object " + list);
     }
 
-    @Override
-    public Type getType() {
-        return Type.ROOT;
-    }
-
-    @Override
-    public String toString() {
-        return "$";
-    }
 }

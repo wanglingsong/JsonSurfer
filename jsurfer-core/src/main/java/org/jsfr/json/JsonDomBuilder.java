@@ -24,6 +24,8 @@
 
 package org.jsfr.json;
 
+import org.jsfr.json.provider.JsonProvider;
+
 import java.util.Stack;
 
 /**

@@ -22,35 +22,12 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json;
+package org.jsfr.json.exception;
 
-/**
- * Created by Administrator on 2015/3/25.
- */
-public interface JsonProvider<O, A, P> {
+public class ResolveException extends RuntimeException {
 
-    O createObject();
-
-    A createArray();
-
-    boolean isObject(Object object);
-
-    boolean isArray(Object array);
-
-    void consumeObjectEntry(O object, String key, P value);
-
-    void consumeArrayElement(A array, P value);
-
-    P primitive(boolean value);
-
-    P primitive(int value);
-
-    P primitive(double value);
-
-    P primitive(String value);
-
-    P primitiveNull();
-
-    <T> T cast(P value, Class<T> tClass);
+    public ResolveException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
 }
