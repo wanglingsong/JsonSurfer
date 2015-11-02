@@ -33,6 +33,7 @@ import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.jsfr.json.compiler.JsonPathCompiler.compile;
@@ -60,7 +61,10 @@ public class JsonPathTest {
         assertEquals("JsonSurfer is great!", compile("$.title").resolve(book, new PoJoResolver()));
 
         List<String> list = Arrays.asList("foo", "bar");
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("list", list);
         assertEquals("bar", compile("$[1]").resolve(list, new PoJoResolver()));
+        assertEquals("bar", compile("$.list[1]").resolve(map, JavaCollectionProvider.INSTANCE));
     }
 
 }
