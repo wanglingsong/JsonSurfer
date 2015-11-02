@@ -24,7 +24,8 @@
 
 package org.jsfr.json.path;
 
-import org.jsfr.json.resolver.JsonPathResolver;
+import org.jsfr.json.resolver.DocumentResolver;
+import org.jsfr.json.resolver.Resolvable;
 
 public abstract class PathOperator implements Resolvable {
 
@@ -44,7 +45,7 @@ public abstract class PathOperator implements Resolvable {
     }
 
     @Override
-    public Object resolve(Object document, JsonPathResolver resolver) {
+    public Object resolve(Object document, DocumentResolver resolver) {
         throw new UnsupportedOperationException("Not supported");
     }
 

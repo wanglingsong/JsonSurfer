@@ -69,12 +69,12 @@ public class JacksonProvider implements JsonProvider<ObjectNode, ArrayNode, Json
     }
 
     @Override
-    public void consumeObjectEntry(ObjectNode object, String key, JsonNode value) {
+    public void put(ObjectNode object, String key, JsonNode value) {
         object.set(key, value);
     }
 
     @Override
-    public void consumeArrayElement(ArrayNode array, JsonNode value) {
+    public void add(ArrayNode array, JsonNode value) {
         array.add(value);
     }
 

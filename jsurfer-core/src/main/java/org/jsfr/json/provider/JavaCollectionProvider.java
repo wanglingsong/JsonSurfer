@@ -57,12 +57,12 @@ public class JavaCollectionProvider implements JsonProvider<Map<String, Object>,
     }
 
     @Override
-    public void consumeObjectEntry(Map<String, Object> object, String key, Object value) {
+    public void put(Map<String, Object> object, String key, Object value) {
         object.put(key, value);
     }
 
     @Override
-    public void consumeArrayElement(List<Object> array, Object value) {
+    public void add(List<Object> array, Object value) {
         array.add(value);
     }
 

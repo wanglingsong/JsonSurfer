@@ -24,12 +24,12 @@
 
 package org.jsfr.json.resolver;
 
-import org.jsfr.json.exception.ResolveException;
+import org.jsfr.json.exception.ResolverException;
 
 import java.lang.reflect.Field;
 import java.util.List;
 
-public class PoJoResolver implements JsonPathResolver<Object, Object> {
+public class PoJoResolver implements DocumentResolver<Object, Object> {
 
     @Override
     public Object resolve(Object object, String field) {
@@ -39,9 +39,9 @@ public class PoJoResolver implements JsonPathResolver<Object, Object> {
             declaredField.setAccessible(true);
             value = declaredField.get(object);
         } catch (IllegalAccessException e) {
-            throw new ResolveException("Failed to resolve field: " + field, e);
+            throw new ResolverException("Failed to resolve field: " + field, e);
         } catch (NoSuchFieldException e) {
-            throw new ResolveException("Failed to resolve field: " + field, e);
+            throw new ResolverException("Failed to resolve field: " + field, e);
         }
         return value;
     }

@@ -24,13 +24,10 @@
 
 package org.jsfr.json.path;
 
-import org.jsfr.json.resolver.JsonPathResolver;
+import org.jsfr.json.resolver.DocumentResolver;
 
 import java.util.Objects;
 
-/**
- * Created by Administrator on 2015/3/22.
- */
 public class ChildNode extends PathOperator {
 
     private String key;
@@ -53,7 +50,7 @@ public class ChildNode extends PathOperator {
     }
 
     @Override
-    public Object resolve(Object document, JsonPathResolver resolver) {
+    public Object resolve(Object document, DocumentResolver resolver) {
         return resolver.resolve(document, key);
     }
 

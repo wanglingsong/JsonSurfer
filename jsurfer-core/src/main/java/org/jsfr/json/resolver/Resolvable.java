@@ -22,12 +22,10 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.exception;
+package org.jsfr.json.resolver;
 
-public class ResolveException extends RuntimeException {
+public interface Resolvable {
 
-    public ResolveException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    Object resolve(Object document, DocumentResolver resolver);
 
 }

@@ -54,12 +54,12 @@ public class JsonSimpleProvider implements JsonProvider<JSONObject, JSONArray, O
     }
 
     @Override
-    public void consumeObjectEntry(JSONObject object, String key, Object value) {
+    public void put(JSONObject object, String key, Object value) {
         object.put(key, value);
     }
 
     @Override
-    public void consumeArrayElement(JSONArray array, Object value) {
+    public void add(JSONArray array, Object value) {
         array.add(value);
     }
 

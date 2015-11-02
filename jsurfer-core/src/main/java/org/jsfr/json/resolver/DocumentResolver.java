@@ -22,12 +22,12 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.path;
+package org.jsfr.json.resolver;
 
-import org.jsfr.json.resolver.JsonPathResolver;
+public interface DocumentResolver<O, L> {
 
-public interface Resolvable {
+    Object resolve(O object, String key);
 
-    Object resolve(Object document, JsonPathResolver resolver);
+    Object resolve(L array, int index);
 
 }

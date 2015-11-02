@@ -24,7 +24,7 @@
 
 package org.jsfr.json.path;
 
-import org.jsfr.json.resolver.JsonPathResolver;
+import org.jsfr.json.resolver.DocumentResolver;
 
 public class Root extends PathOperator {
 
@@ -38,7 +38,7 @@ public class Root extends PathOperator {
     }
 
     @Override
-    public Object resolve(Object document, JsonPathResolver resolver) {
+    public Object resolve(Object document, DocumentResolver resolver) {
         return document;
     }
 

@@ -24,9 +24,9 @@
 
 package org.jsfr.json.provider;
 
-import org.jsfr.json.resolver.JsonPathResolver;
+import org.jsfr.json.resolver.DocumentResolver;
 
-public interface JsonProvider<O, A, P> extends JsonPathResolver<O, A> {
+public interface JsonProvider<O, A, P> extends DocumentResolver<O, A> {
 
     O createObject();
 
@@ -36,9 +36,9 @@ public interface JsonProvider<O, A, P> extends JsonPathResolver<O, A> {
 
     boolean isArray(Object array);
 
-    void consumeObjectEntry(O object, String key, P value);
+    void put(O object, String key, P value);
 
-    void consumeArrayElement(A array, P value);
+    void add(A array, P value);
 
     P primitive(boolean value);
 

@@ -39,7 +39,7 @@ public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonEle
     private Gson internalGson;
 
     public GsonProvider() {
-        this.internalGson = new GsonBuilder().create();
+        this(new GsonBuilder().create());
     }
 
     public GsonProvider(Gson internalGson) {
@@ -67,12 +67,12 @@ public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonEle
     }
 
     @Override
-    public void consumeObjectEntry(JsonObject object, String key, JsonElement value) {
+    public void put(JsonObject object, String key, JsonElement value) {
         object.add(key, value);
     }
 
     @Override
-    public void consumeArrayElement(JsonArray array, JsonElement value) {
+    public void add(JsonArray array, JsonElement value) {
         array.add(value);
     }
 

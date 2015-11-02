@@ -22,12 +22,12 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json.resolver;
+package org.jsfr.json.exception;
 
-public interface JsonPathResolver<O, L> {
+public class ResolverException extends RuntimeException {
 
-    Object resolve(O object, String key);
-
-    Object resolve(L array, int index);
+    public ResolverException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
 }

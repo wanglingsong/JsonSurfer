@@ -37,8 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
@@ -86,22 +84,22 @@ public class JsonSurferTest {
         surfer.surf(read("sample.json"), builder.build());
 
         Object book = provider.createObject();
-        provider.consumeObjectEntry(book, "category", provider.primitive("reference"));
-        provider.consumeObjectEntry(book, "author", provider.primitive("Nigel Rees"));
-        provider.consumeObjectEntry(book, "title", provider.primitive("Sayings of the Century"));
-        provider.consumeObjectEntry(book, "price", provider.primitive(8.95));
+        provider.put(book, "category", provider.primitive("reference"));
+        provider.put(book, "author", provider.primitive("Nigel Rees"));
+        provider.put(book, "title", provider.primitive("Sayings of the Century"));
+        provider.put(book, "price", provider.primitive(8.95));
         verify(mockListener).onValue(eq(book), any(ParsingContext.class));
 
         verify(mockListener).onValue(eq(provider.primitive("reference")), any(ParsingContext.class));
 
         Object cars = provider.createArray();
-        provider.consumeArrayElement(cars, provider.primitive("ferrari"));
-        provider.consumeArrayElement(cars, provider.primitive("lamborghini"));
+        provider.add(cars, provider.primitive("ferrari"));
+        provider.add(cars, provider.primitive("lamborghini"));
         verify(mockListener).onValue(eq(cars), any(ParsingContext.class));
 
         Object bicycle = provider.createObject();
-        provider.consumeObjectEntry(bicycle, "color", provider.primitive("red"));
-        provider.consumeObjectEntry(bicycle, "price", provider.primitive(19.95d));
+        provider.put(bicycle, "color", provider.primitive("red"));
+        provider.put(bicycle, "price", provider.primitive(19.95d));
         verify(mockListener).onValue(eq(bicycle), any(ParsingContext.class));
     }
 
@@ -214,13 +212,13 @@ public class JsonSurferTest {
         builder.bind("$[4]", objectElement);
         surfer.surf(read("array.json"), builder.build());
         Object object = provider.createObject();
-        provider.consumeObjectEntry(object, "key", provider.primitive("value"));
+        provider.put(object, "key", provider.primitive("value"));
         Object array = provider.createArray();
-        provider.consumeArrayElement(array, provider.primitive("abc"));
-        provider.consumeArrayElement(array, provider.primitive(8.88));
-        provider.consumeArrayElement(array, provider.primitive(true));
-        provider.consumeArrayElement(array, provider.primitiveNull());
-        provider.consumeArrayElement(array, object);
+        provider.add(array, provider.primitive("abc"));
+        provider.add(array, provider.primitive(8.88));
+        provider.add(array, provider.primitive(true));
+        provider.add(array, provider.primitiveNull());
+        provider.add(array, object);
         verify(wholeArray).onValue(eq(array), any(ParsingContext.class));
         verify(stringElement).onValue(eq(provider.primitive("abc")), any(ParsingContext.class));
         verify(numberElement).onValue(eq(provider.primitive(8.88)), any(ParsingContext.class));

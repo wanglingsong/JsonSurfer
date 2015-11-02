@@ -64,10 +64,10 @@ public class JsonDomBuilder implements JsonSaxHandler {
         Object newObject = provider.createObject();
         switch (scope) {
             case IN_OBJECT:
-                provider.consumeObjectEntry(currentNode, propertyName, newObject);
+                provider.put(currentNode, propertyName, newObject);
                 break;
             case IN_ARRAY:
-                provider.consumeArrayElement(currentNode, newObject);
+                provider.add(currentNode, newObject);
                 break;
             case IN_ROOT:
                 break;
@@ -127,10 +127,10 @@ public class JsonDomBuilder implements JsonSaxHandler {
         Object newArray = provider.createArray();
         switch (scope) {
             case IN_OBJECT:
-                provider.consumeObjectEntry(currentNode, propertyName, newArray);
+                provider.put(currentNode, propertyName, newArray);
                 break;
             case IN_ARRAY:
-                provider.consumeArrayElement(currentNode, newArray);
+                provider.add(currentNode, newArray);
                 break;
             case IN_ROOT:
                 break;
@@ -150,10 +150,10 @@ public class JsonDomBuilder implements JsonSaxHandler {
     private void consumePrimitive(Object value) {
         switch (scope) {
             case IN_OBJECT:
-                provider.consumeObjectEntry(currentNode, propertyName, value);
+                provider.put(currentNode, propertyName, value);
                 break;
             case IN_ARRAY:
-                provider.consumeArrayElement(currentNode, value);
+                provider.add(currentNode, value);
                 break;
             case IN_ROOT:
                 currentNode = value;
