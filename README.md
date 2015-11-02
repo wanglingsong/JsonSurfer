@@ -23,18 +23,6 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 
 ### [What is JsonPath?](http://goessner.net/articles/JsonPath/)
 
-* JsonSurfer is fast !!! The benchmark is powered by [JMH](http://openjdk.java.net/projects/code-tools/jmh/)
-
-```
-Benchmark                                            Mode  Cnt       Score      Error  Units
-BenchmarkCollectSingleValue.benchmarkGson           thrpt   10  164451.503 ± 8299.919  ops/s
-BenchmarkCollectSingleValue.benchmarkGsonSurfer     thrpt   10  642046.424 ± 1356.375  ops/s
-BenchmarkCollectSingleValue.benchmarkJackson        thrpt   10  209379.817 ± 1597.369  ops/s
-BenchmarkCollectSingleValue.benchmarkJacksonSurfer  thrpt   10  457160.610 ± 2396.219  ops/s
-BenchmarkCollectSingleValue.benchmarkSimpleSurfer   thrpt   10  217048.771 ±  897.836  ops/s
-```
-
-
 * JsonSurfer supports imcomplete JsonPath feature at current version:
 
 | Operator                  |   Description     | Supported |
@@ -54,36 +42,14 @@ BenchmarkCollectSingleValue.benchmarkSimpleSurfer   thrpt   10  217048.771 ±  8
 ```xml
 <dependency>
     <groupId>com.github.jsurfer</groupId>
-    <artifactId>jsurfer-simple</artifactId>
-    <version>1.2.5</version>
+    <artifactId>jsurfer-core</artifactId>
+    <version>1.2.6</version>
 </dependency>
 ```
 
-* JsonSurfer provides flexible plug-in interface, you can choose your json library for parsing and modeling. For example:
-```java
-        // use json-simple parser (Json-Simple dependency is included by default)
-        // transform json into json-simple model i.e.org.json.simple.JSONObject or org.json.simple.JSONArray
-        JsonSurfer surfer = new JsonSurfer(new JsonSimpleParser(), new JsonSimpleProvider());
-        // or 
-        JsonSurfer surfer = JsonSurfer.simple();
-```
-```java
-        // use gson parser (You need to explicitly declare Gson dependency in you pom)
-        // transform json into gson model i.e.com.google.gson.JsonElement
-        JsonSurfer surfer = new JsonSurfer(new GsonParser(), new GsonProvider());
-        // or 
-        JsonSurfer surfer = JsonSurfer.gson();
-```
-* JsonPath binding. More details in the code examples section.
-```java
-        // Find all properties within builders objects
-        builder.bind("$.builders.*.properties", printListener).skipOverlappedPath();
-```
-* Stop parsing on the fly. Refer to [Stoppable parsing](#stoppable-parsing)
+### Surfing API:
 
-### APIs:
-
-#### "Surf" in Json DOM tree firing matched value to registered listeners
+#### "Surfing" in Json DOM tree firing matched value to registered listeners
 ```java
         JsonSurfer jsonSurfer = JsonSurfer.gson();
         SurfingConfiguration.Builder builder = SurfingConfiguration.builder();
@@ -106,7 +72,44 @@ BenchmarkCollectSingleValue.benchmarkSimpleSurfer   thrpt   10  217048.771 ±  8
         JsonSurfer jsonSurfer = JsonSurfer.gson();
         Collection<Object> multipleResults = jsonSurfer.collectAll(sample, "$.store.book[*]");
 ```
-### Code Examples
+
+### Resolver API:
+* As of 1.2.6, JsonSurfer provides another way of processing json. You can directly resolve value with JsonPath from a well-built DOM like HashMap or even POJO:
+```
+        Book book = new Book();
+        book.setAuthor("Leo");
+        book.setCategory("Fiction");
+        book.setPrice(100.0d);
+        book.setTitle("JsonSurfer is great!");
+        System.out.print(compile("$.author").resolve(book, new PoJoResolver()));
+```
+which prints "Leo".
+```
+        List<String> list = Arrays.asList("foo", "bar");
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("list", list);
+        System.out.println(compile("$.list[1]").resolve(map, JavaCollectionProvider.INSTANCE));
+```
+which prints "bar".
+
+### Other API:
+
+* JsonSurfer provides flexible plug-in interface, you can choose your library for parsing and modeling. For example:
+```java
+        // use json-simple parser (Json-Simple dependency is included by default)
+        // transform json into json-simple model i.e.org.json.simple.JSONObject or org.json.simple.JSONArray
+        JsonSurfer surfer = new JsonSurfer(JsonSimpleParser.INSTANCE, JsonSimpleProvider.INSTANCE);
+        // or JsonSurfer surfer = JsonSurfer.simple();
+```
+```java
+        // use gson parser (You need to explicitly declare Gson dependency in you pom)
+        // transform json into gson model i.e.com.google.gson.JsonElement
+        JsonSurfer surfer = new JsonSurfer(GsonParser.INSTANCE, GsonProvider.INSTANCE);
+        // or JsonSurfer surfer = JsonSurfer.gson();
+```
+* Stop parsing on the fly. Refer to [Stoppable parsing](#stoppable-parsing)
+
+### More code Examples
 
 Sample Json:
 ```javascript
@@ -254,4 +257,15 @@ Output
 ```
 {"category":"reference","author":"Nigel Rees","title":"Sayings of the Century","price":8.95}
 ```
+### Benchmark
 
+* JsonSurfer is fast !!! The benchmark is powered by [JMH](http://openjdk.java.net/projects/code-tools/jmh/)
+
+```
+Benchmark                                            Mode  Cnt       Score      Error  Units
+BenchmarkCollectSingleValue.benchmarkGson           thrpt   10  164451.503 ± 8299.919  ops/s
+BenchmarkCollectSingleValue.benchmarkGsonSurfer     thrpt   10  642046.424 ± 1356.375  ops/s
+BenchmarkCollectSingleValue.benchmarkJackson        thrpt   10  209379.817 ± 1597.369  ops/s
+BenchmarkCollectSingleValue.benchmarkJacksonSurfer  thrpt   10  457160.610 ± 2396.219  ops/s
+BenchmarkCollectSingleValue.benchmarkSimpleSurfer   thrpt   10  217048.771 ±  897.836  ops/s
+```
