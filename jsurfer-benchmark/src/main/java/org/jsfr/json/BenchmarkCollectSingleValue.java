@@ -79,7 +79,7 @@ public class BenchmarkCollectSingleValue {
         gsonSurfer = JsonSurfer.gson();
         jacksonSurfer = JsonSurfer.jackson();
         simpleSurfer = JsonSurfer.simple();
-        collectOneListener = new CollectOneListener();
+        collectOneListener = new CollectOneListener(true);
         surfingConfiguration = SurfingConfiguration.builder().bind("$.store.book[0].author", collectOneListener).build();
         json = Resources.toString(Resources.getResource("sample.json"), StandardCharsets.UTF_8);
     }

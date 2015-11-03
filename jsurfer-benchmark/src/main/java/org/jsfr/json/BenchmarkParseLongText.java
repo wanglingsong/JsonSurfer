@@ -74,7 +74,7 @@ public class BenchmarkParseLongText {
         gsonSurfer = JsonSurfer.gson();
         jacksonSurfer = JsonSurfer.jackson();
         simpleSurfer = JsonSurfer.simple();
-        collectOneListener = new CollectOneListener();
+        collectOneListener = new CollectOneListener(true);
         surfingConfiguration = SurfingConfiguration.builder().bind("$.findMe", collectOneListener).build();
         gson = new GsonBuilder().create();
         om = new ObjectMapper();

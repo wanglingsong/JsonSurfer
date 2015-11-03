@@ -24,12 +24,11 @@
 
 package org.jsfr.json;
 
-/**
- * Created by Leo on 2015/3/30.
- */
 public class CollectOneListener implements JsonPathListener {
 
     private boolean shallStopImmediately;
+
+    private boolean gotData = false;
 
     private Object value;
 
@@ -47,7 +46,10 @@ public class CollectOneListener implements JsonPathListener {
 
     @Override
     public void onValue(Object value, ParsingContext context) throws Exception{
-        this.value = value;
+        if (!this.gotData) {
+            this.value = value;
+            this.gotData = true;
+        }
         if (shallStopImmediately) {
             context.stopParsing();
         }
