@@ -263,9 +263,9 @@ Output
 
 ```
 Benchmark                                            Mode  Cnt       Score      Error  Units
-BenchmarkCollectSingleValue.benchmarkGson           thrpt   10  164451.503 ± 8299.919  ops/s
-BenchmarkCollectSingleValue.benchmarkGsonSurfer     thrpt   10  642046.424 ± 1356.375  ops/s
-BenchmarkCollectSingleValue.benchmarkJackson        thrpt   10  209379.817 ± 1597.369  ops/s
-BenchmarkCollectSingleValue.benchmarkJacksonSurfer  thrpt   10  457160.610 ± 2396.219  ops/s
-BenchmarkCollectSingleValue.benchmarkSimpleSurfer   thrpt   10  217048.771 ±  897.836  ops/s
+BenchmarkCollectSingleValue.benchmarkGson           thrpt   10  176764.763 ± 1104.124  ops/s
+BenchmarkCollectSingleValue.benchmarkGsonSurfer     thrpt   10  740780.577 ± 5342.493  ops/s
+BenchmarkCollectSingleValue.benchmarkJackson        thrpt   10  190154.310 ±  929.849  ops/s
+BenchmarkCollectSingleValue.benchmarkJacksonSurfer  thrpt   10  521919.374 ± 2685.533  ops/s
+BenchmarkCollectSingleValue.benchmarkSimpleSurfer   thrpt   10  219732.696 ± 3476.744  ops/s
 ```
