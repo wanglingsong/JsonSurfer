@@ -27,18 +27,37 @@ package org.jsfr.json.path;
 import org.jsfr.json.resolver.DocumentResolver;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Stack;
 
 public class JsonPath implements Iterable<PathOperator> {
 
+    private class JsonPathIterator implements Iterator<PathOperator> {
+
+        private JsonPathNode current = head;
+
+        @Override
+        public boolean hasNext() {
+            return current != null;
+        }
+
+        @Override
+        public PathOperator next() {
+            PathOperator op = current.operator();
+            current = current.next();
+            return op;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("unsupported");
+        }
+
+    }
+
     @Override
     public Iterator<PathOperator> iterator() {
-        return this.getOperators().iterator();
+        return new JsonPathIterator();
     }
 
     public static class Builder {
@@ -47,68 +66,66 @@ public class JsonPath implements Iterable<PathOperator> {
 
         public static Builder start() {
             Builder builder = new Builder();
-            JsonPath newPath = new JsonPath();
-            newPath.operators.push(Root.instance());
-            builder.jsonPath = newPath;
+            builder.jsonPath = new JsonPath();
             return builder;
         }
 
         public Builder child(String key) {
-            jsonPath.operators.push(new ChildNode(key));
+            jsonPath.push(new ChildNode(key));
             return this;
         }
 
         public Builder children(String... children) {
-            jsonPath.operators.push(new ChildrenNode(new HashSet<String>(Arrays.asList(children))));
+            jsonPath.push(new ChildrenNode(new HashSet<String>(Arrays.asList(children))));
             return this;
         }
 
         public Builder anyChild() {
-            jsonPath.operators.push(AnyChild.instance());
+            jsonPath.push(AnyChild.instance());
             return this;
         }
 
 
         public Builder index(int index) {
-            jsonPath.operators.push(new ArrayIndex(index));
+            jsonPath.push(new ArrayIndex(index));
             return this;
         }
 
         public Builder indexes(Integer... indexes) {
-            jsonPath.operators.push(new ArrayIndexes(new HashSet<Integer>(Arrays.asList(indexes))));
+            jsonPath.push(new ArrayIndexes(new HashSet<Integer>(Arrays.asList(indexes))));
             return this;
         }
 
         public Builder anyIndex() {
-            jsonPath.operators.push(AnyIndex.instance());
+            jsonPath.push(AnyIndex.instance());
             return this;
         }
 
         public Builder scan() {
             jsonPath.definite = false;
-            if (!(jsonPath.operators.peek().getType() == PathOperator.Type.DEEP_SCAN)) {
-                jsonPath.operators.push(DeepScan.SINGLETON);
+            if (!(jsonPath.peek().getType() == PathOperator.Type.DEEP_SCAN)) {
+                jsonPath.push(DeepScan.SINGLETON);
             }
             return this;
         }
 
         public Builder any() {
-            jsonPath.operators.push(Wildcard.SINGLETON);
+            jsonPath.push(Wildcard.SINGLETON);
             return this;
         }
 
         public Builder slicing(Integer lower, Integer upper) {
-            jsonPath.operators.push(new ArraySlicing(lower, upper));
+            jsonPath.push(new ArraySlicing(lower, upper));
             return this;
         }
 
         public JsonPath build() {
-            if (jsonPath.operators.peek().getType() == PathOperator.Type.DEEP_SCAN) {
+            if (jsonPath.peek().getType() == PathOperator.Type.DEEP_SCAN) {
                 throw new IllegalStateException("deep-scan shouldn't be the last operator.");
             }
             if (!jsonPath.definite) {
                 // calculate minimum depth
-                for (PathOperator operator : jsonPath.operators) {
+                for (PathOperator operator : jsonPath) {
                     if (!(operator.getType() == PathOperator.Type.DEEP_SCAN)) {
                         jsonPath.minimumDepth++;
                     }
@@ -122,7 +139,15 @@ public class JsonPath implements Iterable<PathOperator> {
     private boolean definite = true;
     private int minimumDepth = 0;
 
-    protected Stack<PathOperator> operators = new Stack<PathOperator>();
+    protected JsonPathNode head;
+    protected JsonPathNode tail;
+    protected int size;
+
+    protected JsonPath() {
+        head = new JsonPathNode(null, Root.instance());
+        tail = head;
+        size = 1;
+    }
 
     public Object resolve(Object document, DocumentResolver resolver) {
         if (!this.isDefinite()) {
@@ -136,23 +161,21 @@ public class JsonPath implements Iterable<PathOperator> {
     }
 
     public boolean match(JsonPath jsonPath) {
-        PathOperator peek1 = operators.peek();
-        PathOperator peek2 = jsonPath.operators.peek();
-        if (!peek1.match(peek2)) {
+        JsonPathNode pointer1 = this.tail;
+        JsonPathNode pointer2 = jsonPath.tail;
+        if (!pointer1.operator().match(pointer2.operator())) {
             return false;
         }
-        ListIterator<PathOperator> iterator1 = operators.listIterator(operators.size() - 1);
-        ListIterator<PathOperator> iterator2 = jsonPath.operators.listIterator(jsonPath.operators.size() - 1);
-        while (iterator1.hasPrevious()) {
-            if (!iterator2.hasPrevious()) {
+        while (pointer1.hasPrevious()) {
+            if (!pointer2.hasPrevious()) {
                 return false;
             }
-            PathOperator o1 = iterator1.previous();
-            PathOperator o2 = iterator2.previous();
+            PathOperator o1 = (pointer1 = pointer1.previous()).operator();
+            PathOperator o2 = (pointer2 = pointer2.previous()).operator();
             if (o1.getType() == PathOperator.Type.DEEP_SCAN) {
-                PathOperator prevScan = iterator1.previous();
-                while (!prevScan.match(o2) && iterator2.hasPrevious()) {
-                    o2 = iterator2.previous();
+                PathOperator prevScan = (pointer1 = pointer1.previous()).operator();
+                while (!prevScan.match(o2) && pointer2.hasPrevious()) {
+                    o2 = (pointer2 = pointer2.previous()).operator();
                 }
             } else {
                 if (!o1.match(o2)) {
@@ -160,19 +183,39 @@ public class JsonPath implements Iterable<PathOperator> {
                 }
             }
         }
-        return !iterator2.hasPrevious();
+        return !pointer2.hasPrevious();
     }
 
     public PathOperator peek() {
-        return operators.peek();
+        return tail.operator();
     }
 
-    public List<PathOperator> getOperators() {
-        return Collections.unmodifiableList(operators);
+    protected void push(PathOperator operator) {
+        this.tail = this.tail.createNext(operator);
+        this.size++;
+    }
+
+    protected PathOperator pop() {
+        JsonPathNode top = tail;
+        tail = top.previous();
+        tail.resetNext();
+        PathOperator topOperator = top.operator();
+        top.reset();
+        this.size--;
+        return topOperator;
     }
 
     public int pathDepth() {
-        return this.operators.size();
+        return this.size;
+    }
+
+    public void clear() {
+        while (tail.hasPrevious()) {
+            pop();
+        }
+        tail.reset();
+        head = null;
+        tail = null;
     }
 
     public int minimumPathDepth() {
@@ -191,7 +234,7 @@ public class JsonPath implements Iterable<PathOperator> {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (PathOperator operator : operators) {
+        for (PathOperator operator : this) {
             sb.append(operator);
         }
         return sb.toString();

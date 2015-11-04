@@ -22,46 +22,53 @@
  * THE SOFTWARE.
  */
 
-package org.jsfr.json;
+package org.jsfr.json.path;
 
-import org.jsfr.json.path.ArrayIndex;
-import org.jsfr.json.path.ChildNode;
-import org.jsfr.json.path.JsonPath;
-import org.jsfr.json.path.PathOperator;
+public class JsonPathNode {
 
-class JsonPosition extends JsonPath {
+    private JsonPathNode prev;
 
-    static JsonPosition start() {
-        return new JsonPosition();
+    private JsonPathNode next;
+
+    private PathOperator pathOperator;
+
+    public JsonPathNode(JsonPathNode prev, PathOperator pathOperator) {
+        this.prev = prev;
+        this.pathOperator = pathOperator;
     }
 
-    void stepIntoObject() {
-        push(new ChildNode(null));
+    public JsonPathNode previous() {
+        return prev;
     }
 
-    void updateObjectEntry(String key) {
-        ((ChildNode) peek()).setKey(key);
+    public boolean hasPrevious() {
+        return prev != null;
     }
 
-    void stepOutObject() {
-        pop();
+    public boolean hasNext() {
+        return next != null;
     }
 
-    void stepIntoArray() {
-        push(new ArrayIndex());
+    public JsonPathNode next() {
+        return next;
     }
 
-    boolean accumulateArrayIndex() {
-        PathOperator top = this.peek();
-        if (top.getType() == PathOperator.Type.ARRAY) {
-            ((ArrayIndex) top).increaseArrayIndex();
-            return true;
-        }
-        return false;
+    public void resetNext() {
+        this.next = null;
     }
 
-    void stepOutArray() {
-        pop();
+    public void reset() {
+        this.prev = null;
+        this.next = null;
+        this.pathOperator = null;
+    }
+
+    public PathOperator operator() {
+        return pathOperator;
+    }
+
+    public JsonPathNode createNext(PathOperator pathOperator) {
+        return this.next = new JsonPathNode(this, pathOperator);
     }
 
 }
