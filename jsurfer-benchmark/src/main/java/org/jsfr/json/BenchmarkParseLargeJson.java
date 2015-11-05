@@ -47,9 +47,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by lwang on 2015/7/16 0016.
- */
 @Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Threads(1)
@@ -85,19 +82,19 @@ public class BenchmarkParseLargeJson {
     }
 
     @Benchmark
-    public Object benchmarkSimpleSufer() {
+    public Object benchmarkJsonSimpleWithJsonSurfer() {
         simpleSurfer.surf(json, surfingConfiguration);
         return null;
     }
 
     @Benchmark
-    public Object benchmarkGsonSufer() {
+    public Object benchmarkGsonWithJsonSurfer() {
         gsonSurfer.surf(json, surfingConfiguration);
         return null;
     }
 
     @Benchmark
-    public Object benchmarkJacksonSufer() {
+    public Object benchmarkJacksonWithJsonSurfer() {
         jacksonSurfer.surf(json, surfingConfiguration);
         return null;
     }
@@ -105,7 +102,7 @@ public class BenchmarkParseLargeJson {
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(BenchmarkParseLargeJson.class.getSimpleName())
-                .addProfiler(FlightRecordingProfiler.class)
+//                .addProfiler(FlightRecordingProfiler.class)
                 .build();
         new Runner(opt).run();
     }

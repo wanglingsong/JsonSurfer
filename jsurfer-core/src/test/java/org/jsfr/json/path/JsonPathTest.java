@@ -67,4 +67,10 @@ public class JsonPathTest {
         assertEquals("bar", compile("$.list[1]").resolve(map, JavaCollectionProvider.INSTANCE));
     }
 
+    @Test
+    public void shallEnsureJsonPathCapacity() throws Exception {
+        JsonPath path = compile("$.a.b.c.d.e.f.g.h.a.b.c.d.e.f.g.h.a.b.c.d.e.f.g.h.a.b.c.d.e.f.g.h.a.b.c.d.e.f.g.h");
+        assertEquals(41, path.size);
+    }
+
 }

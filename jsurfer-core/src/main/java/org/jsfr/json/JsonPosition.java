@@ -36,6 +36,14 @@ class JsonPosition extends JsonPath {
     }
 
     void stepIntoObject() {
+        if (operators.length > size) {
+            PathOperator next = operators[size];
+            if (next instanceof ChildNode) {
+                size++;
+                ((ChildNode) next).setKey(null);
+                return;
+            }
+        }
         push(new ChildNode(null));
     }
 
@@ -48,6 +56,14 @@ class JsonPosition extends JsonPath {
     }
 
     void stepIntoArray() {
+        if (operators.length > size) {
+            PathOperator next = operators[size];
+            if (next instanceof ArrayIndex) {
+                size++;
+                ((ArrayIndex) next).reset();
+                return;
+            }
+        }
         push(new ArrayIndex());
     }
 

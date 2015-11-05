@@ -51,9 +51,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by lwang on 16/7/2015.
- */
 @Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
 @Threads(1)
@@ -85,7 +82,7 @@ public class BenchmarkCollectSingleValue {
     }
 
     @Benchmark
-    public Object benchmarkGsonSurfer() {
+    public Object benchmarkGsonWithJsonSurfer() {
         gsonSurfer.surf(json, surfingConfiguration);
         Object value = collectOneListener.getValue();
         LOGGER.trace("The author of the first book: {}", value);
@@ -93,7 +90,7 @@ public class BenchmarkCollectSingleValue {
     }
 
     @Benchmark
-    public Object benchmarkJacksonSurfer() {
+    public Object benchmarkJacksonWithJsonSurfer() {
         jacksonSurfer.surf(json, surfingConfiguration);
         Object value = collectOneListener.getValue();
         LOGGER.trace("The author of the first book: {}", value);
@@ -101,7 +98,7 @@ public class BenchmarkCollectSingleValue {
     }
 
     @Benchmark
-    public Object benchmarkSimpleSurfer() {
+    public Object benchmarkJsonSimpleWithJsonSurfer() {
         simpleSurfer.surf(json, surfingConfiguration);
         Object value = collectOneListener.getValue();
         LOGGER.trace("The author of the first book: {}", value);
@@ -128,7 +125,7 @@ public class BenchmarkCollectSingleValue {
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(BenchmarkCollectSingleValue.class.getSimpleName())
-                .addProfiler(FlightRecordingProfiler.class)
+//                .addProfiler(FlightRecordingProfiler.class)
                 .build();
         new Runner(opt).run();
     }

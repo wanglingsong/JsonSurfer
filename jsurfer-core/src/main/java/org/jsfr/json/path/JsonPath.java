@@ -32,20 +32,20 @@ import java.util.Iterator;
 
 public class JsonPath implements Iterable<PathOperator> {
 
+    private static final int JSON_PATH_INITIAL_CAPACITY = 20;
+
     private class JsonPathIterator implements Iterator<PathOperator> {
 
-        private JsonPathNode current = head;
+        private int current = 0;
 
         @Override
         public boolean hasNext() {
-            return current != null;
+            return current < size;
         }
 
         @Override
         public PathOperator next() {
-            PathOperator op = current.operator();
-            current = current.next();
-            return op;
+            return operators[current++];
         }
 
         @Override
@@ -139,13 +139,12 @@ public class JsonPath implements Iterable<PathOperator> {
     private boolean definite = true;
     private int minimumDepth = 0;
 
-    protected JsonPathNode head;
-    protected JsonPathNode tail;
+    protected PathOperator[] operators;
     protected int size;
 
     protected JsonPath() {
-        head = new JsonPathNode(null, Root.instance());
-        tail = head;
+        operators = new PathOperator[JSON_PATH_INITIAL_CAPACITY];
+        operators[0] = Root.instance();
         size = 1;
     }
 
@@ -161,21 +160,21 @@ public class JsonPath implements Iterable<PathOperator> {
     }
 
     public boolean match(JsonPath jsonPath) {
-        JsonPathNode pointer1 = this.tail;
-        JsonPathNode pointer2 = jsonPath.tail;
-        if (!pointer1.operator().match(pointer2.operator())) {
+        int pointer1 = this.size - 1;
+        int pointer2 = jsonPath.size - 1;
+        if (!get(pointer1).match(jsonPath.get(pointer2))) {
             return false;
         }
-        while (pointer1.hasPrevious()) {
-            if (!pointer2.hasPrevious()) {
+        while (pointer1 >= 0) {
+            if (!(pointer2 >= 0)) {
                 return false;
             }
-            PathOperator o1 = (pointer1 = pointer1.previous()).operator();
-            PathOperator o2 = (pointer2 = pointer2.previous()).operator();
+            PathOperator o1 = this.get(pointer1--);
+            PathOperator o2 = jsonPath.get(pointer2--);
             if (o1.getType() == PathOperator.Type.DEEP_SCAN) {
-                PathOperator prevScan = (pointer1 = pointer1.previous()).operator();
-                while (!prevScan.match(o2) && pointer2.hasPrevious()) {
-                    o2 = (pointer2 = pointer2.previous()).operator();
+                PathOperator prevScan = this.get(pointer1--);
+                while (!prevScan.match(o2) && pointer2 >= 0) {
+                    o2 = jsonPath.get(pointer2--);
                 }
             } else {
                 if (!o1.match(o2)) {
@@ -183,26 +182,32 @@ public class JsonPath implements Iterable<PathOperator> {
                 }
             }
         }
-        return !pointer2.hasPrevious();
+        return !(pointer2 >= 0);
+    }
+
+    public PathOperator get(int i) {
+        return operators[i];
     }
 
     public PathOperator peek() {
-        return tail.operator();
+        return operators[size - 1];
     }
 
     protected void push(PathOperator operator) {
-        this.tail = this.tail.createNext(operator);
-        this.size++;
+        ensureCapacity(size + 1);
+        operators[size++] = operator;
+    }
+
+    private void ensureCapacity(int capacity) {
+        if (operators.length < capacity) {
+            PathOperator[] newOperators = new PathOperator[operators.length * 2];
+            System.arraycopy(operators, 0, newOperators, 0, operators.length);
+            operators = newOperators;
+        }
     }
 
     protected PathOperator pop() {
-        JsonPathNode top = tail;
-        tail = top.previous();
-        tail.resetNext();
-        PathOperator topOperator = top.operator();
-        top.reset();
-        this.size--;
-        return topOperator;
+        return operators[--size];
     }
 
     public int pathDepth() {
@@ -210,12 +215,7 @@ public class JsonPath implements Iterable<PathOperator> {
     }
 
     public void clear() {
-        while (tail.hasPrevious()) {
-            pop();
-        }
-        tail.reset();
-        head = null;
-        tail = null;
+        operators = null;
     }
 
     public int minimumPathDepth() {
