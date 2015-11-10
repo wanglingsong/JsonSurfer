@@ -26,24 +26,53 @@ package org.jsfr.json;
 
 import org.jsfr.json.provider.JsonProvider;
 
-import java.util.Stack;
-
-/**
- * Created by Leo on 2015/4/2.
- */
 public class JsonDomBuilder implements JsonSaxHandler {
 
-    private enum SCOPE {
-        IN_OBJECT,
-        IN_ARRAY,
-        IN_ROOT
+    private static final int ROOT = 0;
+    private static final int IN_OBJECT = 1;
+    private static final int IN_ARRAY = 2;
+
+    private JsonProvider provider;
+    private String propertyName;
+
+    private int[] scopeStack = new int[32];
+    private Object[] valueStack = new Object[32];
+    private int stackSize = 0;
+
+    {
+        this.push(ROOT, null);
     }
 
-    private SCOPE scope = SCOPE.IN_ROOT;
-    private JsonProvider provider;
-    private Stack<Object> stack = new Stack<Object>();
-    private Object currentNode;
-    private String propertyName;
+    private void push(int newTop, Object topValue) {
+        if (stackSize == scopeStack.length) {
+            int[] newStack = new int[stackSize * 2];
+            System.arraycopy(scopeStack, 0, newStack, 0, stackSize);
+            scopeStack = newStack;
+            Object[] newValueStack = new Object[stackSize * 2];
+            System.arraycopy(valueStack, 0, newValueStack, 0, stackSize);
+            valueStack = newValueStack;
+        }
+
+        scopeStack[stackSize] = newTop;
+        valueStack[stackSize] = topValue;
+        stackSize++;
+    }
+
+    private int peek() {
+        return scopeStack[stackSize - 1];
+    }
+
+    protected Object peekValue() {
+        return valueStack[stackSize - 1];
+    }
+
+    private void replaceTop(Object value) {
+        valueStack[stackSize - 1] = value;
+    }
+
+    private void pop() {
+        stackSize--;
+    }
 
     public void setProvider(JsonProvider provider) {
         this.provider = provider;
@@ -62,31 +91,29 @@ public class JsonDomBuilder implements JsonSaxHandler {
     @Override
     public boolean startObject() {
         Object newObject = provider.createObject();
-        switch (scope) {
+        switch (peek()) {
+            case ROOT:
+                replaceTop(newObject);
+                break;
             case IN_OBJECT:
-                provider.put(currentNode, propertyName, newObject);
+                provider.put(peekValue(), propertyName, newObject);
+                propertyName = null;
                 break;
             case IN_ARRAY:
-                provider.add(currentNode, newObject);
-                break;
-            case IN_ROOT:
+                provider.add(peekValue(), newObject);
                 break;
         }
-        scope = SCOPE.IN_OBJECT;
-        stack.push(newObject);
-        currentNode = newObject;
-        propertyName = null;
+        push(IN_OBJECT, newObject);
         return true;
     }
 
     @Override
     public boolean startObjectEntry(String key) {
-        switch (scope) {
+        switch (peek()) {
             case IN_OBJECT:
                 propertyName = key;
                 break;
             case IN_ARRAY:
-            case IN_ROOT:
                 throw new IllegalStateException();
         }
         return true;
@@ -94,73 +121,55 @@ public class JsonDomBuilder implements JsonSaxHandler {
 
     @Override
     public boolean endObject() {
-        switch (scope) {
+        switch (peek()) {
             case IN_OBJECT:
-                stepOut();
+                pop();
                 break;
             case IN_ARRAY:
-            case IN_ROOT:
                 throw new IllegalStateException();
         }
         return false;
     }
 
-    private void stepOut() {
-        stack.pop();
-        if (!stack.isEmpty()) {
-            currentNode = stack.peek();
-            // TODO better way to determine scope?
-            if (provider.isObject(currentNode)) {
-                scope = SCOPE.IN_OBJECT;
-            } else if (provider.isArray(currentNode)) {
-                scope = SCOPE.IN_ARRAY;
-            } else {
-                throw new IllegalStateException();
-            }
-        } else {
-            scope = SCOPE.IN_ROOT;
-        }
-    }
-
     @Override
     public boolean startArray() {
         Object newArray = provider.createArray();
-        switch (scope) {
+        switch (peek()) {
+            case ROOT:
+                replaceTop(newArray);
+                break;
             case IN_OBJECT:
-                provider.put(currentNode, propertyName, newArray);
+                provider.put(peekValue(), propertyName, newArray);
+                propertyName = null;
                 break;
             case IN_ARRAY:
-                provider.add(currentNode, newArray);
-                break;
-            case IN_ROOT:
+                provider.add(peekValue(), newArray);
                 break;
         }
-        scope = SCOPE.IN_ARRAY;
-        stack.push(newArray);
-        currentNode = newArray;
+        push(IN_ARRAY, newArray);
         return true;
     }
 
     @Override
     public boolean endArray() {
-        stepOut();
+        pop();
         return true;
     }
 
     private void consumePrimitive(Object value) {
-        switch (scope) {
+        switch (peek()) {
+            case ROOT:
+                replaceTop(value);
+                break;
             case IN_OBJECT:
-                provider.put(currentNode, propertyName, value);
+                provider.put(peekValue(), propertyName, value);
+                propertyName = null;
                 break;
             case IN_ARRAY:
-                provider.add(currentNode, value);
-                break;
-            case IN_ROOT:
-                currentNode = value;
+                provider.add(peekValue(), value);
                 break;
         }
     }
-
 
     @Override
     public boolean primitive(PrimitiveHolder primitiveHolder) {
@@ -169,18 +178,15 @@ public class JsonDomBuilder implements JsonSaxHandler {
     }
 
     public boolean isInRoot() {
-        return scope == SCOPE.IN_ROOT;
+        return peek() == ROOT;
     }
 
-    public Object getCurrentNode() {
-        return currentNode;
-    }
 
     public void clear() {
         propertyName = null;
         provider = null;
-        stack = null;
-        currentNode = null;
+        scopeStack = null;
+        valueStack = null;
     }
 
 }

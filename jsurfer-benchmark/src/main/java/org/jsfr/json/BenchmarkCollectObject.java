@@ -24,10 +24,7 @@
 
 package org.jsfr.json;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
@@ -36,14 +33,12 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -53,17 +48,12 @@ import java.util.concurrent.TimeUnit;
 @Threads(1)
 @Fork(1)
 @State(Scope.Benchmark)
-public class BenchmarkParseLongText {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkParseLongText.class);
+public class BenchmarkCollectObject {
 
     private JsonSurfer gsonSurfer;
     private JsonSurfer jacksonSurfer;
     private JsonSurfer simpleSurfer;
     private SurfingConfiguration surfingConfiguration;
-    private CollectOneListener collectOneListener;
-    private Gson gson;
-    private ObjectMapper om;
     private String json;
 
     @Setup
@@ -71,55 +61,44 @@ public class BenchmarkParseLongText {
         gsonSurfer = JsonSurfer.gson();
         jacksonSurfer = JsonSurfer.jackson();
         simpleSurfer = JsonSurfer.simple();
-        collectOneListener = new CollectOneListener(true);
-        surfingConfiguration = SurfingConfiguration.builder().bind("$.findMe", collectOneListener).build();
-        gson = new GsonBuilder().create();
-        om = new ObjectMapper();
-        json = Resources.toString(Resources.getResource("longText.json"), StandardCharsets.UTF_8);
+        TypedJsonPathListener collectOneListener = new TypedJsonPathListener() {
+
+            private Blackhole blackhole = new Blackhole();
+
+            @Override
+            public void onTypedValue(Object value, ParsingContext context) throws Exception {
+                blackhole.consume(value);
+            }
+        };
+        surfingConfiguration = SurfingConfiguration.builder().bind("$.store.book[*]", Map.class, collectOneListener).build();
+        json = Resources.toString(Resources.getResource("sample.json"), StandardCharsets.UTF_8);
     }
 
-    @Benchmark
-    public Object benchmarkGson() {
-        Object value = gson.fromJson(json, Map.class).get("findMe");
-        LOGGER.trace("Find me: {}", value);
-        return value;
-    }
 
     @Benchmark
-    public Object benchmarkJackson() throws IOException {
-        Object value = om.readTree(json).get("findMe");
-        LOGGER.trace("Find me: {}", value);
-        return value;
-    }
-
-    @Benchmark
-    public Object benchmarkGsonSurfer() {
+    public boolean benchmarkGsonWithJsonSurfer() {
         gsonSurfer.surf(json, surfingConfiguration);
-        Object value = collectOneListener.getValue();
-        LOGGER.trace("Find me: {}", value);
-        return value;
+        return true;
     }
 
     @Benchmark
-    public Object benchmarkJacksonSurfer() {
+    public boolean benchmarkJacksonWithJsonSurfer() {
         jacksonSurfer.surf(json, surfingConfiguration);
-        Object value = collectOneListener.getValue();
-        LOGGER.trace("Find me: {}", value);
-        return value;
+        return true;
     }
 
     @Benchmark
-    public Object benchmarkSimpleSurfer() {
+    public boolean benchmarkJsonSimpleWithJsonSurfer() {
         simpleSurfer.surf(json, surfingConfiguration);
-        Object value = collectOneListener.getValue();
-        LOGGER.trace("Find me: {}", value);
-        return value;
+        return true;
     }
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(BenchmarkParseLongText.class.getSimpleName())
+                .include(BenchmarkCollectObject.class.getSimpleName())
+//                .addProfiler(FlightRecordingProfiler.class)
                 .build();
         new Runner(opt).run();
     }
+
 }
