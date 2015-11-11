@@ -137,12 +137,13 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (stopped) {
             return false;
         }
-        switch (currentPosition.peek().getType()) {
+        PathOperator currentNode = currentPosition.peek();
+        switch (currentNode.getType()) {
             case OBJECT:
                 doMatching(config, currentPosition, dispatcher, null);
                 break;
             case ARRAY:
-                currentPosition.accumulateArrayIndex();
+                accumulateArrayIndex((ArrayIndex) currentNode);
                 doMatching(config, currentPosition, dispatcher, null);
                 break;
         }
@@ -177,12 +178,13 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (stopped) {
             return false;
         }
-        switch (currentPosition.peek().getType()) {
+        PathOperator currentNode = currentPosition.peek();
+        switch (currentNode.getType()) {
             case OBJECT:
                 doMatching(config, currentPosition, dispatcher, null);
                 break;
             case ARRAY:
-                currentPosition.accumulateArrayIndex();
+                accumulateArrayIndex((ArrayIndex) currentNode);
                 doMatching(config, currentPosition, dispatcher, null);
                 break;
         }
@@ -190,6 +192,10 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         currentPosition.stepIntoArray();
         dispatcher.startArray();
         return true;
+    }
+
+    private void accumulateArrayIndex(ArrayIndex arrayIndex) {
+        arrayIndex.increaseArrayIndex();
     }
 
     @Override
@@ -208,12 +214,13 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
             return false;
         }
         this.currentValue = primitiveHolder;
-        switch (currentPosition.peek().getType()) {
+        PathOperator currentNode = currentPosition.peek();
+        switch (currentNode.getType()) {
             case OBJECT:
                 doMatching(config, currentPosition, dispatcher, primitiveHolder);
                 break;
             case ARRAY:
-                currentPosition.accumulateArrayIndex();
+                accumulateArrayIndex((ArrayIndex) currentNode);
                 doMatching(config, currentPosition, dispatcher, primitiveHolder);
                 break;
         }
