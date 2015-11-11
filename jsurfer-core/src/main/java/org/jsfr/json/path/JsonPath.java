@@ -29,6 +29,7 @@ import org.jsfr.json.resolver.DocumentResolver;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class JsonPath implements Iterable<PathOperator> {
 
@@ -45,7 +46,11 @@ public class JsonPath implements Iterable<PathOperator> {
 
         @Override
         public PathOperator next() {
-            return operators[current++];
+            if (current >= size) {
+                throw new NoSuchElementException();
+            } else {
+                return operators[current++];
+            }
         }
 
         @Override

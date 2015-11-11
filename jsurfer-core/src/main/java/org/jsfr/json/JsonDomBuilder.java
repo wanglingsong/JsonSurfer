@@ -67,12 +67,16 @@ public class JsonDomBuilder implements JsonSaxHandler {
         stackSize++;
     }
 
+    private Node peekNode() {
+        return stack[stackSize - 1];
+    }
+
     private int peek() {
-        return stack[stackSize - 1].scope;
+        return peekNode().scope;
     }
 
     protected Object peekValue() {
-        return stack[stackSize - 1].value;
+        return peekNode().value;
     }
 
     private void replaceTop(Object value) {
@@ -100,17 +104,20 @@ public class JsonDomBuilder implements JsonSaxHandler {
     @Override
     public boolean startObject() {
         Object newObject = provider.createObject();
-        switch (peek()) {
+        Node top = peekNode();
+        switch (top.scope) {
             case ROOT:
                 replaceTop(newObject);
                 break;
             case IN_OBJECT:
-                provider.put(peekValue(), propertyName, newObject);
+                provider.put(top.value, propertyName, newObject);
                 propertyName = null;
                 break;
             case IN_ARRAY:
-                provider.add(peekValue(), newObject);
+                provider.add(top.value, newObject);
                 break;
+            default:
+                throw new IllegalStateException();
         }
         push(IN_OBJECT, newObject);
         return true;
@@ -143,17 +150,20 @@ public class JsonDomBuilder implements JsonSaxHandler {
     @Override
     public boolean startArray() {
         Object newArray = provider.createArray();
-        switch (peek()) {
+        Node top = peekNode();
+        switch (top.scope) {
             case ROOT:
                 replaceTop(newArray);
                 break;
             case IN_OBJECT:
-                provider.put(peekValue(), propertyName, newArray);
+                provider.put(top.value, propertyName, newArray);
                 propertyName = null;
                 break;
             case IN_ARRAY:
-                provider.add(peekValue(), newArray);
+                provider.add(top.value, newArray);
                 break;
+            default:
+                throw new IllegalStateException();
         }
         push(IN_ARRAY, newArray);
         return true;
@@ -165,24 +175,24 @@ public class JsonDomBuilder implements JsonSaxHandler {
         return true;
     }
 
-    private void consumePrimitive(Object value) {
-        switch (peek()) {
+    @Override
+    public boolean primitive(PrimitiveHolder primitiveHolder) {
+        Object value = primitiveHolder.getValue();
+        Node top = peekNode();
+        switch (top.scope) {
             case ROOT:
                 replaceTop(value);
                 break;
             case IN_OBJECT:
-                provider.put(peekValue(), propertyName, value);
+                provider.put(top.value, propertyName, value);
                 propertyName = null;
                 break;
             case IN_ARRAY:
-                provider.add(peekValue(), value);
+                provider.add(top.value, value);
                 break;
+            default:
+                throw new IllegalStateException();
         }
-    }
-
-    @Override
-    public boolean primitive(PrimitiveHolder primitiveHolder) {
-        consumePrimitive(primitiveHolder.getValue());
         return true;
     }
 

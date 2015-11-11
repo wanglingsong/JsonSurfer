@@ -24,13 +24,15 @@
 
 package org.jsfr.json;
 
+import java.util.Collection;
+
 class JsonCollector extends JsonDomBuilder {
 
     private ErrorHandlingStrategy errorHandlingStrategy;
-    private JsonPathListener[] jsonPathListeners;
+    private Collection<JsonPathListener> jsonPathListeners;
     private ParsingContext context;
 
-    public JsonCollector(JsonPathListener[] jsonPathListeners, ParsingContext context, ErrorHandlingStrategy errorHandlingStrategy) {
+    public JsonCollector(Collection<JsonPathListener> jsonPathListeners, ParsingContext context, ErrorHandlingStrategy errorHandlingStrategy) {
         this.jsonPathListeners = jsonPathListeners;
         this.context = context;
         this.errorHandlingStrategy = errorHandlingStrategy;
