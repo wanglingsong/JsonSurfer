@@ -32,11 +32,18 @@ public class JsonDomBuilder implements JsonSaxHandler {
     private static final int IN_OBJECT = 1;
     private static final int IN_ARRAY = 2;
 
+    private static class Node {
+
+        private int scope;
+        private Object value;
+
+    }
+
     private JsonProvider provider;
     private String propertyName;
 
-    private int[] scopeStack = new int[32];
-    private Object[] valueStack = new Object[32];
+    private Node[] stack = new Node[32];
+
     private int stackSize = 0;
 
     {
@@ -44,30 +51,32 @@ public class JsonDomBuilder implements JsonSaxHandler {
     }
 
     private void push(int newTop, Object topValue) {
-        if (stackSize == scopeStack.length) {
-            int[] newStack = new int[stackSize * 2];
-            System.arraycopy(scopeStack, 0, newStack, 0, stackSize);
-            scopeStack = newStack;
-            Object[] newValueStack = new Object[stackSize * 2];
-            System.arraycopy(valueStack, 0, newValueStack, 0, stackSize);
-            valueStack = newValueStack;
+        if (stackSize == stack.length) {
+            Node[] newStack = new Node[stackSize * 2];
+            System.arraycopy(stack, 0, newStack, 0, stackSize);
+            stack = newStack;
         }
 
-        scopeStack[stackSize] = newTop;
-        valueStack[stackSize] = topValue;
+        Node next = stack[stackSize];
+        if (next == null) {
+            next = new Node();
+            stack[stackSize] = next;
+        }
+        next.value = topValue;
+        next.scope = newTop;
         stackSize++;
     }
 
     private int peek() {
-        return scopeStack[stackSize - 1];
+        return stack[stackSize - 1].scope;
     }
 
     protected Object peekValue() {
-        return valueStack[stackSize - 1];
+        return stack[stackSize - 1].value;
     }
 
     private void replaceTop(Object value) {
-        valueStack[stackSize - 1] = value;
+        stack[stackSize - 1].value = value;
     }
 
     private void pop() {
@@ -185,8 +194,7 @@ public class JsonDomBuilder implements JsonSaxHandler {
     public void clear() {
         propertyName = null;
         provider = null;
-        scopeStack = null;
-        valueStack = null;
+        stack = null;
     }
 
 }

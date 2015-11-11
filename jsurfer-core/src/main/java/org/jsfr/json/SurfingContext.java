@@ -42,45 +42,10 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     private ContentDispatcher dispatcher = new ContentDispatcher();
     private SurfingConfiguration config;
     private PrimitiveHolder currentValue;
+    private String currentKey;
 
     public SurfingContext(SurfingConfiguration config) {
         this.config = config;
-    }
-
-    @Override
-    public boolean startJSON() {
-        if (stopped) {
-            return true;
-        }
-        currentPosition = JsonPosition.start();
-        doMatching(config, currentPosition, dispatcher, null);
-        dispatcher.startJSON();
-        return true;
-    }
-
-    @Override
-    public boolean endJSON() {
-        if (stopped) {
-            return true;
-        }
-        dispatcher.endJSON();
-        // clear resources
-        currentPosition.clear();
-        currentPosition = null;
-        return true;
-    }
-
-    @Override
-    public boolean startObject() {
-        if (stopped) {
-            return false;
-        }
-        if (currentPosition.accumulateArrayIndex()) {
-            doMatching(config, currentPosition, dispatcher, null);
-        }
-        currentPosition.stepIntoObject();
-        dispatcher.startObject();
-        return true;
     }
 
     private void doMatching(SurfingConfiguration config, JsonPosition currentPosition, ContentDispatcher dispatcher, PrimitiveHolder primitiveHolder) {
@@ -145,6 +110,48 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     }
 
     @Override
+    public boolean startJSON() {
+        if (stopped) {
+            return true;
+        }
+        currentPosition = JsonPosition.start();
+        doMatching(config, currentPosition, dispatcher, null);
+        dispatcher.startJSON();
+        return true;
+    }
+
+    @Override
+    public boolean endJSON() {
+        if (stopped) {
+            return true;
+        }
+        dispatcher.endJSON();
+        // clear resources
+        currentPosition.clear();
+        currentPosition = null;
+        return true;
+    }
+
+    @Override
+    public boolean startObject() {
+        if (stopped) {
+            return false;
+        }
+        switch (currentPosition.peek().getType()) {
+            case OBJECT:
+                doMatching(config, currentPosition, dispatcher, null);
+                break;
+            case ARRAY:
+                currentPosition.accumulateArrayIndex();
+                doMatching(config, currentPosition, dispatcher, null);
+                break;
+        }
+        currentPosition.stepIntoObject();
+        dispatcher.startObject();
+        return true;
+    }
+
+    @Override
     public boolean endObject() {
         if (stopped) {
             return false;
@@ -159,21 +166,27 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (stopped) {
             return false;
         }
-        dispatcher.startObjectEntry(key);
+        currentKey = key;
         currentPosition.updateObjectEntry(key);
-        doMatching(config, currentPosition, dispatcher, null);
+        dispatcher.startObjectEntry(key);
         return true;
     }
-
 
     @Override
     public boolean startArray() {
         if (stopped) {
             return false;
         }
-        if (currentPosition.accumulateArrayIndex()) {
-            doMatching(config, currentPosition, dispatcher, null);
+        switch (currentPosition.peek().getType()) {
+            case OBJECT:
+                doMatching(config, currentPosition, dispatcher, null);
+                break;
+            case ARRAY:
+                currentPosition.accumulateArrayIndex();
+                doMatching(config, currentPosition, dispatcher, null);
+                break;
         }
+
         currentPosition.stepIntoArray();
         dispatcher.startArray();
         return true;
@@ -195,9 +208,16 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
             return false;
         }
         this.currentValue = primitiveHolder;
-        if (currentPosition.accumulateArrayIndex()) {
-            doMatching(config, currentPosition, dispatcher, primitiveHolder);
+        switch (currentPosition.peek().getType()) {
+            case OBJECT:
+                doMatching(config, currentPosition, dispatcher, primitiveHolder);
+                break;
+            case ARRAY:
+                currentPosition.accumulateArrayIndex();
+                doMatching(config, currentPosition, dispatcher, primitiveHolder);
+                break;
         }
+
         dispatcher.primitive(primitiveHolder);
         return true;
     }
@@ -209,12 +229,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     @Override
     public String getCurrentFieldName() {
-        PathOperator top = this.currentPosition.peek();
-        if (top.getType() == Type.OBJECT) {
-            return ((ChildNode)top).getKey();
-        } else {
-            return null;
-        }
+        return currentKey;
     }
 
     @Override

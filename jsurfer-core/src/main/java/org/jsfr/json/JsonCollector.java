@@ -77,26 +77,6 @@ class JsonCollector extends JsonDomBuilder {
     }
 
     @Override
-    public boolean primitive(PrimitiveHolder value) {
-        super.primitive(value);
-        if (isInRoot()) {
-            Object result = peekValue();
-            for (JsonPathListener jsonPathListener : jsonPathListeners) {
-                if (!context.isStopped()) {
-                    try {
-                        jsonPathListener.onValue(result, context);
-                    } catch (Exception e) {
-                        errorHandlingStrategy.handleExceptionFromListener(e, context);
-                    }
-                }
-            }
-            this.clear();
-            return false;
-        }
-        return true;
-    }
-
-    @Override
     public void clear() {
         super.clear();
         this.context = null;
