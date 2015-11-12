@@ -160,6 +160,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (stopped) {
             return false;
         }
+        this.currentKey = null;
         currentPosition.stepOutObject();
         dispatcher.endObject();
         return true;

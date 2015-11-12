@@ -100,6 +100,7 @@ public class SurfingConfiguration {
 
         /**
          * Associated with a JsonSurfer
+         *
          * @param jsonSurfer JsonSurfer
          * @return builder
          */
@@ -110,17 +111,19 @@ public class SurfingConfiguration {
 
         /**
          * Build the configuration and then surf with it and the associated JsonSurfer
+         *
          * @param json json
          */
-        public void surf(String json) {
-            this.surf(this.jsonSurfer.read(json));
+        public void buildAndSurf(String json) {
+            this.buildAndSurf(this.jsonSurfer.read(json));
         }
 
         /**
          * Build the configuration and then surf with it and the associated JsonSurfer
+         *
          * @param jsonReader jsonReader
          */
-        public void surf(Reader jsonReader) {
+        public void buildAndSurf(Reader jsonReader) {
             this.jsonSurfer.surf(jsonReader, this.build());
         }
 

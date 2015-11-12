@@ -92,12 +92,12 @@ public class JsonSurfer {
      *
      * @return SurfingConfiguration builder
      */
-    public SurfingConfiguration.Builder builder() {
+    public SurfingConfiguration.Builder configBuilder() {
         return SurfingConfiguration.builder().withSurfer(this);
     }
 
     /**
-     * @param json json
+     * @param json          json
      * @param configuration SurfingConfiguration that holds JsonPath binding
      */
     public void surf(String json, SurfingConfiguration configuration) {
@@ -129,10 +129,10 @@ public class JsonSurfer {
     }
 
     /**
-     * @param json json
+     * @param json   json
      * @param tClass target class
-     * @param paths JsonPath
-     * @param <T> target class
+     * @param paths  JsonPath
+     * @param <T>    target class
      * @return typed value
      */
     public <T> Collection<T> collectAll(String json, Class<T> tClass, JsonPath... paths) {
@@ -150,7 +150,7 @@ public class JsonSurfer {
      */
     public <T> Collection<T> collectAll(Reader reader, Class<T> tClass, JsonPath... paths) {
         CollectAllListener<T> listener = new CollectAllListener<T>(jsonProvider, tClass);
-        SurfingConfiguration.Builder builder = builder();
+        SurfingConfiguration.Builder builder = configBuilder();
         for (JsonPath jsonPath : paths) {
             builder.bind(jsonPath, listener);
         }
@@ -159,10 +159,10 @@ public class JsonSurfer {
     }
 
     /**
-     * @param json json
+     * @param json   json
      * @param tClass target class
-     * @param paths JsonPath
-     * @param <T> target class
+     * @param paths  JsonPath
+     * @param <T>    target class
      * @return typed value
      */
     public <T> Collection<T> collectAll(String json, Class<T> tClass, String... paths) {
@@ -228,7 +228,7 @@ public class JsonSurfer {
     @SuppressWarnings("unchecked")
     public <T> T collectOne(Reader reader, Class<T> tClass, JsonPath... paths) {
         CollectOneListener listener = new CollectOneListener(true);
-        SurfingConfiguration.Builder builder = builder().skipOverlappedPath();
+        SurfingConfiguration.Builder builder = configBuilder().skipOverlappedPath();
         for (JsonPath jsonPath : paths) {
             builder.bind(jsonPath, listener);
         }
@@ -255,7 +255,7 @@ public class JsonSurfer {
     }
 
     /**
-     * @param json json
+     * @param json  json
      * @param paths JsonPath
      * @return value
      */
