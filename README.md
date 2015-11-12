@@ -49,17 +49,32 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 
 ### Surfing API:
 
-#### "Surfing" in Json DOM tree firing matched value to registered listeners
+#### "Surfing" in Json DOM tree collecting matched value in the listeners
 ```java
-        JsonSurfer jsonSurfer = JsonSurfer.gson();
-        SurfingConfiguration.Builder builder = SurfingConfiguration.builder();
-        builder.bind("$.store.book[*]", new JsonPathListener() {
-            @Override
-            public void onValue(Object value, ParsingContext context) throws Exception {
-                System.out.println(value);
-            }
-        });
-        jsonSurfer.surf(sample, builder.build());
+        JsonSurfer surfer = new JsonSurfer(GsonParser.INSTANCE, JavaCollectionProvider.INSTANCE);
+        surfer.configBuilder()
+                .bind("$.store.book[*]", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) throws Exception {
+                        System.out.println(value);
+                    }
+                })
+                .buildAndSurf(sample);
+```
+
+#### Repeated surfing with same binding
+```java
+        JsonSurfer surfer = new JsonSurfer(GsonParser.INSTANCE, JavaCollectionProvider.INSTANCE);
+        SurfingConfiguration config = surfer.configBuilder()
+                .bind("$.store.book[*]", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) throws Exception {
+                        System.out.println(value);
+                    }
+                })
+                .build();        
+        surfer.surf(sample1, config);
+        surfer.surf(sample2, config);
 ```
 
 #### Collect the first matched value
@@ -157,16 +172,15 @@ Sample Json:
 $.store.book[*].author
 ```
 ```java
-        JsonPathListener print = new JsonPathListener() {
-            @Override
-            public void onValue(Object value, ParsingContext context) {
-                System.out.println(value);
-            }
-        };
         JsonSurfer surfer = JsonSurfer.gson();
-        SurfingConfiguration.Builder builder = BuilderFactory.config();
-        builder.bind("$.store.book[*].author", print);
-        surfer.surf(new InputStreamReader(Resources.getResource("sample.json").openStream()), builder.build());
+        surfer.configBuilder()
+                .bind("$.store.book[*].author", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        System.out.println(value);
+                    }
+                })
+                .buildAndSurf(sample);
 ```
 Output
 ```
@@ -180,7 +194,15 @@ Output
 $..author
 ```
 ```java
-        builder.bind("$..author", print);
+        JsonSurfer surfer = JsonSurfer.gson();
+        surfer.configBuilder()
+                .bind("$..author", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        System.out.println(value);
+                    }
+                })
+                .buildAndSurf(sample);
 ```
 Output
 ```
@@ -194,7 +216,15 @@ Output
 $.store.*
 ```
 ```java
-        builder.bind("$.store.*", print);
+        JsonSurfer surfer = JsonSurfer.gson();
+        surfer.configBuilder()
+                .bind("$.store.*", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        System.out.println(value);
+                    }
+                })
+                .buildAndSurf(sample);
 ```
 Output
 ```
@@ -206,7 +236,15 @@ Output
 $.store..price
 ```
 ```java
-        builder.bind("$.store..price", print);
+        JsonSurfer surfer = JsonSurfer.gson();
+        surfer.configBuilder()
+                .bind("$.store..price", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        System.out.println(value);
+                    }
+                })
+                .buildAndSurf(sample);
 ```
 Output
 ```
@@ -221,7 +259,15 @@ Output
 $..book[2]
 ```
 ```java
-        builder.bind("$..book[2]", print);
+        JsonSurfer surfer = JsonSurfer.gson();
+        surfer.configBuilder()
+                .bind("$..book[2]", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        System.out.println(value);
+                    }
+                })
+                .buildAndSurf(sample);
 ```
 Output
 ```
@@ -232,7 +278,15 @@ Output
 $..book[0,1]
 ```
 ```java
-        builder.bind("$..book[0,1]", print);
+        JsonSurfer surfer = JsonSurfer.gson();
+        surfer.configBuilder()
+                .bind("$..book[0,1]", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        System.out.println(value);
+                    }
+                })
+                .buildAndSurf(sample);
 ```
 Output
 ```
@@ -245,13 +299,15 @@ The parsing is stopped when the first book found and printed.
 $..book[0,1]
 ```
 ```java
-        builder.bind("$..book[0,1]", new JsonPathListener() {
-            @Override
-            public void onValue(Object value, ParsingContext parsingContext) {
-                parsingContext.stopParsing();
-                System.out.println(value);
-            }
-        });
+        JsonSurfer surfer = JsonSurfer.gson();
+        surfer.configBuilder()
+                .bind("$..book[0,1]", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        System.out.println(value);
+                    }
+                })
+                .buildAndSurf(sample);
 ```
 Output
 ```
