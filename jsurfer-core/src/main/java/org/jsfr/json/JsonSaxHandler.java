@@ -25,7 +25,7 @@
 package org.jsfr.json;
 
 /**
- * Created by Leo on 2015/4/2.
+ * SAX like handler API
  */
 public interface JsonSaxHandler {
 

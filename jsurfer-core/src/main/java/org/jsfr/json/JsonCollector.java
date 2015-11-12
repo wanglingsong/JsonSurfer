@@ -26,16 +26,13 @@ package org.jsfr.json;
 
 import java.util.Collection;
 
-/**
- * Created by Administrator on 2015/3/21.
- */
 class JsonCollector extends JsonDomBuilder {
 
     private ErrorHandlingStrategy errorHandlingStrategy;
-    private JsonPathListener[] jsonPathListeners;
+    private Collection<JsonPathListener> jsonPathListeners;
     private ParsingContext context;
 
-    public JsonCollector(JsonPathListener[] jsonPathListeners, ParsingContext context, ErrorHandlingStrategy errorHandlingStrategy) {
+    public JsonCollector(Collection<JsonPathListener> jsonPathListeners, ParsingContext context, ErrorHandlingStrategy errorHandlingStrategy) {
         this.jsonPathListeners = jsonPathListeners;
         this.context = context;
         this.errorHandlingStrategy = errorHandlingStrategy;
@@ -45,7 +42,7 @@ class JsonCollector extends JsonDomBuilder {
     public boolean endObject() {
         super.endObject();
         if (isInRoot()) {
-            Object result = getCurrentNode();
+            Object result = peekValue();
             for (JsonPathListener jsonPathListener : jsonPathListeners) {
                 if (!context.isStopped()) {
                     try {
@@ -65,27 +62,7 @@ class JsonCollector extends JsonDomBuilder {
     public boolean endArray() {
         super.endArray();
         if (isInRoot()) {
-            Object result = getCurrentNode();
-            for (JsonPathListener jsonPathListener : jsonPathListeners) {
-                if (!context.isStopped()) {
-                    try {
-                        jsonPathListener.onValue(result, context);
-                    } catch (Exception e) {
-                        errorHandlingStrategy.handleExceptionFromListener(e, context);
-                    }
-                }
-            }
-            this.clear();
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public boolean primitive(PrimitiveHolder value) {
-        super.primitive(value);
-        if (isInRoot()) {
-            Object result = getCurrentNode();
+            Object result = peekValue();
             for (JsonPathListener jsonPathListener : jsonPathListeners) {
                 if (!context.isStopped()) {
                     try {

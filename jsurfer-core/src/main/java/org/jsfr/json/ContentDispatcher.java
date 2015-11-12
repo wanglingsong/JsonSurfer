@@ -27,9 +27,6 @@ package org.jsfr.json;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-/**
- * Created by Administrator on 2015/3/21.
- */
 class ContentDispatcher implements JsonSaxHandler {
 
     private LinkedList<JsonSaxHandler> receiver = new LinkedList<JsonSaxHandler>();

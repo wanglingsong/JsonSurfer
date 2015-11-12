@@ -27,6 +27,7 @@ package org.jsfr.json;
 import org.jsfr.json.path.JsonPath;
 import org.jsfr.json.provider.JsonProvider;
 
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -78,6 +79,7 @@ public class SurfingConfiguration {
 
     public static class Builder {
 
+        private JsonSurfer jsonSurfer;
         private SurfingConfiguration configuration;
         private Map<Integer, ArrayList<Binding>> definiteBindings = new HashMap<Integer, ArrayList<Binding>>();
         private ArrayList<IndefinitePathBinding> indefiniteBindings = new ArrayList<IndefinitePathBinding>();
@@ -94,6 +96,35 @@ public class SurfingConfiguration {
                 }
             }
             return configuration;
+        }
+
+        /**
+         * Associated with a JsonSurfer
+         *
+         * @param jsonSurfer JsonSurfer
+         * @return builder
+         */
+        public Builder withSurfer(JsonSurfer jsonSurfer) {
+            this.jsonSurfer = jsonSurfer;
+            return this;
+        }
+
+        /**
+         * Build the configuration and then surf with it and the associated JsonSurfer
+         *
+         * @param json json
+         */
+        public void buildAndSurf(String json) {
+            this.buildAndSurf(this.jsonSurfer.read(json));
+        }
+
+        /**
+         * Build the configuration and then surf with it and the associated JsonSurfer
+         *
+         * @param jsonReader jsonReader
+         */
+        public void buildAndSurf(Reader jsonReader) {
+            this.jsonSurfer.surf(jsonReader, this.build());
         }
 
         public Builder bind(String path, JsonPathListener... jsonPathListeners) {

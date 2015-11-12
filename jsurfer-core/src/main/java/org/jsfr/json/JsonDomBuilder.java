@@ -26,24 +26,66 @@ package org.jsfr.json;
 
 import org.jsfr.json.provider.JsonProvider;
 
-import java.util.Stack;
-
-/**
- * Created by Leo on 2015/4/2.
- */
 public class JsonDomBuilder implements JsonSaxHandler {
 
-    private enum SCOPE {
-        IN_OBJECT,
-        IN_ARRAY,
-        IN_ROOT
+    private static final int ROOT = 0;
+    private static final int IN_OBJECT = 1;
+    private static final int IN_ARRAY = 2;
+
+    private static class Node {
+
+        private int scope;
+        private Object value;
+
     }
 
-    private SCOPE scope = SCOPE.IN_ROOT;
     private JsonProvider provider;
-    private Stack<Object> stack = new Stack<Object>();
-    private Object currentNode;
     private String propertyName;
+
+    private Node[] stack = new Node[32];
+
+    private int stackSize = 0;
+
+    {
+        this.push(ROOT, null);
+    }
+
+    private void push(int newTop, Object topValue) {
+        if (stackSize == stack.length) {
+            Node[] newStack = new Node[stackSize * 2];
+            System.arraycopy(stack, 0, newStack, 0, stackSize);
+            stack = newStack;
+        }
+
+        Node next = stack[stackSize];
+        if (next == null) {
+            next = new Node();
+            stack[stackSize] = next;
+        }
+        next.value = topValue;
+        next.scope = newTop;
+        stackSize++;
+    }
+
+    private Node peekNode() {
+        return stack[stackSize - 1];
+    }
+
+    private int peek() {
+        return peekNode().scope;
+    }
+
+    protected Object peekValue() {
+        return peekNode().value;
+    }
+
+    private void replaceTop(Object value) {
+        stack[stackSize - 1].value = value;
+    }
+
+    private void pop() {
+        stackSize--;
+    }
 
     public void setProvider(JsonProvider provider) {
         this.provider = provider;
@@ -62,31 +104,32 @@ public class JsonDomBuilder implements JsonSaxHandler {
     @Override
     public boolean startObject() {
         Object newObject = provider.createObject();
-        switch (scope) {
+        Node top = peekNode();
+        switch (top.scope) {
+            case ROOT:
+                replaceTop(newObject);
+                break;
             case IN_OBJECT:
-                provider.put(currentNode, propertyName, newObject);
+                provider.put(top.value, propertyName, newObject);
+                propertyName = null;
                 break;
             case IN_ARRAY:
-                provider.add(currentNode, newObject);
+                provider.add(top.value, newObject);
                 break;
-            case IN_ROOT:
-                break;
+            default:
+                throw new IllegalStateException();
         }
-        scope = SCOPE.IN_OBJECT;
-        stack.push(newObject);
-        currentNode = newObject;
-        propertyName = null;
+        push(IN_OBJECT, newObject);
         return true;
     }
 
     @Override
     public boolean startObjectEntry(String key) {
-        switch (scope) {
+        switch (peek()) {
             case IN_OBJECT:
                 propertyName = key;
                 break;
             case IN_ARRAY:
-            case IN_ROOT:
                 throw new IllegalStateException();
         }
         return true;
@@ -94,93 +137,74 @@ public class JsonDomBuilder implements JsonSaxHandler {
 
     @Override
     public boolean endObject() {
-        switch (scope) {
+        switch (peek()) {
             case IN_OBJECT:
-                stepOut();
+                pop();
                 break;
             case IN_ARRAY:
-            case IN_ROOT:
                 throw new IllegalStateException();
         }
         return false;
     }
 
-    private void stepOut() {
-        stack.pop();
-        if (!stack.isEmpty()) {
-            currentNode = stack.peek();
-            // TODO better way to determine scope?
-            if (provider.isObject(currentNode)) {
-                scope = SCOPE.IN_OBJECT;
-            } else if (provider.isArray(currentNode)) {
-                scope = SCOPE.IN_ARRAY;
-            } else {
-                throw new IllegalStateException();
-            }
-        } else {
-            scope = SCOPE.IN_ROOT;
-        }
-    }
-
     @Override
     public boolean startArray() {
         Object newArray = provider.createArray();
-        switch (scope) {
+        Node top = peekNode();
+        switch (top.scope) {
+            case ROOT:
+                replaceTop(newArray);
+                break;
             case IN_OBJECT:
-                provider.put(currentNode, propertyName, newArray);
+                provider.put(top.value, propertyName, newArray);
+                propertyName = null;
                 break;
             case IN_ARRAY:
-                provider.add(currentNode, newArray);
+                provider.add(top.value, newArray);
                 break;
-            case IN_ROOT:
-                break;
+            default:
+                throw new IllegalStateException();
         }
-        scope = SCOPE.IN_ARRAY;
-        stack.push(newArray);
-        currentNode = newArray;
+        push(IN_ARRAY, newArray);
         return true;
     }
 
     @Override
     public boolean endArray() {
-        stepOut();
+        pop();
         return true;
     }
 
-    private void consumePrimitive(Object value) {
-        switch (scope) {
-            case IN_OBJECT:
-                provider.put(currentNode, propertyName, value);
-                break;
-            case IN_ARRAY:
-                provider.add(currentNode, value);
-                break;
-            case IN_ROOT:
-                currentNode = value;
-                break;
-        }
-    }
-
-
     @Override
     public boolean primitive(PrimitiveHolder primitiveHolder) {
-        consumePrimitive(primitiveHolder.getValue());
+        Object value = primitiveHolder.getValue();
+        Node top = peekNode();
+        switch (top.scope) {
+            case ROOT:
+                replaceTop(value);
+                break;
+            case IN_OBJECT:
+                provider.put(top.value, propertyName, value);
+                propertyName = null;
+                break;
+            case IN_ARRAY:
+                provider.add(top.value, value);
+                break;
+            default:
+                throw new IllegalStateException();
+        }
         return true;
     }
 
     public boolean isInRoot() {
-        return scope == SCOPE.IN_ROOT;
+        return peek() == ROOT;
     }
 
-    public Object getCurrentNode() {
-        return currentNode;
-    }
 
     public void clear() {
         propertyName = null;
         provider = null;
         stack = null;
-        currentNode = null;
     }
 
 }

@@ -25,7 +25,6 @@
 package org.jsfr.json;
 
 import org.jsfr.json.path.ArrayIndex;
-import org.jsfr.json.path.ChildNode;
 import org.jsfr.json.path.PathOperator;
 import org.jsfr.json.path.PathOperator.Type;
 
@@ -42,48 +41,13 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     private ContentDispatcher dispatcher = new ContentDispatcher();
     private SurfingConfiguration config;
     private PrimitiveHolder currentValue;
+    private String currentKey;
 
     public SurfingContext(SurfingConfiguration config) {
         this.config = config;
     }
 
-    @Override
-    public boolean startJSON() {
-        if (stopped) {
-            return true;
-        }
-        currentPosition = JsonPosition.start();
-        doMatching(config, currentPosition, dispatcher, null);
-        dispatcher.startJSON();
-        return true;
-    }
-
-    @Override
-    public boolean endJSON() {
-        if (stopped) {
-            return true;
-        }
-        dispatcher.endJSON();
-        // clear resources
-        currentPosition.clear();
-        currentPosition = null;
-        return true;
-    }
-
-    @Override
-    public boolean startObject() {
-        if (stopped) {
-            return false;
-        }
-        if (currentPosition.accumulateArrayIndex()) {
-            doMatching(config, currentPosition, dispatcher, null);
-        }
-        currentPosition.stepIntoObject();
-        dispatcher.startObject();
-        return true;
-    }
-
-    private void doMatching(SurfingConfiguration config, JsonPosition currentPosition, ContentDispatcher dispatcher, PrimitiveHolder primitiveHolder) {
+    private void doMatching(PrimitiveHolder primitiveHolder) {
 
         // skip matching if "skipOverlappedPath" is enable
         if (config.isSkipOverlappedPath() && !dispatcher.isEmpty()) {
@@ -125,7 +89,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         }
 
         if (listeners != null) {
-            JsonCollector collector = new JsonCollector(listeners.toArray(new JsonPathListener[listeners.size()]), this, config.getErrorHandlingStrategy());
+            JsonCollector collector = new JsonCollector(listeners, this, config.getErrorHandlingStrategy());
             collector.setProvider(config.getJsonProvider());
             dispatcher.addReceiver(collector);
         }
@@ -145,10 +109,58 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     }
 
     @Override
+    public boolean startJSON() {
+        if (stopped) {
+            return true;
+        }
+        currentPosition = JsonPosition.start();
+        doMatching(null);
+        dispatcher.startJSON();
+        return true;
+    }
+
+    @Override
+    public boolean endJSON() {
+        if (stopped) {
+            return true;
+        }
+        dispatcher.endJSON();
+        // clear resources
+        currentPosition.clear();
+        currentPosition = null;
+        return true;
+    }
+
+    @Override
+    public boolean startObject() {
+        if (stopped) {
+            return false;
+        }
+        PathOperator currentNode = currentPosition.peek();
+        switch (currentNode.getType()) {
+            case OBJECT:
+                doMatching(null);
+                break;
+            case ARRAY:
+                accumulateArrayIndex((ArrayIndex) currentNode);
+                doMatching(null);
+                break;
+            case ROOT:
+                break;
+            default:
+                throw new IllegalStateException();
+        }
+        currentPosition.stepIntoObject();
+        dispatcher.startObject();
+        return true;
+    }
+
+    @Override
     public boolean endObject() {
         if (stopped) {
             return false;
         }
+        this.currentKey = null;
         currentPosition.stepOutObject();
         dispatcher.endObject();
         return true;
@@ -159,24 +171,39 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (stopped) {
             return false;
         }
-        dispatcher.startObjectEntry(key);
+        currentKey = key;
         currentPosition.updateObjectEntry(key);
-        doMatching(config, currentPosition, dispatcher, null);
+        dispatcher.startObjectEntry(key);
         return true;
     }
-
 
     @Override
     public boolean startArray() {
         if (stopped) {
             return false;
         }
-        if (currentPosition.accumulateArrayIndex()) {
-            doMatching(config, currentPosition, dispatcher, null);
+        PathOperator currentNode = currentPosition.peek();
+        switch (currentNode.getType()) {
+            case OBJECT:
+                doMatching(null);
+                break;
+            case ARRAY:
+                accumulateArrayIndex((ArrayIndex) currentNode);
+                doMatching(null);
+                break;
+            case ROOT:
+                break;
+            default:
+                throw new IllegalStateException();
         }
+
         currentPosition.stepIntoArray();
         dispatcher.startArray();
         return true;
+    }
+
+    private void accumulateArrayIndex(ArrayIndex arrayIndex) {
+        arrayIndex.increaseArrayIndex();
     }
 
     @Override
@@ -195,9 +222,21 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
             return false;
         }
         this.currentValue = primitiveHolder;
-        if (currentPosition.accumulateArrayIndex()) {
-            doMatching(config, currentPosition, dispatcher, primitiveHolder);
+        PathOperator currentNode = currentPosition.peek();
+        switch (currentNode.getType()) {
+            case OBJECT:
+                doMatching(primitiveHolder);
+                break;
+            case ARRAY:
+                accumulateArrayIndex((ArrayIndex) currentNode);
+                doMatching(primitiveHolder);
+                break;
+            case ROOT:
+                break;
+            default:
+                throw new IllegalStateException();
         }
+
         dispatcher.primitive(primitiveHolder);
         return true;
     }
@@ -209,12 +248,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     @Override
     public String getCurrentFieldName() {
-        PathOperator top = this.currentPosition.peek();
-        if (top.getType() == Type.OBJECT) {
-            return ((ChildNode)top).getKey();
-        } else {
-            return null;
-        }
+        return currentKey;
     }
 
     @Override
@@ -226,7 +260,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     public int getCurrentArrayIndex() {
         PathOperator top = this.currentPosition.peek();
         if (top.getType() == Type.ARRAY) {
-            return ((ArrayIndex)top).getArrayIndex();
+            return ((ArrayIndex) top).getArrayIndex();
         } else {
             return -1;
         }
