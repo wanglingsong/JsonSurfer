@@ -43,7 +43,7 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-core</artifactId>
-    <version>1.2.6</version>
+    <version>1.2.7</version>
 </dependency>
 ```
 
@@ -90,7 +90,7 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 
 ### Resolver API:
 * As of 1.2.6, JsonSurfer provides another way of processing json. You can directly resolve value with JsonPath from a well-built DOM like HashMap or even POJO:
-```
+```java
         Book book = new Book();
         book.setAuthor("Leo");
         book.setCategory("Fiction");
@@ -99,7 +99,7 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
         System.out.print(compile("$.author").resolve(book, new PoJoResolver()));
 ```
 which prints "Leo".
-```
+```java
         List<String> list = Arrays.asList("foo", "bar");
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("list", list);
