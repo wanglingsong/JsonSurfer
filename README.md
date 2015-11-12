@@ -303,8 +303,9 @@ $..book[0,1]
         surfer.configBuilder()
                 .bind("$..book[0,1]", new JsonPathListener() {
                     @Override
-                    public void onValue(Object value, ParsingContext context) {
+                    public void onValue(Object value, ParsingContext context) {                        
                         System.out.println(value);
+                        context.stopParsing();
                     }
                 })
                 .buildAndSurf(sample);
