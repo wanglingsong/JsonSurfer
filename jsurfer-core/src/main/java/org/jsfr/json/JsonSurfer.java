@@ -34,7 +34,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.Collection;
 
-import static org.jsfr.json.SurfingConfiguration.builder;
 import static org.jsfr.json.compiler.JsonPathCompiler.compile;
 
 
@@ -88,8 +87,21 @@ public class JsonSurfer {
         this.errorHandlingStrategy = errorHandlingStrategy;
     }
 
+    /**
+     * Create SurfingConfiguration builder associated with this surfer
+     *
+     * @return SurfingConfiguration builder
+     */
+    public SurfingConfiguration.Builder builder() {
+        return SurfingConfiguration.builder().withSurfer(this);
+    }
+
+    /**
+     * @param json json
+     * @param configuration SurfingConfiguration that holds JsonPath binding
+     */
     public void surf(String json, SurfingConfiguration configuration) {
-        surf(new StringReader(json), configuration);
+        surf(read(json), configuration);
     }
 
     /**
@@ -102,7 +114,7 @@ public class JsonSurfer {
     }
 
     public Collection<Object> collectAll(String json, JsonPath... paths) {
-        return collectAll(new StringReader(json), paths);
+        return collectAll(read(json), paths);
     }
 
     /**
@@ -116,8 +128,15 @@ public class JsonSurfer {
         return collectAll(reader, Object.class, paths);
     }
 
+    /**
+     * @param json json
+     * @param tClass target class
+     * @param paths JsonPath
+     * @param <T> target class
+     * @return typed value
+     */
     public <T> Collection<T> collectAll(String json, Class<T> tClass, JsonPath... paths) {
-        return collectAll(new StringReader(json), tClass, paths);
+        return collectAll(read(json), tClass, paths);
     }
 
     /**
@@ -139,8 +158,15 @@ public class JsonSurfer {
         return listener.getCollection();
     }
 
+    /**
+     * @param json json
+     * @param tClass target class
+     * @param paths JsonPath
+     * @param <T> target class
+     * @return typed value
+     */
     public <T> Collection<T> collectAll(String json, Class<T> tClass, String... paths) {
-        return collectAll(new StringReader(json), tClass, paths);
+        return collectAll(read(json), tClass, paths);
     }
 
     /**
@@ -157,7 +183,7 @@ public class JsonSurfer {
     }
 
     public Collection<Object> collectAll(String json, String... paths) {
-        return collectAll(new StringReader(json), paths);
+        return collectAll(read(json), paths);
     }
 
     /**
@@ -172,7 +198,7 @@ public class JsonSurfer {
     }
 
     public Object collectOne(String json, JsonPath... paths) {
-        return collectOne(new StringReader(json), paths);
+        return collectOne(read(json), paths);
     }
 
     /**
@@ -187,7 +213,7 @@ public class JsonSurfer {
     }
 
     public <T> T collectOne(String json, Class<T> tClass, JsonPath... paths) {
-        return collectOne(new StringReader(json), tClass, paths);
+        return collectOne(read(json), tClass, paths);
     }
 
     /**
@@ -212,7 +238,7 @@ public class JsonSurfer {
     }
 
     public <T> T collectOne(String json, Class<T> tClass, String... paths) {
-        return collectOne(new StringReader(json), tClass, paths);
+        return collectOne(read(json), tClass, paths);
     }
 
     /**
@@ -228,8 +254,13 @@ public class JsonSurfer {
         return collectOne(reader, tClass, compile(paths));
     }
 
+    /**
+     * @param json json
+     * @param paths JsonPath
+     * @return value
+     */
     public Object collectOne(String json, String... paths) {
-        return collectOne(new StringReader(json), paths);
+        return collectOne(read(json), paths);
     }
 
     /**
@@ -250,6 +281,10 @@ public class JsonSurfer {
         if (configuration.getErrorHandlingStrategy() == null) {
             configuration.setErrorHandlingStrategy(errorHandlingStrategy);
         }
+    }
+
+    public Reader read(String json) {
+        return new StringReader(json);
     }
 
 }
