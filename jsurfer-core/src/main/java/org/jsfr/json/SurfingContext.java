@@ -58,16 +58,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         int currentDepth = currentPosition.pathDepth();
         for (SurfingConfiguration.IndefinitePathBinding binding : config.getIndefinitePathLookup()) {
             if (binding.minimumPathDepth <= currentDepth) {
-                if (binding.jsonPath.match(currentPosition)) {
-                    if (primitiveHolder != null) {
-                        dispatchPrimitive(binding, primitiveHolder.getValue());
-                    } else {
-                        if (listeners == null) {
-                            listeners = new LinkedList<JsonPathListener>();
-                        }
-                        Collections.addAll(listeners, binding.listeners);
-                    }
-                }
+                listeners = doMatching(binding, primitiveHolder, listeners);
             } else {
                 break;
             }
@@ -75,16 +66,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         SurfingConfiguration.Binding[] bindings = config.getDefinitePathBind(currentDepth);
         if (bindings != null) {
             for (SurfingConfiguration.Binding binding : bindings) {
-                if (binding.jsonPath.match(currentPosition)) {
-                    if (primitiveHolder != null) {
-                        dispatchPrimitive(binding, primitiveHolder.getValue());
-                    } else {
-                        if (listeners == null) {
-                            listeners = new LinkedList<JsonPathListener>();
-                        }
-                        Collections.addAll(listeners, binding.listeners);
-                    }
-                }
+                listeners = doMatching(binding, primitiveHolder, listeners);
             }
         }
 
@@ -93,6 +75,20 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
             collector.setProvider(config.getJsonProvider());
             dispatcher.addReceiver(collector);
         }
+    }
+
+    private LinkedList<JsonPathListener> doMatching(SurfingConfiguration.Binding binding, PrimitiveHolder primitiveHolder, LinkedList<JsonPathListener> listeners) {
+        if (binding.jsonPath.match(currentPosition)) {
+            if (primitiveHolder != null) {
+                dispatchPrimitive(binding, primitiveHolder.getValue());
+            } else {
+                if (listeners == null) {
+                    listeners = new LinkedList<JsonPathListener>();
+                }
+                Collections.addAll(listeners, binding.listeners);
+            }
+        }
+        return listeners;
     }
 
     private void dispatchPrimitive(SurfingConfiguration.Binding binding, Object primitive) {
