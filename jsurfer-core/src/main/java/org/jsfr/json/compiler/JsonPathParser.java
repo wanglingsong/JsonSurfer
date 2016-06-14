@@ -1,4 +1,4 @@
-// Generated from JsonPath.g4 by ANTLR 4.5.1
+// Generated from JsonPath.g4 by ANTLR 4.5.3
 
 package org.jsfr.json.compiler;
 
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class JsonPathParser extends Parser {
-	static { RuntimeMetaData.checkVersion("4.5.1", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.5.3", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
@@ -183,6 +183,7 @@ public class JsonPathParser extends Parser {
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__1) | (1L << T__2) | (1L << T__3) | (1L << T__4) | (1L << T__5) | (1L << T__8))) != 0)) {
 				{
 				setState(38);
+				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,0,_ctx) ) {
 				case 1:
 					{
@@ -769,6 +770,7 @@ public class JsonPathParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(122);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,6,_ctx) ) {
 			case 1:
 				{
@@ -853,6 +855,7 @@ public class JsonPathParser extends Parser {
 					_prevctx = _localctx;
 					{
 					setState(138);
+					_errHandler.sync(this);
 					switch ( getInterpreter().adaptivePredict(_input,9,_ctx) ) {
 					case 1:
 						{
