@@ -104,6 +104,11 @@ public class JacksonProvider implements JsonProvider<ObjectNode, ArrayNode, Json
     }
 
     @Override
+    public JsonNode primitive(long value) {
+        return factory.numberNode(value);
+    }
+
+    @Override
     public JsonNode primitive(String value) {
         return factory.textNode(value);
     }

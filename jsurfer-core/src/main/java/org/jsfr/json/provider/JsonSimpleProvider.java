@@ -89,6 +89,11 @@ public class JsonSimpleProvider implements JsonProvider<JSONObject, JSONArray, O
     }
 
     @Override
+    public Object primitive(long value) {
+        return value;
+    }
+
+    @Override
     public Object primitive(String value) {
         return value;
     }

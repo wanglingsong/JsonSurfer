@@ -54,10 +54,10 @@ public class JacksonParser implements JsonParserAdapter {
                 public void doSkipValue() throws Exception {
                 }
             };
-            AbstractPrimitiveHolder intHolder = new AbstractPrimitiveHolder(context.getConfig()) {
+            AbstractPrimitiveHolder longHolder = new AbstractPrimitiveHolder(context.getConfig()) {
                 @Override
                 public Object doGetValue() throws Exception {
-                    return jsonProvider.primitive(jp.getIntValue());
+                    return jsonProvider.primitive(jp.getLongValue());
                 }
 
                 @Override
@@ -121,11 +121,11 @@ public class JacksonParser implements JsonParserAdapter {
                         stringHolder.skipValue();
                         break;
                     case VALUE_NUMBER_INT:
-                        intHolder.init();
-                        if (!context.primitive(intHolder)) {
+                        longHolder.init();
+                        if (!context.primitive(longHolder)) {
                             return;
                         }
-                        intHolder.skipValue();
+                        longHolder.skipValue();
                         break;
                     case VALUE_NUMBER_FLOAT:
                         doubleHolder.init();

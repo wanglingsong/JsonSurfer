@@ -46,6 +46,8 @@ public interface JsonProvider<O, A, P> extends DocumentResolver<O, A> {
 
     P primitive(double value);
 
+    P primitive(long value);
+
     P primitive(String value);
 
     P primitiveNull();

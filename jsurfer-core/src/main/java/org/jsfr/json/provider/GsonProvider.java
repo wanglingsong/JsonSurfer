@@ -102,6 +102,11 @@ public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonEle
     }
 
     @Override
+    public JsonElement primitive(long value) {
+        return new JsonPrimitive(value);
+    }
+
+    @Override
     public JsonElement primitive(String value) {
         return new JsonPrimitive(value);
     }

@@ -92,6 +92,11 @@ public class JavaCollectionProvider implements JsonProvider<Map<String, Object>,
     }
 
     @Override
+    public Object primitive(long value) {
+        return value;
+    }
+
+    @Override
     public Object primitive(String value) {
         return value;
     }
