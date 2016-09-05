@@ -43,23 +43,23 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-core</artifactId>
-    <version>1.2.7</version>
+    <version>1.2.8</version>
 </dependency>
 ```
-* Required dependencies
+* Optional dependencies
 
-JsonSurfer supports Gson, Jackson and JsonSimple but does not transitively include Gson and Jackson. Please choose and declare them in POM by yourself.
+JsonSurfer has driver for Gson, Jackson and JsonSimple but does not transitively include Gson and Jackson library. Please declare them in POM as needed.
 
 ```xml
 <dependency>
     <groupId>com.google.code.gson</groupId>
     <artifactId>gson</artifactId>
-    <version>2.3.1</version>
+    <version>2.7</version>
 </dependency>
 <dependency>
     <groupId>com.fasterxml.jackson.core</groupId>
     <artifactId>jackson-databind</artifactId>
-    <version>2.6.0</version>
+    <version>2.8.2</version>
 </dependency>
 ```
 
