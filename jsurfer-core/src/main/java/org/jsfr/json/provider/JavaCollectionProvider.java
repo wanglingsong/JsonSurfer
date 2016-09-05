@@ -47,16 +47,6 @@ public class JavaCollectionProvider implements JsonProvider<Map<String, Object>,
     }
 
     @Override
-    public boolean isObject(Object object) {
-        return object instanceof HashMap;
-    }
-
-    @Override
-    public boolean isArray(Object array) {
-        return array instanceof ArrayList;
-    }
-
-    @Override
     public void put(Map<String, Object> object, String key, Object value) {
         object.put(key, value);
     }

@@ -59,16 +59,6 @@ public class JacksonProvider implements JsonProvider<ObjectNode, ArrayNode, Json
     }
 
     @Override
-    public boolean isObject(Object object) {
-        return object instanceof ObjectNode;
-    }
-
-    @Override
-    public boolean isArray(Object array) {
-        return array instanceof ArrayNode;
-    }
-
-    @Override
     public void put(ObjectNode object, String key, JsonNode value) {
         object.set(key, value);
     }

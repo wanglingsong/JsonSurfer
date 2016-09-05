@@ -44,16 +44,6 @@ public class JsonSimpleProvider implements JsonProvider<JSONObject, JSONArray, O
     }
 
     @Override
-    public boolean isObject(Object object) {
-        return object instanceof JSONObject;
-    }
-
-    @Override
-    public boolean isArray(Object array) {
-        return array instanceof JSONArray;
-    }
-
-    @Override
     public void put(JSONObject object, String key, Object value) {
         object.put(key, value);
     }

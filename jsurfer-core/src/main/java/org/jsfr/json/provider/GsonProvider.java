@@ -57,16 +57,6 @@ public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonEle
     }
 
     @Override
-    public boolean isObject(Object object) {
-        return object instanceof JsonObject;
-    }
-
-    @Override
-    public boolean isArray(Object array) {
-        return array instanceof JsonArray;
-    }
-
-    @Override
     public void put(JsonObject object, String key, JsonElement value) {
         object.add(key, value);
     }

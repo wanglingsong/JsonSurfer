@@ -32,10 +32,6 @@ public interface JsonProvider<O, A, P> extends DocumentResolver<O, A> {
 
     A createArray();
 
-    boolean isObject(Object object);
-
-    boolean isArray(Object array);
-
     void put(O object, String key, P value);
 
     void add(A array, P value);
