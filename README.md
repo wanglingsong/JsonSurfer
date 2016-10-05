@@ -23,7 +23,7 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 
 ### [What is JsonPath?](http://goessner.net/articles/JsonPath/)
 
-* JsonSurfer supports imcomplete JsonPath feature at current version:
+* JsonSurfer supports incomplete JsonPath feature at current version:
 
 | Operator                  |   Description     | Supported |
 | :-----------------------: |:-----------------:| :-------: |
