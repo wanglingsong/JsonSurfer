@@ -25,13 +25,9 @@
 package org.jsfr.json;
 
 import org.jsfr.json.path.JsonPath;
-import org.jsfr.json.provider.GsonProvider;
-import org.jsfr.json.provider.JacksonProvider;
 import org.jsfr.json.provider.JsonProvider;
-import org.jsfr.json.provider.JsonSimpleProvider;
 
 import java.io.Reader;
-import java.io.StringReader;
 import java.util.Collection;
 
 import static org.jsfr.json.compiler.JsonPathCompiler.compile;
@@ -46,27 +42,6 @@ public class JsonSurfer {
     private JsonProvider jsonProvider;
     private JsonParserAdapter jsonParserAdapter;
     private ErrorHandlingStrategy errorHandlingStrategy;
-
-    /**
-     * @return New JsonSurfer using JsonSimple parser and provider. JsonSimple dependency is included by default.
-     */
-    public static JsonSurfer simple() {
-        return new JsonSurfer(JsonSimpleParser.INSTANCE, JsonSimpleProvider.INSTANCE);
-    }
-
-    /**
-     * @return New JsonSurfer using Gson parser and provider. You need to explicitly declare gson dependency.
-     */
-    public static JsonSurfer gson() {
-        return new JsonSurfer(GsonParser.INSTANCE, GsonProvider.INSTANCE);
-    }
-
-    /**
-     * @return New JsonSurfer using Jackson parser and provider. You need to explicitly declare Jackson dependency.
-     */
-    public static JsonSurfer jackson() {
-        return new JsonSurfer(JacksonParser.INSTANCE, JacksonProvider.INSTANCE);
-    }
 
     /**
      * @param jsonParserAdapter jsonParserAdapter
@@ -101,7 +76,8 @@ public class JsonSurfer {
      * @param configuration SurfingConfiguration that holds JsonPath binding
      */
     public void surf(String json, SurfingConfiguration configuration) {
-        surf(read(json), configuration);
+        ensureSetting(configuration);
+        jsonParserAdapter.parse(json, new SurfingContext(configuration));
     }
 
     /**
@@ -114,7 +90,7 @@ public class JsonSurfer {
     }
 
     public Collection<Object> collectAll(String json, JsonPath... paths) {
-        return collectAll(read(json), paths);
+        return collectAll(json, Object.class, paths);
     }
 
     /**
@@ -136,7 +112,13 @@ public class JsonSurfer {
      * @return typed value
      */
     public <T> Collection<T> collectAll(String json, Class<T> tClass, JsonPath... paths) {
-        return collectAll(read(json), tClass, paths);
+        CollectAllListener<T> listener = new CollectAllListener<T>(jsonProvider, tClass);
+        SurfingConfiguration.Builder builder = configBuilder();
+        for (JsonPath jsonPath : paths) {
+            builder.bind(jsonPath, listener);
+        }
+        surf(json, builder.build());
+        return listener.getCollection();
     }
 
     /**
@@ -166,7 +148,7 @@ public class JsonSurfer {
      * @return typed value
      */
     public <T> Collection<T> collectAll(String json, Class<T> tClass, String... paths) {
-        return collectAll(read(json), tClass, paths);
+        return collectAll(json, tClass, compile(paths));
     }
 
     /**
@@ -183,7 +165,7 @@ public class JsonSurfer {
     }
 
     public Collection<Object> collectAll(String json, String... paths) {
-        return collectAll(read(json), paths);
+        return collectAll(json, Object.class, paths);
     }
 
     /**
@@ -198,7 +180,7 @@ public class JsonSurfer {
     }
 
     public Object collectOne(String json, JsonPath... paths) {
-        return collectOne(read(json), paths);
+        return collectOne(json, Object.class, paths);
     }
 
     /**
@@ -213,7 +195,14 @@ public class JsonSurfer {
     }
 
     public <T> T collectOne(String json, Class<T> tClass, JsonPath... paths) {
-        return collectOne(read(json), tClass, paths);
+        CollectOneListener listener = new CollectOneListener(true);
+        SurfingConfiguration.Builder builder = configBuilder().skipOverlappedPath();
+        for (JsonPath jsonPath : paths) {
+            builder.bind(jsonPath, listener);
+        }
+        surf(json, builder.build());
+        Object value = listener.getValue();
+        return tClass.cast(jsonProvider.cast(value, tClass));
     }
 
     /**
@@ -238,7 +227,7 @@ public class JsonSurfer {
     }
 
     public <T> T collectOne(String json, Class<T> tClass, String... paths) {
-        return collectOne(read(json), tClass, paths);
+        return collectOne(json, tClass, compile(paths));
     }
 
     /**
@@ -260,7 +249,7 @@ public class JsonSurfer {
      * @return value
      */
     public Object collectOne(String json, String... paths) {
-        return collectOne(read(json), paths);
+        return collectOne(json, Object.class, paths);
     }
 
     /**
@@ -281,10 +270,6 @@ public class JsonSurfer {
         if (configuration.getErrorHandlingStrategy() == null) {
             configuration.setErrorHandlingStrategy(errorHandlingStrategy);
         }
-    }
-
-    public Reader read(String json) {
-        return new StringReader(json);
     }
 
 }

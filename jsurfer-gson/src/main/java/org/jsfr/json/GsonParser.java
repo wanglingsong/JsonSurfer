@@ -24,136 +24,144 @@
 
 package org.jsfr.json;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import org.jsfr.json.provider.JsonProvider;
 
 import java.io.Reader;
+import java.io.StringReader;
 
-public class JacksonParser implements JsonParserAdapter {
+public class GsonParser implements JsonParserAdapter {
 
-    public static final JacksonParser INSTANCE = new JacksonParser();
+    public final static GsonParser INSTANCE = new GsonParser();
 
-    private JacksonParser(){};
+    private GsonParser(){}
 
     @Override
-    public void parse(Reader reader, final SurfingContext context) {
+    public void parse(Reader reader, SurfingContext context) {
         try {
-            JsonFactory f = new JsonFactory();
-            final JsonParser jp = f.createParser(reader);
+            final JsonReader jsonReader = new JsonReader(reader);
             final JsonProvider jsonProvider = context.getConfig().getJsonProvider();
-
             AbstractPrimitiveHolder stringHolder = new AbstractPrimitiveHolder(context.getConfig()) {
                 @Override
                 public Object doGetValue() throws Exception {
-                    return jsonProvider.primitive(jp.getText());
+                    return jsonProvider.primitive(jsonReader.nextString());
                 }
 
                 @Override
                 public void doSkipValue() throws Exception {
+                    jsonReader.skipValue();
                 }
             };
-            AbstractPrimitiveHolder longHolder = new AbstractPrimitiveHolder(context.getConfig()) {
+            AbstractPrimitiveHolder numberHolder = new AbstractPrimitiveHolder(context.getConfig()) {
                 @Override
                 public Object doGetValue() throws Exception {
-                    return jsonProvider.primitive(jp.getLongValue());
+                    return jsonProvider.primitive(jsonReader.nextDouble());
                 }
 
                 @Override
                 public void doSkipValue() throws Exception {
+                    jsonReader.skipValue();
                 }
             };
-            AbstractPrimitiveHolder doubleHolder = new AbstractPrimitiveHolder(context.getConfig()) {
+            AbstractPrimitiveHolder booleanHolder = new AbstractPrimitiveHolder(context.getConfig()) {
                 @Override
                 public Object doGetValue() throws Exception {
-                    return jsonProvider.primitive(jp.getDoubleValue());
+                    return jsonProvider.primitive(jsonReader.nextBoolean());
                 }
 
                 @Override
                 public void doSkipValue() throws Exception {
+                    jsonReader.skipValue();
                 }
             };
-            StaticPrimitiveHolder staticPrimitiveHolder = new StaticPrimitiveHolder();
+            AbstractPrimitiveHolder nullHolder = new AbstractPrimitiveHolder(context.getConfig()) {
+                @Override
+                public Object doGetValue() throws Exception {
+                    jsonReader.nextNull();
+                    return jsonProvider.primitiveNull();
+                }
 
+                @Override
+                public void doSkipValue() throws Exception {
+                    jsonReader.skipValue();
+                }
+            };
             context.startJSON();
             while (true) {
-                JsonToken token = jp.nextToken();
-                if (token == null) {
-                    context.endJSON();
-                    return;
-                }
+                JsonToken token = jsonReader.peek();
                 switch (token) {
-                    case NOT_AVAILABLE:
-                        return;
-                    case START_OBJECT:
-                        if (!context.startObject()) {
-                            return;
-                        }
-                        break;
-                    case END_OBJECT:
-                        if (!context.endObject()) {
-                            return;
-                        }
-                        break;
-                    case START_ARRAY:
+                    case BEGIN_ARRAY:
+                        jsonReader.beginArray();
                         if (!context.startArray()) {
                             return;
                         }
                         break;
                     case END_ARRAY:
+                        jsonReader.endArray();
                         if (!context.endArray()) {
                             return;
                         }
                         break;
-                    case FIELD_NAME:
-                        if (!context.startObjectEntry(jp.getCurrentName())) {
+                    case BEGIN_OBJECT:
+                        jsonReader.beginObject();
+                        if (!context.startObject()) {
                             return;
                         }
                         break;
-                    case VALUE_EMBEDDED_OBJECT:
-                        throw new IllegalStateException("Unexpected token");
-                    case VALUE_STRING:
+                    case END_OBJECT:
+                        jsonReader.endObject();
+                        if (!context.endObject()) {
+                            return;
+                        }
+                        break;
+                    case NAME:
+                        String name = jsonReader.nextName();
+                        if (!context.startObjectEntry(name)) {
+                            return;
+                        }
+                        break;
+                    case STRING:
                         stringHolder.init();
                         if (!context.primitive(stringHolder)) {
                             return;
                         }
                         stringHolder.skipValue();
                         break;
-                    case VALUE_NUMBER_INT:
-                        longHolder.init();
-                        if (!context.primitive(longHolder)) {
+                    case NUMBER:
+                        numberHolder.init();
+                        if (!context.primitive(numberHolder)) {
                             return;
                         }
-                        longHolder.skipValue();
+                        numberHolder.skipValue();
                         break;
-                    case VALUE_NUMBER_FLOAT:
-                        doubleHolder.init();
-                        if (!context.primitive(doubleHolder)) {
+                    case BOOLEAN:
+                        booleanHolder.init();
+                        if (!context.primitive(booleanHolder)) {
                             return;
                         }
-                        doubleHolder.skipValue();
+                        booleanHolder.skipValue();
                         break;
-                    case VALUE_TRUE:
-                        if (!context.primitive(staticPrimitiveHolder.withValue(jsonProvider.primitive(true)))) {
+                    case NULL:
+                        nullHolder.init();
+                        if (!context.primitive(nullHolder)) {
                             return;
                         }
+                        nullHolder.skipValue();
                         break;
-                    case VALUE_FALSE:
-                        if (!context.primitive(staticPrimitiveHolder.withValue(jsonProvider.primitive(false)))) {
-                            return;
-                        }
-                        break;
-                    case VALUE_NULL:
-                        if (!context.primitive(staticPrimitiveHolder.withValue(jsonProvider.primitiveNull()))) {
-                            return;
-                        }
-                        break;
+                    case END_DOCUMENT:
+                        context.endJSON();
+                        return;
                 }
             }
         } catch (Exception e) {
             context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
         }
+    }
+
+    @Override
+    public void parse(String json, SurfingContext context) {
+        parse(new StringReader(json), context);
     }
 
 }

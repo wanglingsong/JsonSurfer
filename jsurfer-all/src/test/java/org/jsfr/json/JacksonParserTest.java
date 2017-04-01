@@ -29,13 +29,11 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.Resources;
 import org.jsfr.json.provider.JacksonProvider;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.io.Reader;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -50,7 +48,7 @@ public class JacksonParserTest extends JsonSurferTest {
     @Before
     public void setUp() throws Exception {
         provider = new JacksonProvider();
-        surfer = JsonSurfer.jackson();
+        surfer = new JsonSurfer(JacksonParser.INSTANCE, provider);
     }
 
     @Test
@@ -58,7 +56,7 @@ public class JacksonParserTest extends JsonSurferTest {
         final AtomicLong counter = new AtomicLong();
         ObjectMapper om = new ObjectMapper();
         JsonFactory f = new JsonFactory();
-        JsonParser jp = f.createParser(Resources.getResource("allthethings.json").openStream());
+        JsonParser jp = f.createParser(read("allthethings.json"));
         long start = System.currentTimeMillis();
         jp.nextToken();
         jp.nextToken();
@@ -76,14 +74,14 @@ public class JacksonParserTest extends JsonSurferTest {
 
     @Test
     public void testJacksonTypeBindingOne() throws Exception {
-        InputStreamReader reader = new InputStreamReader(Resources.getResource("sample.json").openStream(), StandardCharsets.UTF_8);
+        Reader reader = read("sample.json");
         Book book = surfer.collectOne(reader, Book.class, "$..book[1]");
         assertEquals("Evelyn Waugh", book.getAuthor());
     }
 
     @Test
     public void testJacksonTypeBindingCollection() throws Exception {
-        InputStreamReader reader = new InputStreamReader(Resources.getResource("sample.json").openStream(), StandardCharsets.UTF_8);
+        Reader reader = read("sample.json");
         Collection<Book> book = surfer.collectAll(reader, Book.class, "$..book[0,1]");
         assertEquals(2, book.size());
         assertEquals("Nigel Rees", book.iterator().next().getAuthor());

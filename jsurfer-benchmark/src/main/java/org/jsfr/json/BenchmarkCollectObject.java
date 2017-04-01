@@ -58,9 +58,9 @@ public class BenchmarkCollectObject {
 
     @Setup
     public void setup() throws Exception {
-        gsonSurfer = JsonSurfer.gson();
-        jacksonSurfer = JsonSurfer.jackson();
-        simpleSurfer = JsonSurfer.simple();
+        gsonSurfer = JsonSurferGson.INSTANCE;
+        jacksonSurfer = JsonSurferJackson.INSTANCE;
+        simpleSurfer = JsonSurferJsonSimple.INSTANCE;
         TypedJsonPathListener collectOneListener = new TypedJsonPathListener() {
 
             private Blackhole blackhole = new Blackhole();

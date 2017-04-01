@@ -67,9 +67,9 @@ public class BenchmarkParseLargeJson {
 
     @Setup
     public void setup(final Blackhole blackhole) throws IOException {
-        simpleSurfer = JsonSurfer.simple();
-        gsonSurfer = JsonSurfer.gson();
-        jacksonSurfer = JsonSurfer.jackson();
+        gsonSurfer = JsonSurferGson.INSTANCE;
+        jacksonSurfer = JsonSurferJackson.INSTANCE;
+        simpleSurfer = JsonSurferJsonSimple.INSTANCE;
         JsonPathListener blackHoleListener = new JsonPathListener() {
             @Override
             public void onValue(Object value, ParsingContext context) throws Exception {

@@ -68,9 +68,9 @@ public class BenchmarkParseLongText {
 
     @Setup
     public void setup() throws Exception {
-        gsonSurfer = JsonSurfer.gson();
-        jacksonSurfer = JsonSurfer.jackson();
-        simpleSurfer = JsonSurfer.simple();
+        gsonSurfer = JsonSurferGson.INSTANCE;
+        jacksonSurfer = JsonSurferJackson.INSTANCE;
+        simpleSurfer = JsonSurferJsonSimple.INSTANCE;
         collectOneListener = new CollectOneListener(true);
         surfingConfiguration = SurfingConfiguration.builder().bind("$.findMe", collectOneListener).build();
         gson = new GsonBuilder().create();

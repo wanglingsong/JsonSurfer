@@ -24,17 +24,13 @@
 
 package org.jsfr.json;
 
-import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import org.jsfr.json.provider.GsonProvider;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -50,11 +46,7 @@ public class GsonParserTest extends JsonSurferTest {
     @Before
     public void setUp() throws Exception {
         provider = GsonProvider.INSTANCE;
-        surfer = JsonSurfer.gson();
-    }
-
-    private Reader read(String resourceName) throws IOException {
-        return new InputStreamReader(Resources.getResource(resourceName).openStream(), StandardCharsets.UTF_8);
+        surfer = new JsonSurfer(GsonParser.INSTANCE, provider);
     }
 
     @Test

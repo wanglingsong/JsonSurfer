@@ -24,6 +24,8 @@
 
 package org.jsfr.json;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
@@ -47,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import profilers.FlightRecordingProfiler;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
@@ -65,6 +68,7 @@ public class BenchmarkCollectSingleValue {
     private JsonSurfer gsonSurfer;
     private JsonSurfer jacksonSurfer;
     private JsonSurfer simpleSurfer;
+    private JsonSurfer fastjsonSurfer;
     private SurfingConfiguration surfingConfiguration;
     private CollectOneListener collectOneListener;
     private String json;
@@ -73,12 +77,29 @@ public class BenchmarkCollectSingleValue {
     public void setup() throws Exception {
         gson = new GsonBuilder().create();
         om = new ObjectMapper();
-        gsonSurfer = JsonSurfer.gson();
-        jacksonSurfer = JsonSurfer.jackson();
-        simpleSurfer = JsonSurfer.simple();
+        gsonSurfer = JsonSurferGson.INSTANCE;
+        jacksonSurfer = JsonSurferJackson.INSTANCE;
+        simpleSurfer = JsonSurferJsonSimple.INSTANCE;
+        fastjsonSurfer = JsonSurferFastJson.INSTANCE;
         collectOneListener = new CollectOneListener(true);
         surfingConfiguration = SurfingConfiguration.builder().bind("$.store.book[0].author", collectOneListener).build();
         json = Resources.toString(Resources.getResource("sample.json"), StandardCharsets.UTF_8);
+    }
+
+    @Benchmark
+    public Object benchmarkFastjsonWithJsonSurfer() {
+        fastjsonSurfer.surf(json, surfingConfiguration);
+        Object value = collectOneListener.getValue();
+        LOGGER.trace("The author of the first book: {}", value);
+        return value;
+    }
+
+    @Benchmark
+    public Object benchmarkFastjson() {
+        JSONObject obj = JSON.parseObject(json);
+        Object value = obj.getJSONObject("store").getJSONArray("book").getJSONObject(0).get("author");
+        LOGGER.trace("The author of the first book: {}", value);
+        return value;
     }
 
     @Benchmark

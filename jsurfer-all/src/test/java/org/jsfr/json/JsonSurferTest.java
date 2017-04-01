@@ -36,6 +36,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
@@ -69,7 +71,7 @@ public class JsonSurferTest {
     @Before
     public void setUp() throws Exception {
         provider = JsonSimpleProvider.INSTANCE;
-        surfer = JsonSurfer.simple();
+        surfer = new JsonSurfer(JsonSimpleParser.INSTANCE, provider);
     }
 
     @Test
@@ -156,8 +158,8 @@ public class JsonSurferTest {
                 .onValue(anyObject(), any(ParsingContext.class));
     }
 
-    private String read(String resourceName) throws IOException {
-        return Resources.toString(Resources.getResource(resourceName), StandardCharsets.UTF_8);
+    protected Reader read(String resourceName) throws IOException {
+        return new InputStreamReader(Resources.getResource(resourceName).openStream(), StandardCharsets.UTF_8);
     }
 
     @Test

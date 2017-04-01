@@ -27,6 +27,7 @@ package org.jsfr.json;
 import org.json.simple.parser.JSONParser;
 
 import java.io.Reader;
+import java.io.StringReader;
 
 public class JsonSimpleParser implements JsonParserAdapter {
 
@@ -42,6 +43,11 @@ public class JsonSimpleParser implements JsonParserAdapter {
         } catch (Exception e) {
             context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
         }
+    }
+
+    @Override
+    public void parse(String json, SurfingContext context) {
+        parse(new StringReader(json), context);
     }
 
 }

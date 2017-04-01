@@ -5,7 +5,7 @@
     <parent>
         <artifactId>jsurfer</artifactId>
         <groupId>com.github.jsurfer</groupId>
-        <version>1.2.8</version>
+        <version>1.2.9</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -29,18 +29,8 @@
         </dependency>
         <dependency>
             <groupId>com.github.jsurfer</groupId>
-            <artifactId>jsurfer-core</artifactId>
+            <artifactId>jsurfer-all</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.3.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.5.1</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>

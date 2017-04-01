@@ -115,7 +115,7 @@ public class SurfingConfiguration {
          * @param json json
          */
         public void buildAndSurf(String json) {
-            this.buildAndSurf(this.jsonSurfer.read(json));
+            this.jsonSurfer.surf(json, this.build());
         }
 
         /**

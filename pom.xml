@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer</artifactId>
-    <version>1.2.8</version>
+    <version>1.2.9</version>
     <packaging>pom</packaging>
     <name>JsonSurfer</name>
     <description>Let's surf on json</description>
@@ -162,7 +162,13 @@
     </build>
 
     <modules>
+        <module>jsurfer-benchmark</module>
         <module>jsurfer-core</module>
+        <module>jsurfer-gson</module>
+        <module>jsurfer-jackson</module>
+        <module>jsurfer-jsonsimple</module>
+        <module>jsurfer-fastjson</module>
+        <module>jsurfer-all</module>
     </modules>
 
     <dependencies>
