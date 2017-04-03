@@ -162,7 +162,7 @@
     </build>
 
     <modules>
-        <module>jsurfer-benchmark</module>
+        <!--<module>jsurfer-benchmark</module>-->
         <module>jsurfer-core</module>
         <module>jsurfer-gson</module>
         <module>jsurfer-jackson</module>
