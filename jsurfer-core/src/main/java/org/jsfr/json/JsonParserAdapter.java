@@ -37,6 +37,10 @@ public interface JsonParserAdapter {
      */
     void parse(Reader reader, SurfingContext context);
 
+    /**
+     * @param json json
+     * @param context SurfingContext
+     */
     void parse(String json, SurfingContext context);
 
 }
