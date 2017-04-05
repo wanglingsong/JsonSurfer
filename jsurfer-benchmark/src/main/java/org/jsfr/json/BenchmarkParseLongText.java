@@ -65,12 +65,14 @@ public class BenchmarkParseLongText {
     private Gson gson;
     private ObjectMapper om;
     private String json;
+    private JsonSurfer fastjsonSurfer;
 
     @Setup
     public void setup() throws Exception {
         gsonSurfer = JsonSurferGson.INSTANCE;
         jacksonSurfer = JsonSurferJackson.INSTANCE;
         simpleSurfer = JsonSurferJsonSimple.INSTANCE;
+        fastjsonSurfer = JsonSurferFastJson.INSTANCE;
         collectOneListener = new CollectOneListener(true);
         surfingConfiguration = SurfingConfiguration.builder().bind("$.findMe", collectOneListener).build();
         gson = new GsonBuilder().create();
@@ -111,6 +113,14 @@ public class BenchmarkParseLongText {
     @Benchmark
     public Object benchmarkSimpleSurfer() {
         simpleSurfer.surf(json, surfingConfiguration);
+        Object value = collectOneListener.getValue();
+        LOGGER.trace("Find me: {}", value);
+        return value;
+    }
+
+    @Benchmark
+    public Object benchmarkFastJsonSurfer() {
+        fastjsonSurfer.surf(json, surfingConfiguration);
         Object value = collectOneListener.getValue();
         LOGGER.trace("Find me: {}", value);
         return value;

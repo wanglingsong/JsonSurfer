@@ -146,6 +146,8 @@ public class JacksonParser implements JsonParserAdapter {
                 case VALUE_NULL:
                     context.primitive(staticPrimitiveHolder.withValue(jsonProvider.primitiveNull()));
                     break;
+                default:
+                    throw new IllegalStateException("Unexpected token");
             }
         }
     }

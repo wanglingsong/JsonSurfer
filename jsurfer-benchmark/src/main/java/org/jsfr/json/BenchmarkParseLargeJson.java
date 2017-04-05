@@ -62,6 +62,7 @@ public class BenchmarkParseLargeJson {
     private JsonSurfer simpleSurfer;
     private JsonSurfer gsonSurfer;
     private JsonSurfer jacksonSurfer;
+    private JsonSurfer fastjsonSurfer;
     private SurfingConfiguration surfingConfiguration;
     private String json;
 
@@ -70,6 +71,7 @@ public class BenchmarkParseLargeJson {
         gsonSurfer = JsonSurferGson.INSTANCE;
         jacksonSurfer = JsonSurferJackson.INSTANCE;
         simpleSurfer = JsonSurferJsonSimple.INSTANCE;
+        fastjsonSurfer = JsonSurferFastJson.INSTANCE;
         JsonPathListener blackHoleListener = new JsonPathListener() {
             @Override
             public void onValue(Object value, ParsingContext context) throws Exception {
@@ -96,6 +98,12 @@ public class BenchmarkParseLargeJson {
     @Benchmark
     public Object benchmarkJacksonWithJsonSurfer() {
         jacksonSurfer.surf(json, surfingConfiguration);
+        return null;
+    }
+
+    @Benchmark
+    public Object benchmarkFastJsonWithJsonSurfer() {
+        fastjsonSurfer.surf(json, surfingConfiguration);
         return null;
     }
 
