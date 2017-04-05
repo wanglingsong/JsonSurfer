@@ -49,11 +49,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 public class JsonSurferTest {
 
@@ -64,7 +61,7 @@ public class JsonSurferTest {
     private JsonPathListener print = new JsonPathListener() {
         @Override
         public void onValue(Object value, ParsingContext context) {
-            System.out.println(value);
+            LOGGER.debug("Received value: {}", value);
         }
     };
 
@@ -72,6 +69,153 @@ public class JsonSurferTest {
     public void setUp() throws Exception {
         provider = JsonSimpleProvider.INSTANCE;
         surfer = new JsonSurfer(JsonSimpleParser.INSTANCE, provider);
+    }
+
+    @Test
+    public void testJsonPathFilterEqualNumber() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$.store.book[?(@.price==8.95)]", mockListener)
+                .buildAndSurf(read("sample.json"));
+
+        Object book = provider.createObject();
+        provider.put(book, "category", provider.primitive("reference"));
+        provider.put(book, "author", provider.primitive("Nigel Rees"));
+        provider.put(book, "title", provider.primitive("Sayings of the Century"));
+        provider.put(book, "price", provider.primitive(8.95));
+        verify(mockListener).onValue(eq(book), any(ParsingContext.class));
+        verify(mockListener, times(1)).onValue(any(), any(ParsingContext.class));
+    }
+
+    @Test
+    public void testJsonPathFilterGreaterThan() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$.store.book[?(@.price>10)]", mockListener)
+                .buildAndSurf(read("sample.json"));
+
+        Object book1 = provider.createObject();
+        provider.put(book1, "category", provider.primitive("fiction"));
+        provider.put(book1, "author", provider.primitive("Evelyn Waugh"));
+        provider.put(book1, "title", provider.primitive("Sword of Honour"));
+        provider.put(book1, "price", provider.primitive(12.99));
+        verify(mockListener).onValue(eq(book1), any(ParsingContext.class));
+
+        Object book2 = provider.createObject();
+        provider.put(book2, "category", provider.primitive("fiction"));
+        provider.put(book2, "author", provider.primitive("J. R. R. Tolkien"));
+        provider.put(book2, "title", provider.primitive("The Lord of the Rings"));
+        provider.put(book2, "isbn", provider.primitive("0-395-19395-8"));
+        provider.put(book2, "price", provider.primitive(22.99));
+        verify(mockListener).onValue(eq(book2), any(ParsingContext.class));
+        verify(mockListener, times(2)).onValue(any(), any(ParsingContext.class));
+    }
+
+    @Test
+    public void testJsonPathFilterLessThan() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$.store.book[?(@.price<10)]", mockListener)
+                .buildAndSurf(read("sample.json"));
+
+        Object book1 = provider.createObject();
+        provider.put(book1, "category", provider.primitive("reference"));
+        provider.put(book1, "author", provider.primitive("Nigel Rees"));
+        provider.put(book1, "title", provider.primitive("Sayings of the Century"));
+        provider.put(book1, "price", provider.primitive(8.95));
+        verify(mockListener).onValue(eq(book1), any(ParsingContext.class));
+
+        Object book2 = provider.createObject();
+        provider.put(book2, "category", provider.primitive("fiction"));
+        provider.put(book2, "author", provider.primitive("Herman Melville"));
+        provider.put(book2, "title", provider.primitive("Moby Dick"));
+        provider.put(book2, "isbn", provider.primitive("0-553-21311-3"));
+        provider.put(book2, "price", provider.primitive(8.99));
+        verify(mockListener).onValue(eq(book2), any(ParsingContext.class));
+        verify(mockListener, times(2)).onValue(any(), any(ParsingContext.class));
+    }
+
+    @Test
+    public void testJsonPathFilterEqualString() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$.store.book[?(@.category=='fiction')]", mockListener)
+                .buildAndSurf(read("sample.json"));
+
+        Object book1 = provider.createObject();
+        provider.put(book1, "category", provider.primitive("fiction"));
+        provider.put(book1, "author", provider.primitive("Evelyn Waugh"));
+        provider.put(book1, "title", provider.primitive("Sword of Honour"));
+        provider.put(book1, "price", provider.primitive(12.99));
+        verify(mockListener).onValue(eq(book1), any(ParsingContext.class));
+
+        Object book2 = provider.createObject();
+        provider.put(book2, "category", provider.primitive("fiction"));
+        provider.put(book2, "author", provider.primitive("J. R. R. Tolkien"));
+        provider.put(book2, "title", provider.primitive("The Lord of the Rings"));
+        provider.put(book2, "isbn", provider.primitive("0-395-19395-8"));
+        provider.put(book2, "price", provider.primitive(22.99));
+        verify(mockListener).onValue(eq(book2), any(ParsingContext.class));
+
+        Object book3 = provider.createObject();
+        provider.put(book3, "category", provider.primitive("fiction"));
+        provider.put(book3, "author", provider.primitive("Herman Melville"));
+        provider.put(book3, "title", provider.primitive("Moby Dick"));
+        provider.put(book3, "isbn", provider.primitive("0-553-21311-3"));
+        provider.put(book3, "price", provider.primitive(8.99));
+        verify(mockListener).onValue(eq(book3), any(ParsingContext.class));
+        verify(mockListener, times(3)).onValue(any(), any(ParsingContext.class));
+    }
+
+    @Test
+    public void testJsonPathFilterExistence() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$.store.book[?(@.isbn)]", mockListener)
+                .buildAndSurf(read("sample.json"));
+
+        Object book2 = provider.createObject();
+        provider.put(book2, "category", provider.primitive("fiction"));
+        provider.put(book2, "author", provider.primitive("J. R. R. Tolkien"));
+        provider.put(book2, "title", provider.primitive("The Lord of the Rings"));
+        provider.put(book2, "isbn", provider.primitive("0-395-19395-8"));
+        provider.put(book2, "price", provider.primitive(22.99));
+        verify(mockListener).onValue(eq(book2), any(ParsingContext.class));
+
+        Object book3 = provider.createObject();
+        provider.put(book3, "category", provider.primitive("fiction"));
+        provider.put(book3, "author", provider.primitive("Herman Melville"));
+        provider.put(book3, "title", provider.primitive("Moby Dick"));
+        provider.put(book3, "isbn", provider.primitive("0-553-21311-3"));
+        provider.put(book3, "price", provider.primitive(8.99));
+        verify(mockListener).onValue(eq(book3), any(ParsingContext.class));
+        verify(mockListener, times(2)).onValue(any(), any(ParsingContext.class));
+    }
+
+    @Test
+    public void testJsonPathFilterAggregate() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$.store.book[?(@.price < 10 || @.category && @.isbn && @.price>10)]", mockListener)
+                .buildAndSurf(read("sample.json"));
+
+        Object book1 = provider.createObject();
+        provider.put(book1, "category", provider.primitive("reference"));
+        provider.put(book1, "author", provider.primitive("Nigel Rees"));
+        provider.put(book1, "title", provider.primitive("Sayings of the Century"));
+        provider.put(book1, "price", provider.primitive(8.95));
+        verify(mockListener).onValue(eq(book1), any(ParsingContext.class));
+
+        Object book2 = provider.createObject();
+        provider.put(book2, "category", provider.primitive("fiction"));
+        provider.put(book2, "author", provider.primitive("J. R. R. Tolkien"));
+        provider.put(book2, "title", provider.primitive("The Lord of the Rings"));
+        provider.put(book2, "isbn", provider.primitive("0-395-19395-8"));
+        provider.put(book2, "price", provider.primitive(22.99));
+        verify(mockListener).onValue(eq(book2), any(ParsingContext.class));
+
+        Object book3 = provider.createObject();
+        provider.put(book3, "category", provider.primitive("fiction"));
+        provider.put(book3, "author", provider.primitive("Herman Melville"));
+        provider.put(book3, "title", provider.primitive("Moby Dick"));
+        provider.put(book3, "isbn", provider.primitive("0-553-21311-3"));
+        provider.put(book3, "price", provider.primitive(8.99));
+        verify(mockListener).onValue(eq(book3), any(ParsingContext.class));
+        verify(mockListener, times(3)).onValue(any(), any(ParsingContext.class));
     }
 
     @Test
@@ -160,6 +304,10 @@ public class JsonSurferTest {
 
     protected Reader read(String resourceName) throws IOException {
         return new InputStreamReader(Resources.getResource(resourceName).openStream(), StandardCharsets.UTF_8);
+    }
+
+    private String readAsString(String resourceName) throws IOException {
+        return Resources.toString(Resources.getResource(resourceName), StandardCharsets.UTF_8);
     }
 
     @Test
@@ -304,8 +452,21 @@ public class JsonSurferTest {
     }
 
     @Test
+    public void testCollectAllFromString() throws Exception {
+        Collection<Object> values = surfer.collectAll(readAsString("sample.json"), "$..book[1,3][author, title]");
+        assertEquals(4, values.size());
+        assertEquals("Evelyn Waugh", values.iterator().next());
+    }
+
+    @Test
     public void testCollectOne() throws Exception {
         String value = surfer.collectOne(read("sample.json"), String.class, "$..book[1,3][author,title]");
+        assertEquals("Evelyn Waugh", value);
+    }
+
+    @Test
+    public void testCollectOneFromString() throws Exception {
+        Object value = surfer.collectOne(readAsString("sample.json"), "$..book[1,3][author,title]");
         assertEquals("Evelyn Waugh", value);
     }
 
@@ -381,7 +542,7 @@ public class JsonSurferTest {
             @Override
             public void onValue(Object value, ParsingContext parsingContext) {
                 parsingContext.stopParsing();
-                System.out.println(value);
+                //System.out.println(value);
             }
         }).buildAndSurf(read("sample.json"));
     }

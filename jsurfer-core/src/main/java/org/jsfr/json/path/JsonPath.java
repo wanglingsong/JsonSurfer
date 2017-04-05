@@ -24,6 +24,7 @@
 
 package org.jsfr.json.path;
 
+import org.jsfr.json.filter.JsonPathFilter;
 import org.jsfr.json.resolver.DocumentResolver;
 
 import java.util.Arrays;
@@ -124,6 +125,11 @@ public class JsonPath implements Iterable<PathOperator> {
             return this;
         }
 
+        public Builder withFilter(JsonPathFilter jsonPathFilter) {
+            jsonPath.jsonPathFilter = jsonPathFilter;
+            return this;
+        }
+
         public JsonPath build() {
             if (jsonPath.peek().getType() == PathOperator.Type.DEEP_SCAN) {
                 throw new IllegalStateException("deep-scan shouldn't be the last operator.");
@@ -147,10 +153,16 @@ public class JsonPath implements Iterable<PathOperator> {
     protected PathOperator[] operators;
     protected int size;
 
+    private JsonPathFilter jsonPathFilter;
+
     protected JsonPath() {
         operators = new PathOperator[JSON_PATH_INITIAL_CAPACITY];
         operators[0] = Root.instance();
         size = 1;
+    }
+
+    public JsonPathFilter getJsonPathFilter() {
+        return jsonPathFilter;
     }
 
     public Object resolve(Object document, DocumentResolver resolver) {
@@ -190,7 +202,7 @@ public class JsonPath implements Iterable<PathOperator> {
         return !(pointer2 >= 0);
     }
 
-    public PathOperator get(int i) {
+    private PathOperator get(int i) {
         return operators[i];
     }
 
@@ -211,8 +223,8 @@ public class JsonPath implements Iterable<PathOperator> {
         }
     }
 
-    protected PathOperator pop() {
-        return operators[--size];
+    protected void pop() {
+        size--;
     }
 
     public int pathDepth() {

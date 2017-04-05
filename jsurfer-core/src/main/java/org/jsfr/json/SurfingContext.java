@@ -71,7 +71,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         }
 
         if (listeners != null) {
-            JsonCollector collector = new JsonCollector(listeners, this, config.getErrorHandlingStrategy());
+            JsonCollector collector = new JsonCollector(listeners.size() == 1 ? Collections.singleton(listeners.getFirst()) : listeners, this, config.getErrorHandlingStrategy());
             collector.setProvider(config.getJsonProvider());
             dispatcher.addReceiver(collector);
         }
@@ -85,7 +85,13 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
                 if (listeners == null) {
                     listeners = new LinkedList<JsonPathListener>();
                 }
-                Collections.addAll(listeners, binding.listeners);
+                if (binding.jsonPath.getJsonPathFilter() != null) {
+                    for (JsonPathListener jsonPathListener : binding.listeners) {
+                        listeners.add(new FilteredJsonPathListener(binding.jsonPath.getJsonPathFilter(), jsonPathListener, config));
+                    }
+                } else {
+                    Collections.addAll(listeners, binding.listeners);
+                }
             }
         }
         return listeners;
@@ -97,6 +103,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
                 break;
             }
             try {
+                // TODO apply filter?
                 listener.onValue(primitive, this);
             } catch (Exception e) {
                 config.getErrorHandlingStrategy().handleExceptionFromListener(e, this);

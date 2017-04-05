@@ -88,65 +88,47 @@ public class GsonParser implements JsonParserAdapter {
                 }
             };
             context.startJSON();
-            while (true) {
+            while (!context.isStopped()) {
                 JsonToken token = jsonReader.peek();
                 switch (token) {
                     case BEGIN_ARRAY:
                         jsonReader.beginArray();
-                        if (!context.startArray()) {
-                            return;
-                        }
+                        context.startArray();
                         break;
                     case END_ARRAY:
                         jsonReader.endArray();
-                        if (!context.endArray()) {
-                            return;
-                        }
+                        context.endArray();
                         break;
                     case BEGIN_OBJECT:
                         jsonReader.beginObject();
-                        if (!context.startObject()) {
-                            return;
-                        }
+                        context.startObject();
                         break;
                     case END_OBJECT:
                         jsonReader.endObject();
-                        if (!context.endObject()) {
-                            return;
-                        }
+                        context.endObject();
                         break;
                     case NAME:
                         String name = jsonReader.nextName();
-                        if (!context.startObjectEntry(name)) {
-                            return;
-                        }
+                        context.startObjectEntry(name);
                         break;
                     case STRING:
                         stringHolder.init();
-                        if (!context.primitive(stringHolder)) {
-                            return;
-                        }
+                        context.primitive(stringHolder);
                         stringHolder.skipValue();
                         break;
                     case NUMBER:
                         numberHolder.init();
-                        if (!context.primitive(numberHolder)) {
-                            return;
-                        }
+                        context.primitive(numberHolder);
                         numberHolder.skipValue();
                         break;
                     case BOOLEAN:
                         booleanHolder.init();
-                        if (!context.primitive(booleanHolder)) {
-                            return;
-                        }
+                        context.primitive(booleanHolder);
                         booleanHolder.skipValue();
                         break;
                     case NULL:
                         nullHolder.init();
-                        if (!context.primitive(nullHolder)) {
-                            return;
-                        }
+                        context.primitive(nullHolder);
                         nullHolder.skipValue();
                         break;
                     case END_DOCUMENT:

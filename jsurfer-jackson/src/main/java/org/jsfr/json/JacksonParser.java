@@ -96,7 +96,7 @@ public class JacksonParser implements JsonParserAdapter {
         StaticPrimitiveHolder staticPrimitiveHolder = new StaticPrimitiveHolder();
 
         context.startJSON();
-        while (true) {
+        while (!context.isStopped()) {
             JsonToken token = jp.nextToken();
             if (token == null) {
                 context.endJSON();
@@ -106,67 +106,45 @@ public class JacksonParser implements JsonParserAdapter {
                 case NOT_AVAILABLE:
                     return;
                 case START_OBJECT:
-                    if (!context.startObject()) {
-                        return;
-                    }
+                    context.startObject();
                     break;
                 case END_OBJECT:
-                    if (!context.endObject()) {
-                        return;
-                    }
+                    context.endObject();
                     break;
                 case START_ARRAY:
-                    if (!context.startArray()) {
-                        return;
-                    }
+                    context.startArray();
                     break;
                 case END_ARRAY:
-                    if (!context.endArray()) {
-                        return;
-                    }
+                    context.endArray();
                     break;
                 case FIELD_NAME:
-                    if (!context.startObjectEntry(jp.getCurrentName())) {
-                        return;
-                    }
+                    context.startObjectEntry(jp.getCurrentName());
                     break;
                 case VALUE_EMBEDDED_OBJECT:
                     throw new IllegalStateException("Unexpected token");
                 case VALUE_STRING:
                     stringHolder.init();
-                    if (!context.primitive(stringHolder)) {
-                        return;
-                    }
+                    context.primitive(stringHolder);
                     stringHolder.skipValue();
                     break;
                 case VALUE_NUMBER_INT:
                     longHolder.init();
-                    if (!context.primitive(longHolder)) {
-                        return;
-                    }
+                    context.primitive(longHolder);
                     longHolder.skipValue();
                     break;
                 case VALUE_NUMBER_FLOAT:
                     doubleHolder.init();
-                    if (!context.primitive(doubleHolder)) {
-                        return;
-                    }
+                    context.primitive(doubleHolder);
                     doubleHolder.skipValue();
                     break;
                 case VALUE_TRUE:
-                    if (!context.primitive(staticPrimitiveHolder.withValue(jsonProvider.primitive(true)))) {
-                        return;
-                    }
+                    context.primitive(staticPrimitiveHolder.withValue(jsonProvider.primitive(true)));
                     break;
                 case VALUE_FALSE:
-                    if (!context.primitive(staticPrimitiveHolder.withValue(jsonProvider.primitive(false)))) {
-                        return;
-                    }
+                    context.primitive(staticPrimitiveHolder.withValue(jsonProvider.primitive(false)));
                     break;
                 case VALUE_NULL:
-                    if (!context.primitive(staticPrimitiveHolder.withValue(jsonProvider.primitiveNull()))) {
-                        return;
-                    }
+                    context.primitive(staticPrimitiveHolder.withValue(jsonProvider.primitiveNull()));
                     break;
             }
         }

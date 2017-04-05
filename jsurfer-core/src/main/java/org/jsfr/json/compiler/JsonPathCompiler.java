@@ -29,7 +29,10 @@ import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.jsfr.json.filter.*;
 import org.jsfr.json.path.JsonPath;
+
+import java.math.BigDecimal;
 
 /**
  * Created by Leo on 2015/4/1.
@@ -37,6 +40,8 @@ import org.jsfr.json.path.JsonPath;
 public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
 
     private JsonPath.Builder builder;
+
+    private FilterBuilder filterBuilder;
 
     public JsonPath.Builder getBuilder() {
         return builder;
@@ -135,14 +140,63 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
 
     @Override
     public Void visitFilter(JsonPathParser.FilterContext ctx) {
-        // TODO
-        return super.visitFilter(ctx);
+        builder.any();
+        filterBuilder = new FilterBuilder();
+        Void rst = super.visitFilter(ctx);
+        builder.withFilter(filterBuilder.build());
+        return rst;
     }
 
     @Override
     public Void visitExpr(JsonPathParser.ExprContext ctx) {
-        // TODO
-        return super.visitExpr(ctx);
+        Void rst;
+        if (ctx.AndOperator() != null) {
+            filterBuilder.startAndPredicate();
+            rst = super.visitExpr(ctx);
+            filterBuilder.endAndPredicate();
+        } else if (ctx.OrOperator() != null) {
+            filterBuilder.startOrPredicate();
+            rst = super.visitExpr(ctx);
+            filterBuilder.endOrPredicate();
+        } else {
+            rst = super.visitExpr(ctx);
+        }
+        return rst;
+    }
+
+    @Override
+    public Void visitExprEqualNum(JsonPathParser.ExprEqualNumContext ctx) {
+        JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY().getText()).build();
+        filterBuilder.append(new EqualityNumPredicate( relativePath, new BigDecimal(ctx.NUM().getText())));
+        return super.visitExprEqualNum(ctx);
+    }
+
+    @Override
+    public Void visitExprExist(JsonPathParser.ExprExistContext ctx) {
+        JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY().getText()).build();
+        filterBuilder.append(new ExistencePredicate(relativePath));
+        return super.visitExprExist(ctx);
+    }
+
+    @Override
+    public Void visitExprGtNum(JsonPathParser.ExprGtNumContext ctx) {
+        JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY().getText()).build();
+        filterBuilder.append(new GreaterThanNumPredicate(relativePath, new BigDecimal(ctx.NUM().getText())));
+        return super.visitExprGtNum(ctx);
+    }
+
+    @Override
+    public Void visitExprLtNum(JsonPathParser.ExprLtNumContext ctx) {
+        JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY().getText()).build();
+        filterBuilder.append(new LessThanNumPredicate( relativePath, new BigDecimal(ctx.NUM().getText())));
+        return super.visitExprLtNum(ctx);
+    }
+
+    @Override
+    public Void visitExprEqualStr(JsonPathParser.ExprEqualStrContext ctx) {
+        JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY(0).getText()).build();
+        filterBuilder.append(new EqualityStrPredicate( relativePath, ctx.KEY(1).getText()));
+        return super.visitExprEqualStr(ctx);
     }
 
     public static JsonPath[] compile(String... paths) {
@@ -164,9 +218,9 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
         return compiler.getBuilder().build();
     }
 
-    public static void main(String[] s) {
-        JsonPath path = compile("$..abc.c.d[1].e[2,3,6]");
-        System.out.println(path);
-    }
+//    public static void main(String[] s) {
+//        JsonPath path = compile("$..abc.c.d[1].e[2,3,6]");
+//        System.out.println(path);
+//    }
 
 }

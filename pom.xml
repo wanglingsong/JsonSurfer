@@ -68,6 +68,10 @@
                                     </goals>
                                 </execution>
                             </executions>
+                            <configuration>
+                                <executable>gpg2</executable>
+                                <passphrase>123456aB</passphrase>
+                            </configuration>
                         </plugin>
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
@@ -130,8 +134,8 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.2</version>
                     <configuration>
-                        <source>1.6</source>
-                        <target>1.6</target>
+                        <source>1.7</source>
+                        <target>1.7</target>
                     </configuration>
                 </plugin>
                 <plugin>
