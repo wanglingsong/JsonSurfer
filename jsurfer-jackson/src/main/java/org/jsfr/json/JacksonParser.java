@@ -43,7 +43,7 @@ public class JacksonParser implements JsonParserAdapter {
     @Override
     public void parse(Reader reader, final SurfingContext context) {
         try {
-            final JsonParser jp = JSON_FACTORY.createParser(reader);
+            JsonParser jp = JSON_FACTORY.createParser(reader);
             doPare(jp, context);
         } catch (Exception e) {
             context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
@@ -53,7 +53,7 @@ public class JacksonParser implements JsonParserAdapter {
     @Override
     public void parse(String json, SurfingContext context) {
         try {
-            final JsonParser jp = JSON_FACTORY.createParser(json);
+            JsonParser jp = JSON_FACTORY.createParser(json);
             doPare(jp, context);
         } catch (Exception e) {
             context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
