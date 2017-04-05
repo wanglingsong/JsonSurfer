@@ -1,8 +1,7 @@
-package org.jsfr.json;
+package org.jsfr.json.provider;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.jsfr.json.provider.JsonProvider;
 
 /**
  * Created by Leo on 2017/4/1.

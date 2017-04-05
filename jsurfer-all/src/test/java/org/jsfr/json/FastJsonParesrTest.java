@@ -1,6 +1,6 @@
 package org.jsfr.json;
 
-import org.jsfr.json.provider.JavaCollectionProvider;
+import org.jsfr.json.provider.FastJsonProvider;
 import org.junit.Before;
 
 /**
@@ -11,7 +11,7 @@ public class FastJsonParesrTest extends JsonSurferTest {
     @Override
     @Before
     public void setUp() throws Exception {
-        provider = JavaCollectionProvider.INSTANCE;
+        provider = FastJsonProvider.INSTANCE;
         surfer = new JsonSurfer(FastJsonParser.INSTANCE, provider);
     }
 

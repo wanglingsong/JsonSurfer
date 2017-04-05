@@ -1,6 +1,6 @@
 package org.jsfr.json;
 
-import org.jsfr.json.provider.JavaCollectionProvider;
+import org.jsfr.json.provider.FastJsonProvider;
 
 /**
  * Created by Leo on 2017/4/1.
