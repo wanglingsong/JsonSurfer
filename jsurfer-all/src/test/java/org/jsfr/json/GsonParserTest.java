@@ -26,6 +26,7 @@ package org.jsfr.json;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import org.jsfr.json.compiler.JsonPathCompiler;
 import org.jsfr.json.provider.GsonProvider;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,14 +73,14 @@ public class GsonParserTest extends JsonSurferTest {
     @Test
     public void testGsonTypeBindingOne() throws Exception {
         Reader reader = read("sample.json");
-        Book book = surfer.collectOne(reader, Book.class, "$..book[1]");
+        Book book = surfer.collectOne(reader, Book.class, JsonPathCompiler.compile("$..book[1]"));
         assertEquals("Evelyn Waugh", book.getAuthor());
     }
 
     @Test
     public void testGsonTypeBindingCollection() throws Exception {
         Reader reader = read("sample.json");
-        Collection<Book> book = surfer.collectAll(reader, Book.class, "$..book[0,1]");
+        Collection<Book> book = surfer.collectAll(reader, Book.class, JsonPathCompiler.compile("$..book[0,1]"));
         assertEquals(2, book.size());
         assertEquals("Nigel Rees", book.iterator().next().getAuthor());
     }

@@ -27,6 +27,7 @@ package org.jsfr.json;
 import com.google.common.io.Resources;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
+import org.jsfr.json.compiler.JsonPathCompiler;
 import org.jsfr.json.provider.JavaCollectionProvider;
 import org.jsfr.json.provider.JsonProvider;
 import org.jsfr.json.provider.JsonSimpleProvider;
@@ -446,7 +447,7 @@ public class JsonSurferTest {
 
     @Test
     public void testCollectAll() throws Exception {
-        Collection<String> values = surfer.collectAll(read("sample.json"), String.class, "$..book[1,3][author, title]");
+        Collection<String> values = surfer.collectAll(read("sample.json"), String.class, JsonPathCompiler.compile("$..book[1,3][author, title]"));
         assertEquals(4, values.size());
         assertEquals("Evelyn Waugh", values.iterator().next());
     }
@@ -460,7 +461,7 @@ public class JsonSurferTest {
 
     @Test
     public void testCollectOne() throws Exception {
-        String value = surfer.collectOne(read("sample.json"), String.class, "$..book[1,3][author,title]");
+        String value = surfer.collectOne(read("sample.json"), String.class, JsonPathCompiler.compile("$..book[1,3][author,title]"));
         assertEquals("Evelyn Waugh", value);
     }
 

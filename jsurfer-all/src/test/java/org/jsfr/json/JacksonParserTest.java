@@ -29,6 +29,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jsfr.json.compiler.JsonPathCompiler;
 import org.jsfr.json.provider.JacksonProvider;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,17 +76,16 @@ public class JacksonParserTest extends JsonSurferTest {
     @Test
     public void testJacksonTypeBindingOne() throws Exception {
         Reader reader = read("sample.json");
-        Book book = surfer.collectOne(reader, Book.class, "$..book[1]");
+        Book book = surfer.collectOne(reader, Book.class, JsonPathCompiler.compile("$..book[1]"));
         assertEquals("Evelyn Waugh", book.getAuthor());
     }
 
     @Test
     public void testJacksonTypeBindingCollection() throws Exception {
         Reader reader = read("sample.json");
-        Collection<Book> book = surfer.collectAll(reader, Book.class, "$..book[0,1]");
+        Collection<Book> book = surfer.collectAll(reader, Book.class, JsonPathCompiler.compile("$..book[0,1]"));
         assertEquals(2, book.size());
         assertEquals("Nigel Rees", book.iterator().next().getAuthor());
     }
-
 
 }
