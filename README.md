@@ -23,51 +23,94 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 
 ### [What is JsonPath?](http://goessner.net/articles/JsonPath/)
 
-* JsonSurfer supports incomplete JsonPath feature at current version:
+* Supported JsonPath operator in JsonSurfer:
 
-| Operator                  |   Description     | Supported |
-| :-----------------------: |:-----------------:| :-------: |
-| `$`                       | root              | YES       |
-| `@`                       | current node      | Not yet   |
-| `*`                       | wildcard          | YES       |
-| `..`                      | recursive descent | YES       |
-| `.<name>`                 | child             | YES       |
-| `['<name>' (, '<name>')]` | child/children    | YES       |
-| `[<number> (, <number>)]` | index/indices     | YES       |
-| `[start:end]`             | array slice       | YES       |
-| `[?(<expression>)]`       | expression        | Not yet   |
+| Operator                  |   Description     |
+| :-----------------------: |:-----------------:|
+| `$`                       | root              |
+| `@`                       | current node      |
+| `*`                       | wildcard          |
+| `..`                      | recursive descent |
+| `.<name>`                 | child             |
+| `['<name>' (, '<name>')]` | child/children    |
+| `[<number> (, <number>)]` | index/indices     |
+| `[start:end]`             | array slice       |
+| `[?(<expression>)]`       | filter expression |
 
 * JsonSurfer is available in cetral maven repository.
 
-```xml
-<dependency>
-    <groupId>com.github.jsurfer</groupId>
-    <artifactId>jsurfer-core</artifactId>
-    <version>1.2.8</version>
-</dependency>
-```
-* Optional dependencies
-
-JsonSurfer has driver for Gson, Jackson and JsonSimple but does not transitively include Gson and Jackson library. Please declare them in POM as needed.
+JsonSurfer has drivers for most of popular json libraries including: Gson, Jackson, FastJson and JsonSimple. Choose one and add to your POM.
 
 ```xml
+
 <dependency>
-    <groupId>com.google.code.gson</groupId>
-    <artifactId>gson</artifactId>
-    <version>2.7</version>
+    <groupId>com.github.jsurfer</groupId>
+    <artifactId>jsurfer-gson</artifactId>
+    <version>1.3</version>
 </dependency>
+
 <dependency>
-    <groupId>com.fasterxml.jackson.core</groupId>
-    <artifactId>jackson-databind</artifactId>
-    <version>2.8.2</version>
+    <groupId>com.github.jsurfer</groupId>
+    <artifactId>jsurfer-jackson</artifactId>
+    <version>1.3</version>
 </dependency>
+
+<dependency>
+    <groupId>com.github.jsurfer</groupId>
+    <artifactId>jsurfer-fastjson</artifactId>
+    <version>1.3</version>
+</dependency>
+
+<dependency>
+    <groupId>com.github.jsurfer</groupId>
+    <artifactId>jsurfer-jsonsimple</artifactId>
+    <version>1.3</version>
+</dependency>
+
 ```
 
-### Surfing API:
+### Usage:
 
-#### "Surfing" in Json DOM tree collecting matched value in the listeners
+#### Create your JsonSurfer:
+
+* JsonSurfer has flexible constructor. You can create yourself or pick a prebuilt one according the json library you used:
+1. Gson
 ```java
-        JsonSurfer surfer = new JsonSurfer(GsonParser.INSTANCE, JavaCollectionProvider.INSTANCE);
+        // use gson parser and use gson provider use to deserialize json into gson model i.e.com.google.gson.JsonElement
+        JsonSurfer surfer = new JsonSurfer(GsonParser.INSTANCE, GsonProvider.INSTANCE);
+```
+or
+```java
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
+```
+2. Jackson
+```java
+        JsonSurfer surfer = new JsonSurfer(JacksonParser.INSTANCE, JacksonProvider.INSTANCE);
+```
+or
+```java
+        JsonSurfer surfer = JsonSurferJackson.INSTANCE;
+```
+3. JsonSimple
+```java
+        // use json-simple parser and json-simple provider to deserialize json into json-simple model i.e.org.json.simple.JSONObject or org.json.simple.JSONArray
+        JsonSurfer surfer = new JsonSurfer(JsonSimpleParser.INSTANCE, JsonSimpleProvider.INSTANCE);
+```
+or
+```java
+        JsonSurfer surfer = JsonSurferJsonSimple.INSTANCE;
+```
+4. Fastjson
+```java
+        JsonSurfer surfer = new JsonSurfer(FastJsonParser.INSTANCE, FastJsonProvider.INSTANCE);
+```
+or
+```java
+        JsonSurfer surfer = JsonSurferFastJson.INSTANCE;
+```
+#### "Surfing" in Json and collecting matched value in the listeners
+```java
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
         surfer.configBuilder()
                 .bind("$.store.book[*]", new JsonPathListener() {
                     @Override
@@ -78,9 +121,9 @@ JsonSurfer has driver for Gson, Jackson and JsonSimple but does not transitively
                 .buildAndSurf(sample);
 ```
 
-#### Repeated surfing with same binding
+#### Reuse listener binding
 ```java
-        JsonSurfer surfer = new JsonSurfer(GsonParser.INSTANCE, JavaCollectionProvider.INSTANCE);
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
         SurfingConfiguration config = surfer.configBuilder()
                 .bind("$.store.book[*]", new JsonPathListener() {
                     @Override
@@ -93,18 +136,33 @@ JsonSurfer has driver for Gson, Jackson and JsonSimple but does not transitively
         surfer.surf(sample2, config);
 ```
 
-#### Collect the first matched value
+#### Collect the first matched value and stop immediately
 ```java
-        JsonSurfer jsonSurfer = JsonSurfer.gson();
+        JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
         Object singleResult = jsonSurfer.collectOne(sample, "$.store.book[0]");
 ```
-#### Colllect every matched value
+#### Colllect every matched value in a collection
 ```java
-        JsonSurfer jsonSurfer = JsonSurfer.gson();
+        JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
         Collection<Object> multipleResults = jsonSurfer.collectAll(sample, "$.store.book[*]");
 ```
+#### Stop parsing on the fly
+* Refer to [Stoppable parsing](#stoppable-parsing)
+#### Filters
+* Filter operators
 
-### Resolver API:
+| Operator                  |   Description     |
+| :-----------------------: |:-----------------:|
+| ==                        | equal             |
+| <                         | less than         |
+| >                         | greater than      |
+
+You can use logical operators '&&' and '||' to create more complex filter expression. For example:
+```
+$.store.book[?(@.price < 10 || @.category && @.isbn && @.price>10)]
+```
+
+#### Resolver API:
 * As of 1.2.6, JsonSurfer provides another way of processing json. You can directly resolve value with JsonPath from a well-built DOM like HashMap or even POJO:
 ```java
         Book book = new Book();
@@ -122,25 +180,10 @@ which prints "Leo".
         System.out.println(compile("$.list[1]").resolve(map, JavaCollectionProvider.INSTANCE));
 ```
 which prints "bar".
+#### Stop parsing on the fly
+* Refer to [Stoppable parsing](#stoppable-parsing)
 
-### Other API:
-
-* JsonSurfer provides flexible plug-in interface, you can choose your library for parsing and modeling. For example:
-```java
-        // use json-simple parser (Json-Simple dependency is included by default)
-        // transform json into json-simple model i.e.org.json.simple.JSONObject or org.json.simple.JSONArray
-        JsonSurfer surfer = new JsonSurfer(JsonSimpleParser.INSTANCE, JsonSimpleProvider.INSTANCE);
-        // or JsonSurfer surfer = JsonSurfer.simple();
-```
-```java
-        // use gson parser (You need to explicitly declare Gson dependency in you pom)
-        // transform json into gson model i.e.com.google.gson.JsonElement
-        JsonSurfer surfer = new JsonSurfer(GsonParser.INSTANCE, GsonProvider.INSTANCE);
-        // or JsonSurfer surfer = JsonSurfer.gson();
-```
-* Stop parsing on the fly. Refer to [Stoppable parsing](#stoppable-parsing)
-
-### More code Examples
+### Examples
 
 Sample Json:
 ```javascript
@@ -183,12 +226,23 @@ Sample Json:
 }
 ```
 
+| JsonPath                  |   Result     |
+| :-----------------------: |:-----------------:|
+| ```$.store.book[*].author``` | [Find the authors of all books](#find-the-authors-of-all-books)  |
+| ```$..author```              | [All authors](#all-authors)                    |
+| ```$.store.*```              | [All things in store](#all-things-in-store)                   |
+| ```$.store..price``` | [The price of everything in the store](#the-price-of-everything-in-the-store)  |
+| ```$..book[2]```              | [The thrid book](#the-thrid-book)                   |
+| ```$..book[0,1]```              | [The first two books](#the-first-two-books)                 |
+| ```$.store.book[?(@.price==8.95)]``` | [Filter all books whose price equals to 8.95](#filter-all-books-whose-price-equals-to-8.95)  |
+| ```$.store.book[?(@.category=='fiction')]```              | [Filter all books which belong to fiction category](#filter-all-books-which-belong-to-fiction-category)                   |
+
 #### Find the authors of all books: 
 ```javascript
 $.store.book[*].author
 ```
 ```java
-        JsonSurfer surfer = JsonSurfer.gson();
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
         surfer.configBuilder()
                 .bind("$.store.book[*].author", new JsonPathListener() {
                     @Override
@@ -210,7 +264,7 @@ Output
 $..author
 ```
 ```java
-        JsonSurfer surfer = JsonSurfer.gson();
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
         surfer.configBuilder()
                 .bind("$..author", new JsonPathListener() {
                     @Override
@@ -232,7 +286,7 @@ Output
 $.store.*
 ```
 ```java
-        JsonSurfer surfer = JsonSurfer.gson();
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
         surfer.configBuilder()
                 .bind("$.store.*", new JsonPathListener() {
                     @Override
@@ -252,7 +306,7 @@ Output
 $.store..price
 ```
 ```java
-        JsonSurfer surfer = JsonSurfer.gson();
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
         surfer.configBuilder()
                 .bind("$.store..price", new JsonPathListener() {
                     @Override
@@ -275,7 +329,7 @@ Output
 $..book[2]
 ```
 ```java
-        JsonSurfer surfer = JsonSurfer.gson();
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
         surfer.configBuilder()
                 .bind("$..book[2]", new JsonPathListener() {
                     @Override
@@ -294,7 +348,7 @@ Output
 $..book[0,1]
 ```
 ```java
-        JsonSurfer surfer = JsonSurfer.gson();
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
         surfer.configBuilder()
                 .bind("$..book[0,1]", new JsonPathListener() {
                     @Override
@@ -309,13 +363,53 @@ Output
 {"category":"reference","author":"Nigel Rees","title":"Sayings of the Century","price":8.95}
 {"category":"fiction","author":"Evelyn Waugh","title":"Sword of Honour","price":12.99}
 ```
+#### Filter all books whose price equals to 8.95
+```javascript
+$.store.book[?(@.price==8.95)]
+```
+```java
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
+        surfer.configBuilder()
+                .bind("$.store.book[?(@.price==8.95)]", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        System.out.println(value);
+                    }
+                })
+                .buildAndSurf(sample);
+```
+Output
+```
+{"category":"reference","author":"Nigel Rees","title":"Sayings of the Century","price":8.95}
+```
+#### Filter all books which belong to fiction category
+```javascript
+$.store.book[?(@.category=='fiction')]
+```
+```java
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
+        surfer.configBuilder()
+                .bind("$.store.book[?(@.category=='fiction')]", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        System.out.println(value);
+                    }
+                })
+                .buildAndSurf(sample);
+```
+Output
+```
+{"category":"fiction","author":"Evelyn Waugh","title":"Sword of Honour","price":12.99}
+{"category":"fiction","author":"Herman Melville","title":"Moby Dick","isbn":"0-553-21311-3","price":8.99}
+{"category":"fiction","author":"J. R. R. Tolkien","title":"The Lord of the Rings","isbn":"0-395-19395-8","price":22.99}
+```
 #### Stoppable parsing
 The parsing is stopped when the first book found and printed.
 ```javascript
 $..book[0,1]
 ```
 ```java
-        JsonSurfer surfer = JsonSurfer.gson();
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
         surfer.configBuilder()
                 .bind("$..book[0,1]", new JsonPathListener() {
                     @Override
@@ -335,10 +429,12 @@ Output
 * JsonSurfer is fast !!! The benchmark is powered by [JMH](http://openjdk.java.net/projects/code-tools/jmh/)
 
 ```
-Benchmark                                            Mode  Cnt       Score      Error  Units
-BenchmarkCollectSingleValue.benchmarkGson           thrpt   10  176764.763 ± 1104.124  ops/s
-BenchmarkCollectSingleValue.benchmarkGsonSurfer     thrpt   10  740780.577 ± 5342.493  ops/s
-BenchmarkCollectSingleValue.benchmarkJackson        thrpt   10  190154.310 ±  929.849  ops/s
-BenchmarkCollectSingleValue.benchmarkJacksonSurfer  thrpt   10  521919.374 ± 2685.533  ops/s
-BenchmarkCollectSingleValue.benchmarkSimpleSurfer   thrpt   10  219732.696 ± 3476.744  ops/s
+Benchmark                                                       Mode  Cnt       Score       Error  Units
+BenchmarkCollectSingleValue.benchmarkFastjson                  thrpt   10  139772.275      8854.369  ops/s
+BenchmarkCollectSingleValue.benchmarkFastjsonWithJsonSurfer    thrpt   10  699176.961      23396.619  ops/s
+BenchmarkCollectSingleValue.benchmarkGson                      thrpt   10  139394.358      6019.764  ops/s
+BenchmarkCollectSingleValue.benchmarkGsonWithJsonSurfer        thrpt   10  632155.657      15484.499  ops/s
+BenchmarkCollectSingleValue.benchmarkJackson                   thrpt   10  160545.079      7006.525  ops/s
+BenchmarkCollectSingleValue.benchmarkJacksonWithJsonSurfer     thrpt   10  451870.586      13132.576  ops/s
+BenchmarkCollectSingleValue.benchmarkJsonSimpleWithJsonSurfer  thrpt   10  155094.948      4457.502  ops/s
 ```
