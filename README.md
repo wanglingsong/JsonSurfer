@@ -143,8 +143,8 @@ which prints "Leo".
 ```
 which prints "bar".
 
-#### Stopable parsing
-* Stop parsing on the fly. Refer to [Stoppable parsing](#stoppable-parsing)
+#### Stop parsing on the fly
+* Refer to [Stoppable parsing](#stoppable-parsing)
 
 ### Examples
 
