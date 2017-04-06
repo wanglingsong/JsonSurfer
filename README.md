@@ -73,18 +73,41 @@ JsonSurfer has drivers for most of popular json libraries including: Gson, Jacks
 
 #### Create your JsonSurfer:
 
-* JsonSurfer provides flexible plug-in interface, you can choose your library for parsing and modeling. For example:
-```java
-        // use json-simple parser and json-simple provider to deserialize json into json-simple model i.e.org.json.simple.JSONObject or org.json.simple.JSONArray
-        JsonSurfer surfer = new JsonSurfer(JsonSimpleParser.INSTANCE, JsonSimpleProvider.INSTANCE);
-        // or JsonSurfer surfer = JsonSurferJsonSimple.INSTANCE;
-```
+* JsonSurfer has flexible constructor. You can create yourself or pick a prebuilt one according the json library you used:
+1. Gson
 ```java
         // use gson parser and use gson provider use to deserialize json into gson model i.e.com.google.gson.JsonElement
         JsonSurfer surfer = new JsonSurfer(GsonParser.INSTANCE, GsonProvider.INSTANCE);
-        // or JsonSurfer surfer = JsonSurferGson.INSTANCE;
 ```
-
+or
+```java
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
+```
+2. Jackson
+```java
+        JsonSurfer surfer = new JsonSurfer(JacksonParser.INSTANCE, JacksonProvider.INSTANCE);
+```
+or
+```java
+        JsonSurfer surfer = JsonSurferJackson.INSTANCE;
+```
+3. JsonSimple
+```java
+        // use json-simple parser and json-simple provider to deserialize json into json-simple model i.e.org.json.simple.JSONObject or org.json.simple.JSONArray
+        JsonSurfer surfer = new JsonSurfer(JsonSimpleParser.INSTANCE, JsonSimpleProvider.INSTANCE);
+```
+or
+```java
+        JsonSurfer surfer = JsonSurferJsonSimple.INSTANCE;
+```
+4. Fastjson
+```java
+        JsonSurfer surfer = new JsonSurfer(FastJsonParser.INSTANCE, FastJsonProvider.INSTANCE);
+```
+or
+```java
+        JsonSurfer surfer = JsonSurferFastJson.INSTANCE;
+```
 #### "Surfing" in Json and collecting matched value in the listeners
 ```java
         JsonSurfer surfer = JsonSurferGson.INSTANCE;
