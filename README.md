@@ -228,7 +228,7 @@ Sample Json:
 
 | JsonPath                  |   Result     |
 | :-----------------------: |:-----------------:|
-| ```$.store.book[*].author``` | Find the authors of all books  |
+| ```$.store.book[*].author``` | [Find the authors of all books](#find-the-authors-of-all-books)  |
 | ```$..author```              | All authors                    |
 | ```$.store.*```              | greater than                   |
 | ```$.store..price``` | The price of everything in the store  |
