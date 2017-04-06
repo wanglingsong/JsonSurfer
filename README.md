@@ -338,6 +338,25 @@ Output
 {"category":"reference","author":"Nigel Rees","title":"Sayings of the Century","price":8.95}
 {"category":"fiction","author":"Evelyn Waugh","title":"Sword of Honour","price":12.99}
 ```
+#### Filter all book whose price equals to 8.95
+```javascript
+$.store.book[?(@.price==8.95)]
+```
+```java
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
+        surfer.configBuilder()
+                .bind("$.store.book[?(@.price==8.95)]", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        System.out.println(value);
+                    }
+                })
+                .buildAndSurf(sample);
+```
+Output
+```
+{"category":"reference","author":"Nigel Rees","title":"Sayings of the Century","price":8.95}
+```
 #### Stoppable parsing
 The parsing is stopped when the first book found and printed.
 ```javascript
