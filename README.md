@@ -231,11 +231,11 @@ Sample Json:
 | ```$.store.book[*].author``` | [Find the authors of all books](#find-the-authors-of-all-books)  |
 | ```$..author```              | [All authors](#all-authors)                    |
 | ```$.store.*```              | [All things in store](#all-things-in-store)                   |
-| ```$.store..price``` | [The price of everything in the store]()  |
-| ```$..book[2]```              | [The thrid book]()                   |
-| ```$..book[0,1]```              | [The first two books]()                 |
-| ```$.store.book[?(@.price==8.95)]``` | (Filter all books whose price equals to 8.95]()  |
-| ```$.store.book[?(@.category=='fiction')]```              | [Filter all books which belong to fiction category]()                   |
+| ```$.store..price``` | [The price of everything in the store](#the-price-of-everything-in-the-store)  |
+| ```$..book[2]```              | [The thrid book](#the-thrid-book)                   |
+| ```$..book[0,1]```              | [The first two books](#the-first-two-books)                 |
+| ```$.store.book[?(@.price==8.95)]``` | [Filter all books whose price equals to 8.95](#filter-all-books-whose-price-equals-to-8.95)  |
+| ```$.store.book[?(@.category=='fiction')]```              | [Filter all books which belong to fiction category](#filter-all-books-which-belong-to-fiction-category)                   |
 
 #### Find the authors of all books: 
 ```javascript
