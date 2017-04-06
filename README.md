@@ -146,6 +146,21 @@ or
         JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
         Collection<Object> multipleResults = jsonSurfer.collectAll(sample, "$.store.book[*]");
 ```
+#### Stop parsing on the fly
+* Refer to [Stoppable parsing](#stoppable-parsing)
+#### Filters
+* Filter operators
+
+| Operator                  |   Description     |
+| :-----------------------: |:-----------------:|
+| ==                        | equal             |
+| <                         | less than         |
+| >                         | greater than      |
+
+You can use logical operators '&&' and '||' to create more complex filter expression. For example:
+```
+$.store.book[?(@.price < 10 || @.category && @.isbn && @.price>10)]
+```
 
 #### Resolver API:
 * As of 1.2.6, JsonSurfer provides another way of processing json. You can directly resolve value with JsonPath from a well-built DOM like HashMap or even POJO:
@@ -165,7 +180,6 @@ which prints "Leo".
         System.out.println(compile("$.list[1]").resolve(map, JavaCollectionProvider.INSTANCE));
 ```
 which prints "bar".
-
 #### Stop parsing on the fly
 * Refer to [Stoppable parsing](#stoppable-parsing)
 
@@ -211,6 +225,17 @@ Sample Json:
     "expensive": 10
 }
 ```
+
+| JsonPath                  |   Result     |
+| :-----------------------: |:-----------------:|
+| ```$.store.book[*].author``` | Find the authors of all books  |
+| ```$..author```              | All authors                    |
+| ```$.store.*```              | greater than                   |
+| ```$.store..price``` | The price of everything in the store  |
+| ```$..book[2]```              | The thrid book                   |
+| ```$..book[0,1]```              | The first two books                 |
+| ```$.store.book[?(@.price==8.95)]``` | Filter all books whose price equals to 8.95  |
+| ```$.store.book[?(@.category=='fiction')]```              | Filter all books which belong to fiction category                   |
 
 #### Find the authors of all books: 
 ```javascript
@@ -338,7 +363,7 @@ Output
 {"category":"reference","author":"Nigel Rees","title":"Sayings of the Century","price":8.95}
 {"category":"fiction","author":"Evelyn Waugh","title":"Sword of Honour","price":12.99}
 ```
-#### Filter all book whose price equals to 8.95
+#### Filter all books whose price equals to 8.95
 ```javascript
 $.store.book[?(@.price==8.95)]
 ```
@@ -356,6 +381,27 @@ $.store.book[?(@.price==8.95)]
 Output
 ```
 {"category":"reference","author":"Nigel Rees","title":"Sayings of the Century","price":8.95}
+```
+#### Filter all books which belong to fiction category
+```javascript
+$.store.book[?(@.category=='fiction')]
+```
+```java
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
+        surfer.configBuilder()
+                .bind("$.store.book[?(@.category=='fiction')]", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        System.out.println(value);
+                    }
+                })
+                .buildAndSurf(sample);
+```
+Output
+```
+{"category":"fiction","author":"Evelyn Waugh","title":"Sword of Honour","price":12.99}
+{"category":"fiction","author":"Herman Melville","title":"Moby Dick","isbn":"0-553-21311-3","price":8.99}
+{"category":"fiction","author":"J. R. R. Tolkien","title":"The Lord of the Rings","isbn":"0-395-19395-8","price":22.99}
 ```
 #### Stoppable parsing
 The parsing is stopped when the first book found and printed.
