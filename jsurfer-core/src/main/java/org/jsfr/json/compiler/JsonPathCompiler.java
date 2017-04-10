@@ -24,8 +24,8 @@
 
 package org.jsfr.json.compiler;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BailErrorStrategy;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -208,7 +208,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
     }
 
     public static JsonPath compile(String path) {
-        JsonPathLexer lexer = new JsonPathLexer(new ANTLRInputStream(path));
+        JsonPathLexer lexer = new JsonPathLexer(CharStreams.fromString(path));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         JsonPathParser parser = new JsonPathParser(tokens);
         parser.setErrorHandler(new BailErrorStrategy());
