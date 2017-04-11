@@ -49,7 +49,7 @@ class CollectAllListener<T> implements JsonPathListener {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void onValue(Object value, ParsingContext context) throws Exception{
+    public void onValue(Object value, ParsingContext context) {
         collection.add(tClass.cast(jsonProvider.cast(value, tClass)));
     }
 

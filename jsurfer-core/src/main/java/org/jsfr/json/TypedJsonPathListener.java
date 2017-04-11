@@ -26,6 +26,6 @@ package org.jsfr.json;
 
 public interface TypedJsonPathListener<T> {
 
-    void onTypedValue(T value, ParsingContext context) throws Exception;
+    void onTypedValue(T value, ParsingContext context);
 
 }

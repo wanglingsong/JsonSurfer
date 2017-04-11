@@ -33,7 +33,7 @@ public class JsonSimpleParser implements JsonParserAdapter {
 
     public static final JsonSimpleParser INSTANCE = new JsonSimpleParser();
 
-    private JsonSimpleParser(){};
+    private JsonSimpleParser(){}
 
     @Override
     public void parse(Reader reader, SurfingContext context) {

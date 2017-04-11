@@ -20,7 +20,7 @@ public class FilteredJsonPathListener implements JsonPathListener {
     }
 
     @Override
-    public void onValue(Object value, ParsingContext context) throws Exception {
+    public void onValue(Object value, ParsingContext context) {
         if (jsonPathFilter.apply(value, surfingConfiguration.getJsonProvider())) {
             underlyingListener.onValue(value, context);
         }

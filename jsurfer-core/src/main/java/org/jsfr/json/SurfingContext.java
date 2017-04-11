@@ -82,16 +82,15 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
             if (primitiveHolder != null) {
                 dispatchPrimitive(binding, primitiveHolder.getValue());
             } else {
-                if (listeners == null) {
-                    listeners = new LinkedList<JsonPathListener>();
-                }
+                LinkedList<JsonPathListener> listenersToAdd = listeners == null ? new LinkedList<JsonPathListener>() : listeners;
                 if (binding.jsonPath.getJsonPathFilter() != null) {
                     for (JsonPathListener jsonPathListener : binding.listeners) {
-                        listeners.add(new FilteredJsonPathListener(binding.jsonPath.getJsonPathFilter(), jsonPathListener, config));
+                        listenersToAdd.add(new FilteredJsonPathListener(binding.jsonPath.getJsonPathFilter(), jsonPathListener, config));
                     }
                 } else {
-                    Collections.addAll(listeners, binding.listeners);
+                    Collections.addAll(listenersToAdd, binding.listeners);
                 }
+                return listenersToAdd;
             }
         }
         return listeners;

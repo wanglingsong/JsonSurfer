@@ -45,7 +45,7 @@ public class CollectOneListener implements JsonPathListener {
     }
 
     @Override
-    public void onValue(Object value, ParsingContext context) throws Exception{
+    public void onValue(Object value, ParsingContext context) {
         if (!this.gotData) {
             this.value = value;
             this.gotData = true;

@@ -146,7 +146,7 @@ public class SurfingConfiguration {
             for (final TypedJsonPathListener<T> typedListener : typedListeners) {
                 listeners[i++] = new JsonPathListener() {
                     @Override
-                    public void onValue(Object value, ParsingContext parsingContext) throws Exception {
+                    public void onValue(Object value, ParsingContext parsingContext) {
                         typedListener.onTypedValue((T) configuration.jsonProvider.cast(value, tClass), parsingContext);
                     }
                 };

@@ -24,6 +24,8 @@
 
 package org.jsfr.json;
 
+import java.io.IOException;
+
 /**
  * Created by Administrator on 2015/7/18 0018.
  */
@@ -74,9 +76,9 @@ public abstract class AbstractPrimitiveHolder implements PrimitiveHolder {
         }
     }
 
-    protected abstract void doSkipValue() throws Exception;
+    protected abstract void doSkipValue() throws IOException;
 
 
-    protected abstract Object doGetValue() throws Exception;
+    protected abstract Object doGetValue() throws IOException;
 
 }

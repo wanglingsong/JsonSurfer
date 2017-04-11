@@ -1,13 +1,14 @@
 package org.jsfr.json.filter;
 
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
  * Created by Leo on 2017/4/4.
  */
 public class FilterBuilder {
 
-    private Stack<AggregatePredicate> stack = new Stack<AggregatePredicate>();
+    private Deque<AggregatePredicate> stack = new ArrayDeque<>();
 
     private JsonPathFilter resultFilter;
 

@@ -51,7 +51,6 @@ public class FastJsonParser implements JsonParserAdapter {
                     case SET:
                     case TREE_SET:
                     case NEW:
-                        break;
                     case COMMA:
                     case COLON:
                         break;

@@ -476,13 +476,13 @@ public class JsonSurferTest {
         surfer.configBuilder()
                 .bind("$.store.book[0].title", new JsonPathListener() {
                     @Override
-                    public void onValue(Object value, ParsingContext context) throws Exception {
+                    public void onValue(Object value, ParsingContext context) {
                         assertEquals(context.getCurrentFieldName(), "title");
                     }
                 })
                 .bind("$.store.book[0]", new JsonPathListener() {
                     @Override
-                    public void onValue(Object value, ParsingContext context) throws Exception {
+                    public void onValue(Object value, ParsingContext context) {
                         assertNull(context.getCurrentFieldName());
                     }
                 })
@@ -494,13 +494,13 @@ public class JsonSurferTest {
         surfer.configBuilder()
                 .bind("$.store.book[3]", new JsonPathListener() {
                     @Override
-                    public void onValue(Object value, ParsingContext context) throws Exception {
+                    public void onValue(Object value, ParsingContext context) {
                         assertEquals(context.getCurrentArrayIndex(), 3);
                     }
                 })
                 .bind("$.store", new JsonPathListener() {
                     @Override
-                    public void onValue(Object value, ParsingContext context) throws Exception {
+                    public void onValue(Object value, ParsingContext context) {
                         assertEquals(context.getCurrentArrayIndex(), -1);
                     }
                 })

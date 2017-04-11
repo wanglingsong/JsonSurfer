@@ -28,6 +28,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import org.jsfr.json.provider.JsonProvider;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
@@ -44,46 +45,46 @@ public class GsonParser implements JsonParserAdapter {
             final JsonProvider jsonProvider = context.getConfig().getJsonProvider();
             AbstractPrimitiveHolder stringHolder = new AbstractPrimitiveHolder(context.getConfig()) {
                 @Override
-                public Object doGetValue() throws Exception {
+                public Object doGetValue() throws IOException {
                     return jsonProvider.primitive(jsonReader.nextString());
                 }
 
                 @Override
-                public void doSkipValue() throws Exception {
+                public void doSkipValue() throws IOException {
                     jsonReader.skipValue();
                 }
             };
             AbstractPrimitiveHolder numberHolder = new AbstractPrimitiveHolder(context.getConfig()) {
                 @Override
-                public Object doGetValue() throws Exception {
+                public Object doGetValue() throws IOException {
                     return jsonProvider.primitive(jsonReader.nextDouble());
                 }
 
                 @Override
-                public void doSkipValue() throws Exception {
+                public void doSkipValue() throws IOException {
                     jsonReader.skipValue();
                 }
             };
             AbstractPrimitiveHolder booleanHolder = new AbstractPrimitiveHolder(context.getConfig()) {
                 @Override
-                public Object doGetValue() throws Exception {
+                public Object doGetValue() throws IOException {
                     return jsonProvider.primitive(jsonReader.nextBoolean());
                 }
 
                 @Override
-                public void doSkipValue() throws Exception {
+                public void doSkipValue() throws IOException {
                     jsonReader.skipValue();
                 }
             };
             AbstractPrimitiveHolder nullHolder = new AbstractPrimitiveHolder(context.getConfig()) {
                 @Override
-                public Object doGetValue() throws Exception {
+                public Object doGetValue() throws IOException {
                     jsonReader.nextNull();
                     return jsonProvider.primitiveNull();
                 }
 
                 @Override
-                public void doSkipValue() throws Exception {
+                public void doSkipValue() throws IOException {
                     jsonReader.skipValue();
                 }
             };

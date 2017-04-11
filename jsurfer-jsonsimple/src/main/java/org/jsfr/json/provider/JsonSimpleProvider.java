@@ -31,7 +31,7 @@ public class JsonSimpleProvider implements JsonProvider<JSONObject, JSONArray, O
 
     public static final JsonSimpleProvider INSTANCE = new JsonSimpleProvider();
 
-    private JsonSimpleProvider(){};
+    private JsonSimpleProvider(){}
 
     @Override
     public JSONObject createObject() {

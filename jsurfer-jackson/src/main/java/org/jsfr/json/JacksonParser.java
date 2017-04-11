@@ -65,32 +65,32 @@ public class JacksonParser implements JsonParserAdapter {
 
         AbstractPrimitiveHolder stringHolder = new AbstractPrimitiveHolder(context.getConfig()) {
             @Override
-            public Object doGetValue() throws Exception {
+            public Object doGetValue() throws IOException {
                 return jsonProvider.primitive(jp.getText());
             }
 
             @Override
-            public void doSkipValue() throws Exception {
+            public void doSkipValue() throws IOException {
             }
         };
         AbstractPrimitiveHolder longHolder = new AbstractPrimitiveHolder(context.getConfig()) {
             @Override
-            public Object doGetValue() throws Exception {
+            public Object doGetValue() throws IOException {
                 return jsonProvider.primitive(jp.getLongValue());
             }
 
             @Override
-            public void doSkipValue() throws Exception {
+            public void doSkipValue() throws IOException {
             }
         };
         AbstractPrimitiveHolder doubleHolder = new AbstractPrimitiveHolder(context.getConfig()) {
             @Override
-            public Object doGetValue() throws Exception {
+            public Object doGetValue() throws IOException {
                 return jsonProvider.primitive(jp.getDoubleValue());
             }
 
             @Override
-            public void doSkipValue() throws Exception {
+            public void doSkipValue() throws IOException {
             }
         };
         StaticPrimitiveHolder staticPrimitiveHolder = new StaticPrimitiveHolder();
@@ -120,8 +120,6 @@ public class JacksonParser implements JsonParserAdapter {
                 case FIELD_NAME:
                     context.startObjectEntry(jp.getCurrentName());
                     break;
-                case VALUE_EMBEDDED_OBJECT:
-                    throw new IllegalStateException("Unexpected token");
                 case VALUE_STRING:
                     stringHolder.init();
                     context.primitive(stringHolder);
@@ -146,6 +144,7 @@ public class JacksonParser implements JsonParserAdapter {
                 case VALUE_NULL:
                     context.primitive(staticPrimitiveHolder.withValue(jsonProvider.primitiveNull()));
                     break;
+                case VALUE_EMBEDDED_OBJECT:
                 default:
                     throw new IllegalStateException("Unexpected token");
             }
