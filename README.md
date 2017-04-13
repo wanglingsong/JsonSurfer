@@ -114,7 +114,7 @@ or
         surfer.configBuilder()
                 .bind("$.store.book[*]", new JsonPathListener() {
                     @Override
-                    public void onValue(Object value, ParsingContext context) throws Exception {
+                    public void onValue(Object value, ParsingContext context) {
                         System.out.println(value);
                     }
                 })
@@ -127,7 +127,7 @@ or
         SurfingConfiguration config = surfer.configBuilder()
                 .bind("$.store.book[*]", new JsonPathListener() {
                     @Override
-                    public void onValue(Object value, ParsingContext context) throws Exception {
+                    public void onValue(Object value, ParsingContext context) {
                         System.out.println(value);
                     }
                 })
