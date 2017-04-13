@@ -69,10 +69,6 @@
                                     </goals>
                                 </execution>
                             </executions>
-                            <configuration>
-                                <executable>gpg2</executable>
-                                <passphrase>123456aB</passphrase>
-                            </configuration>
                         </plugin>
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
