@@ -34,16 +34,19 @@ import java.io.Reader;
 
 public class JacksonParser implements JsonParserAdapter {
 
-    public static final JacksonParser INSTANCE = new JacksonParser();
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
+    public static final JacksonParser INSTANCE = new JacksonParser(JSON_FACTORY);
 
-    private JacksonParser() {
+    private JsonFactory factory;
+
+    public JacksonParser(JsonFactory factory) {
+      this.factory = factory;
     }
 
     @Override
     public void parse(Reader reader, final SurfingContext context) {
         try {
-            JsonParser jp = JSON_FACTORY.createParser(reader);
+            JsonParser jp = this.factory.createParser(reader);
             doPare(jp, context);
         } catch (Exception e) {
             context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
@@ -53,7 +56,7 @@ public class JacksonParser implements JsonParserAdapter {
     @Override
     public void parse(String json, SurfingContext context) {
         try {
-            JsonParser jp = JSON_FACTORY.createParser(json);
+            JsonParser jp = this.factory.createParser(json);
             doPare(jp, context);
         } catch (Exception e) {
             context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
