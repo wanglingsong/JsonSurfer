@@ -8,7 +8,7 @@ import java.util.Deque;
  */
 public class FilterBuilder {
 
-    private Deque<AggregatePredicate> stack = new ArrayDeque<>();
+    private Deque<AggregatePredicate> stack = new ArrayDeque<AggregatePredicate>();
 
     private JsonPathFilter resultFilter;
 
