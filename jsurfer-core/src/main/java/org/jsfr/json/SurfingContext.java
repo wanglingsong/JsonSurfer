@@ -30,7 +30,9 @@ import org.jsfr.json.path.PathOperator;
 import org.jsfr.json.path.PathOperator.Type;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * SurfingContext is not thread-safe
@@ -41,7 +43,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     private JsonPosition currentPosition;
     private ContentDispatcher dispatcher = new ContentDispatcher();
     private SurfingConfiguration config;
-    private PrimitiveHolder currentValue;
+    private Map<String, Object> transientMap;
 
     public SurfingContext(SurfingConfiguration config) {
         this.config = config;
@@ -221,7 +223,6 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (stopped) {
             return false;
         }
-        this.currentValue = primitiveHolder;
         PathOperator currentNode = currentPosition.peek();
         switch (currentNode.getType()) {
             case OBJECT:
@@ -257,11 +258,6 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     }
 
     @Override
-    public PrimitiveHolder getCurrentValue() {
-        return this.currentValue;
-    }
-
-    @Override
     public int getCurrentArrayIndex() {
         PathOperator top = this.currentPosition.peek();
         if (top.getType() == Type.ARRAY) {
@@ -269,6 +265,19 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         } else {
             return -1;
         }
+    }
+
+    @Override
+    public void save(String key, Object value) {
+        if (this.transientMap == null) {
+            this.transientMap = new HashMap<String, Object>();
+        }
+        this.transientMap.put(key, value);
+    }
+
+    @Override
+    public <T> T load(String key, Class<T> tClass) {
+        return this.transientMap != null ? tClass.cast(this.transientMap.get(key)) : null;
     }
 
     @Override

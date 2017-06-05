@@ -73,6 +73,27 @@ public class JsonSurferTest {
     }
 
     @Test
+    public void testTransientMap() throws Exception {
+        surfer.configBuilder().bind("$.store.book[1]", new JsonPathListener() {
+            @Override
+            public void onValue(Object value, ParsingContext context) {
+                context.save("foo", "bar");
+            }
+        }).bind("$.store.book[2]", new JsonPathListener() {
+            @Override
+            public void onValue(Object value, ParsingContext context) {
+                assertEquals("bar", context.load("foo", String.class));
+            }
+        })
+        .bind("$.store.book[0]", new JsonPathListener() {
+            @Override
+            public void onValue(Object value, ParsingContext context) {
+                assertNull(context.load("foo", String.class));
+            }
+        }).buildAndSurf(read("sample.json"));
+    }
+
+    @Test
     public void testJsonPathFilterEqualNumber() throws Exception {
         JsonPathListener mockListener = mock(JsonPathListener.class);
         surfer.configBuilder().bind("$.store.book[?(@.price==8.95)]", mockListener)

@@ -29,7 +29,6 @@ package org.jsfr.json;
  */
 public interface ParsingContext {
 
-
     /**
      * Stop the parsing
      */
@@ -51,13 +50,24 @@ public interface ParsingContext {
     String getCurrentFieldName();
 
     /**
-     * @return The current primitive value holder
-     */
-    PrimitiveHolder getCurrentValue();
-
-    /**
      * @return The current index of json array. -1 if current position is not in json array
      */
     int getCurrentArrayIndex();
+
+    /**
+     * Save a transient data during parsing
+     *
+     * @param key   key
+     * @param value value
+     */
+    void save(String key, Object value);
+
+    /**
+     * @param key    key
+     * @param tClass class to cast
+     * @param <T>    type
+     * @return Saved value
+     */
+    <T> T load(String key, Class<T> tClass);
 
 }
