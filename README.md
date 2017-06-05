@@ -46,25 +46,25 @@ JsonSurfer has drivers for most of popular json libraries including: Gson, Jacks
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-gson</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-jackson</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-fastjson</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-jsonsimple</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 </dependency>
 
 ```
@@ -146,8 +146,6 @@ or
         JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
         Collection<Object> multipleResults = jsonSurfer.collectAll(sample, "$.store.book[*]");
 ```
-#### Stop parsing on the fly
-* Refer to [Stoppable parsing](#stoppable-parsing)
 #### Filters
 * Filter operators
 
@@ -182,6 +180,28 @@ which prints "Leo".
 which prints "bar".
 #### Stop parsing on the fly
 * Refer to [Stoppable parsing](#stoppable-parsing)
+#### Share data among processors
+
+Since JsonSurfer emit data in the way of callback, it may become difficult if one of your processing depends one another. Therefore a simple transient map is added for sharing data among your processors. Following unit test shows how to use it:
+
+```java
+        surfer.configBuilder().bind("$.store.book[1]", new JsonPathListener() {
+            @Override
+            public void onValue(Object value, ParsingContext context) {
+                context.save("foo", "bar");
+            }
+        }).bind("$.store.book[2]", new JsonPathListener() {
+            @Override
+            public void onValue(Object value, ParsingContext context) {
+                assertEquals("bar", context.load("foo", String.class));
+            }
+        }).bind("$.store.book[0]", new JsonPathListener() {
+            @Override
+            public void onValue(Object value, ParsingContext context) {
+                assertNull(context.load("foo", String.class));
+            }
+        }).buildAndSurf(read("sample.json"));
+```
 
 ### Examples
 
