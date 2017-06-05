@@ -15,7 +15,7 @@ indexes: '[' NUM ( ',' NUM )* ']' ;
 slicing: '[' NUM? COLON NUM? ']';
 COLON : ':';
 childNode: '.' KEY ;
-childrenNode: '[' KEY ( ',' KEY )* ']' ;
+childrenNode: '[' QUOTED_STRING ( ',' QUOTED_STRING )* ']' ;
 filter: '[?(' expr ')]';
 expr : expr AndOperator expr
            | expr OrOperator expr
@@ -40,6 +40,8 @@ NUM
     ;
 fragment INT :   '0' | [1-9] [0-9]* ; // no leading zeros
 fragment EXP :   [Ee] [+\-]? INT ; // \- since - means "range" inside [...]
+
+QUOTED_STRING : '\'' ( ~('\''|'\\') | ('\\' .) )* '\'';
 
 KEY :  (ESC | ~(["\\] | '.' | '*' | '[' | ']' | '(' | ')' | ',' | ':'| '=' | '@' | '?' | '&' | '|' | '>' | '<' | '\'' | [ \t\n\r]))+  ;
 fragment ESC :   '\\' (["\\/bfnrt] | UNICODE) ;

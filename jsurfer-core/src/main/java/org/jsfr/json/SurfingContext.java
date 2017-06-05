@@ -25,6 +25,7 @@
 package org.jsfr.json;
 
 import org.jsfr.json.path.ArrayIndex;
+import org.jsfr.json.path.ChildNode;
 import org.jsfr.json.path.PathOperator;
 import org.jsfr.json.path.PathOperator.Type;
 
@@ -41,7 +42,6 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     private ContentDispatcher dispatcher = new ContentDispatcher();
     private SurfingConfiguration config;
     private PrimitiveHolder currentValue;
-    private String currentKey;
 
     public SurfingContext(SurfingConfiguration config) {
         this.config = config;
@@ -162,7 +162,6 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (stopped) {
             return false;
         }
-        this.currentKey = null;
         currentPosition.stepOutObject();
         dispatcher.endObject();
         return true;
@@ -173,7 +172,6 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (stopped) {
             return false;
         }
-        currentKey = key;
         currentPosition.updateObjectEntry(key);
         dispatcher.startObjectEntry(key);
         return true;
@@ -250,7 +248,12 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     @Override
     public String getCurrentFieldName() {
-        return currentKey;
+        PathOperator top = this.currentPosition.peek();
+        if (top instanceof ChildNode) {
+            return ((ChildNode) top).getKey();
+        } else {
+            return null;
+        }
     }
 
     @Override

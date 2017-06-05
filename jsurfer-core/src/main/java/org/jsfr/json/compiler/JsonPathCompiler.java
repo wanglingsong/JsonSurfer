@@ -74,11 +74,12 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
     @Override
     public Void visitChildrenNode(JsonPathParser.ChildrenNodeContext ctx) {
         int i = 0;
-        String[] keys = new String[ctx.KEY().size()];
-        for (TerminalNode key : ctx.KEY()) {
-            keys[i++] = key.getText();
+        String[] strings = new String[ctx.QUOTED_STRING().size()];
+        for (TerminalNode node : ctx.QUOTED_STRING()) {
+            String quotedString = node.getText();
+            strings[i++] = quotedString.substring(1, quotedString.length()-1);
         }
-        builder.children(keys);
+        builder.children(strings);
         return super.visitChildren(ctx);
     }
 
