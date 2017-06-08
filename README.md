@@ -120,7 +120,6 @@ or
                 })
                 .buildAndSurf(sample);
 ```
-
 #### Reuse listener binding
 ```java
         JsonSurfer surfer = JsonSurferGson.INSTANCE;
@@ -135,7 +134,6 @@ or
         surfer.surf(sample1, config);
         surfer.surf(sample2, config);
 ```
-
 #### Collect the first matched value and stop immediately
 ```java
         JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
@@ -145,6 +143,11 @@ or
 ```java
         JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
         Collection<Object> multipleResults = jsonSurfer.collectAll(sample, "$.store.book[*]");
+```
+#### Compile JsonPath
+```java
+        JsonPath compiledPath = JsonPathCompiler.compile("$..book[1,3]['author','title']");
+        String value = surfer.collectOne(read("sample.json"), String.class, compiledPath);
 ```
 #### Filters
 * Filter operators
@@ -159,7 +162,6 @@ You can use logical operators '&&' and '||' to create more complex filter expres
 ```
 $.store.book[?(@.price < 10 || @.category && @.isbn && @.price>10)]
 ```
-
 #### Resolver API:
 * As of 1.2.6, JsonSurfer provides another way of processing json. You can directly resolve value with JsonPath from a well-built DOM like HashMap or even POJO:
 ```java
