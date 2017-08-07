@@ -286,7 +286,7 @@ public class JsonSurferTest {
 
                     @Override
                     public boolean matchesSafely(ParsingContext parsingContext) {
-                        parsingContext.stopParsing();
+                        parsingContext.stop();
                         return true;
                     }
 
@@ -569,7 +569,7 @@ public class JsonSurferTest {
         surfer.configBuilder().bind("$..book[0,1]", new JsonPathListener() {
             @Override
             public void onValue(Object value, ParsingContext parsingContext) {
-                parsingContext.stopParsing();
+                parsingContext.stop();
                 //System.out.println(value);
             }
         }).buildAndSurf(read("sample.json"));

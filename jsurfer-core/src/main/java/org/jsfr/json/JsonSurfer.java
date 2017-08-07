@@ -29,6 +29,8 @@ import org.jsfr.json.provider.JsonProvider;
 
 import java.io.Reader;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import static org.jsfr.json.compiler.JsonPathCompiler.compile;
 
@@ -38,6 +40,9 @@ import static org.jsfr.json.compiler.JsonPathCompiler.compile;
  * and return the matched value immediately. JsonSurfer is fully streaming which means that it doesn't construct the DOM tree in memory.
  */
 public class JsonSurfer {
+
+    private static final String KEY_HAS_MATCH = "_JSURFER_INTERNAL_HAS_MATCH_";
+    private static final String KEY_MATCH = "_JSURFER_INTERNAL_MATCH_";
 
     private JsonProvider jsonProvider;
     private JsonParserAdapter jsonParserAdapter;
@@ -72,6 +77,60 @@ public class JsonSurfer {
     }
 
     /**
+     * Create a streaming iterator which can pull matched value one by one according to provided JsonPath. Internally, only one matched value stored in memory
+     *
+     * @param reader   Json source
+     * @param jsonPath JsonPath
+     * @return Streaming iterator
+     */
+    public Iterator iterator(Reader reader, String jsonPath) {
+
+        final SurfingConfiguration config = SurfingConfiguration.builder().bind(jsonPath, new JsonPathListener() {
+            @Override
+            public void onValue(Object value, ParsingContext context) {
+                context.save(KEY_MATCH, value);
+                context.save(KEY_HAS_MATCH, true);
+                context.pause();
+            }
+        }).build();
+
+        ensureSetting(config);
+
+        final SurfingContext context = new SurfingContext(config);
+        context.save(KEY_HAS_MATCH, false);
+        context.pause();
+        final ResumableParser resumableParser = jsonParserAdapter.parse(reader, context);
+        return new Iterator<Object>() {
+
+            @Override
+            public boolean hasNext() {
+                if (context.load(KEY_HAS_MATCH, Boolean.class)) {
+                    return true;
+                } else {
+                    return resumableParser.resume() && context.load(KEY_HAS_MATCH, Boolean.class);
+                }
+            }
+
+            @Override
+            public Object next() {
+                if (hasNext()) {
+                    Object match = context.load(KEY_MATCH, Object.class);
+                    context.save(KEY_HAS_MATCH, false);
+                    context.save(KEY_MATCH, null);
+                    return match;
+                } else {
+                    throw new NoSuchElementException();
+                }
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException("remove unsupported");
+            }
+        };
+    }
+
+    /**
      * @param json          json
      * @param configuration SurfingConfiguration that holds JsonPath binding
      */
@@ -92,7 +151,7 @@ public class JsonSurfer {
     /**
      * Collect all matched value into a collection
      *
-     * @param json Json string
+     * @param json  Json string
      * @param paths JsonPath
      * @return collection
      */
@@ -103,7 +162,7 @@ public class JsonSurfer {
     /**
      * Collect all matched value into a collection
      *
-     * @param json Json string
+     * @param json  Json string
      * @param paths JsonPath
      * @return collection
      */
@@ -183,7 +242,7 @@ public class JsonSurfer {
     /**
      * Collect the first matched value and stop parsing immediately
      *
-     * @param json json
+     * @param json  json
      * @param paths JsonPath
      * @return value
      */
@@ -192,10 +251,10 @@ public class JsonSurfer {
     }
 
     /**
-     * @param json json
+     * @param json   json
      * @param tClass type
-     * @param paths JsonPath
-     * @param <T> type
+     * @param paths  JsonPath
+     * @param <T>    type
      * @return value
      */
     public <T> T collectOne(String json, Class<T> tClass, JsonPath... paths) {

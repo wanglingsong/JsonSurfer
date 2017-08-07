@@ -51,7 +51,7 @@ public class CollectOneListener implements JsonPathListener {
             this.gotData = true;
         }
         if (shallStopImmediately) {
-            context.stopParsing();
+            context.stop();
         }
     }
 

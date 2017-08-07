@@ -40,6 +40,7 @@ import java.util.Map;
 class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     private boolean stopped = false;
+    private boolean paused = false;
     private JsonPosition currentPosition;
     private ContentDispatcher dispatcher = new ContentDispatcher();
     private SurfingConfiguration config;
@@ -114,9 +115,6 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     @Override
     public boolean startJSON() {
-        if (stopped) {
-            return true;
-        }
         currentPosition = JsonPosition.start();
         doMatching(null);
         dispatcher.startJSON();
@@ -125,19 +123,17 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     @Override
     public boolean endJSON() {
-        if (stopped) {
-            return true;
-        }
         dispatcher.endJSON();
         // clear resources
         currentPosition.clear();
         currentPosition = null;
+        this.stopped = true;
         return true;
     }
 
     @Override
     public boolean startObject() {
-        if (stopped) {
+        if (shouldBreak()) {
             return false;
         }
         PathOperator currentNode = currentPosition.peek();
@@ -161,7 +157,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     @Override
     public boolean endObject() {
-        if (stopped) {
+        if (shouldBreak()) {
             return false;
         }
         currentPosition.stepOutObject();
@@ -171,7 +167,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     @Override
     public boolean startObjectEntry(String key) {
-        if (stopped) {
+        if (shouldBreak()) {
             return false;
         }
         currentPosition.updateObjectEntry(key);
@@ -181,7 +177,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     @Override
     public boolean startArray() {
-        if (stopped) {
+        if (shouldBreak()) {
             return false;
         }
         PathOperator currentNode = currentPosition.peek();
@@ -210,7 +206,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     @Override
     public boolean endArray() {
-        if (stopped) {
+        if (shouldBreak()) {
             return false;
         }
         currentPosition.stepOutArray();
@@ -220,7 +216,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     @Override
     public boolean primitive(PrimitiveHolder primitiveHolder) {
-        if (stopped) {
+        if (shouldBreak()) {
             return false;
         }
         PathOperator currentNode = currentPosition.peek();
@@ -280,14 +276,33 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         return this.transientMap != null ? tClass.cast(this.transientMap.get(key)) : null;
     }
 
+    private boolean shouldBreak() {
+        return this.stopped || this.paused;
+    }
+
     @Override
-    public void stopParsing() {
+    public void stop() {
         this.stopped = true;
     }
 
     @Override
     public boolean isStopped() {
         return this.stopped;
+    }
+
+    @Override
+    public void pause() {
+        this.paused = true;
+    }
+
+    @Override
+    public void resume() {
+        this.paused = false;
+    }
+
+    @Override
+    public boolean isPaused() {
+        return this.paused;
     }
 
     public SurfingConfiguration getConfig() {

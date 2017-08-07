@@ -33,6 +33,7 @@ import org.junit.Test;
 
 import java.io.Reader;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -83,6 +84,17 @@ public class GsonParserTest extends JsonSurferTest {
         Collection<Book> book = surfer.collectAll(reader, Book.class, JsonPathCompiler.compile("$..book[0,1]"));
         assertEquals(2, book.size());
         assertEquals("Nigel Rees", book.iterator().next().getAuthor());
+    }
+
+    @Test
+    public void testSurfingIterator() throws Exception {
+        Iterator iterator = surfer.iterator(read("sample.json"), "$.store.book[*]");
+        int count = 0;
+        while (iterator.hasNext()) {
+            LOGGER.info("Iterator next: {}", iterator.next());
+            count++;
+        }
+        assertEquals(4, count);
     }
 
 }

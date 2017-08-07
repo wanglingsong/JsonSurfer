@@ -30,14 +30,29 @@ package org.jsfr.json;
 public interface ParsingContext {
 
     /**
-     * Stop the parsing
+     * Stop parsing
      */
-    void stopParsing();
+    void stop();
 
     /**
      * @return Whether parsing is stopped
      */
     boolean isStopped();
+
+    /**
+     * Pause parsing
+     */
+    void pause();
+
+    /**
+     * Resume parsing
+     */
+    void resume();
+
+    /**
+     * @return Whether parsing is paused
+     */
+    boolean isPaused();
 
     /**
      * @return The current JsonPath

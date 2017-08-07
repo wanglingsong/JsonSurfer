@@ -33,21 +33,34 @@ public class JsonSimpleParser implements JsonParserAdapter {
 
     public static final JsonSimpleParser INSTANCE = new JsonSimpleParser();
 
-    private JsonSimpleParser(){}
+    private JsonSimpleParser() {
+    }
 
     @Override
-    public void parse(Reader reader, SurfingContext context) {
+    public ResumableParser parse(Reader reader, SurfingContext context) {
         JSONParser parser = new JSONParser();
         try {
             parser.parse(reader, new JsonSimpleHandlerAdapter(context));
         } catch (Exception e) {
             context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
         }
+        return null;
     }
 
     @Override
-    public void parse(String json, SurfingContext context) {
+    public ResumableParser parse(String json, SurfingContext context) {
         parse(new StringReader(json), context);
+        return null;
+    }
+
+    @Override
+    public ResumableParser createParser(Reader reader, SurfingContext context) {
+        throw new UnsupportedOperationException("Unsupported");
+    }
+
+    @Override
+    public ResumableParser createParser(String json, SurfingContext context) {
+        throw new UnsupportedOperationException("Unsupported");
     }
 
 }

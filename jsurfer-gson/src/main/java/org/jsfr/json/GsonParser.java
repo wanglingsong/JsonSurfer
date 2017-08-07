@@ -34,117 +34,176 @@ import java.io.StringReader;
 
 public class GsonParser implements JsonParserAdapter {
 
-    public final static GsonParser INSTANCE = new GsonParser();
+    private static class GsonResumableParser implements ResumableParser {
+        private JsonReader jsonReader;
+        private SurfingContext context;
+        private AbstractPrimitiveHolder stringHolder;
+        private AbstractPrimitiveHolder numberHolder;
+        private AbstractPrimitiveHolder booleanHolder;
+        private AbstractPrimitiveHolder nullHolder;
 
-    private GsonParser(){}
+        public GsonResumableParser(JsonReader jsonReader, SurfingContext context, AbstractPrimitiveHolder stringHolder, AbstractPrimitiveHolder numberHolder, AbstractPrimitiveHolder booleanHolder, AbstractPrimitiveHolder nullHolder) {
+            this.jsonReader = jsonReader;
+            this.context = context;
+            this.stringHolder = stringHolder;
+            this.numberHolder = numberHolder;
+            this.booleanHolder = booleanHolder;
+            this.nullHolder = nullHolder;
+        }
 
-    @Override
-    public void parse(Reader reader, SurfingContext context) {
-        try {
-            final JsonReader jsonReader = new JsonReader(reader);
-            final JsonProvider jsonProvider = context.getConfig().getJsonProvider();
-            AbstractPrimitiveHolder stringHolder = new AbstractPrimitiveHolder(context.getConfig()) {
-                @Override
-                public Object doGetValue() throws IOException {
-                    return jsonProvider.primitive(jsonReader.nextString());
-                }
-
-                @Override
-                public void doSkipValue() throws IOException {
-                    jsonReader.skipValue();
-                }
-            };
-            AbstractPrimitiveHolder numberHolder = new AbstractPrimitiveHolder(context.getConfig()) {
-                @Override
-                public Object doGetValue() throws IOException {
-                    return jsonProvider.primitive(jsonReader.nextDouble());
-                }
-
-                @Override
-                public void doSkipValue() throws IOException {
-                    jsonReader.skipValue();
-                }
-            };
-            AbstractPrimitiveHolder booleanHolder = new AbstractPrimitiveHolder(context.getConfig()) {
-                @Override
-                public Object doGetValue() throws IOException {
-                    return jsonProvider.primitive(jsonReader.nextBoolean());
-                }
-
-                @Override
-                public void doSkipValue() throws IOException {
-                    jsonReader.skipValue();
-                }
-            };
-            AbstractPrimitiveHolder nullHolder = new AbstractPrimitiveHolder(context.getConfig()) {
-                @Override
-                public Object doGetValue() throws IOException {
-                    jsonReader.nextNull();
-                    return jsonProvider.primitiveNull();
-                }
-
-                @Override
-                public void doSkipValue() throws IOException {
-                    jsonReader.skipValue();
-                }
-            };
+        @Override
+        public void parse() {
             context.startJSON();
-            while (!context.isStopped()) {
-                JsonToken token = jsonReader.peek();
-                switch (token) {
-                    case BEGIN_ARRAY:
-                        jsonReader.beginArray();
-                        context.startArray();
-                        break;
-                    case END_ARRAY:
-                        jsonReader.endArray();
-                        context.endArray();
-                        break;
-                    case BEGIN_OBJECT:
-                        jsonReader.beginObject();
-                        context.startObject();
-                        break;
-                    case END_OBJECT:
-                        jsonReader.endObject();
-                        context.endObject();
-                        break;
-                    case NAME:
-                        String name = jsonReader.nextName();
-                        context.startObjectEntry(name);
-                        break;
-                    case STRING:
-                        stringHolder.init();
-                        context.primitive(stringHolder);
-                        stringHolder.skipValue();
-                        break;
-                    case NUMBER:
-                        numberHolder.init();
-                        context.primitive(numberHolder);
-                        numberHolder.skipValue();
-                        break;
-                    case BOOLEAN:
-                        booleanHolder.init();
-                        context.primitive(booleanHolder);
-                        booleanHolder.skipValue();
-                        break;
-                    case NULL:
-                        nullHolder.init();
-                        context.primitive(nullHolder);
-                        nullHolder.skipValue();
-                        break;
-                    case END_DOCUMENT:
-                        context.endJSON();
-                        return;
+            doParse();
+        }
+
+        @Override
+        public boolean resume() {
+            try {
+                if (context.isStopped() || !context.isPaused()) {
+                    return false;
                 }
+                context.resume();
+                doParse();
+                return true;
+            } catch (Exception e) {
+                context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
+                return false;
             }
-        } catch (Exception e) {
-            context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
+        }
+
+        private void doParse() {
+            try {
+                while (!context.isStopped() && !context.isPaused()) {
+                    JsonToken token = jsonReader.peek();
+                    switch (token) {
+                        case BEGIN_ARRAY:
+                            jsonReader.beginArray();
+                            context.startArray();
+                            break;
+                        case END_ARRAY:
+                            jsonReader.endArray();
+                            context.endArray();
+                            break;
+                        case BEGIN_OBJECT:
+                            jsonReader.beginObject();
+                            context.startObject();
+                            break;
+                        case END_OBJECT:
+                            jsonReader.endObject();
+                            context.endObject();
+                            break;
+                        case NAME:
+                            String name = jsonReader.nextName();
+                            context.startObjectEntry(name);
+                            break;
+                        case STRING:
+                            stringHolder.init();
+                            context.primitive(stringHolder);
+                            stringHolder.skipValue();
+                            break;
+                        case NUMBER:
+                            numberHolder.init();
+                            context.primitive(numberHolder);
+                            numberHolder.skipValue();
+                            break;
+                        case BOOLEAN:
+                            booleanHolder.init();
+                            context.primitive(booleanHolder);
+                            booleanHolder.skipValue();
+                            break;
+                        case NULL:
+                            nullHolder.init();
+                            context.primitive(nullHolder);
+                            nullHolder.skipValue();
+                            break;
+                        case END_DOCUMENT:
+                            context.endJSON();
+                            return;
+                    }
+                }
+            } catch (Exception e) {
+                context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
+            }
         }
     }
 
+    public final static GsonParser INSTANCE = new GsonParser();
+
+    private GsonParser() {
+    }
+
     @Override
-    public void parse(String json, SurfingContext context) {
-        parse(new StringReader(json), context);
+    public ResumableParser parse(Reader reader, SurfingContext context) {
+        ResumableParser parser = createParser(reader, context);
+        parser.parse();
+        return parser;
+
+    }
+
+    @Override
+    public ResumableParser parse(String json, SurfingContext context) {
+        ResumableParser parser = createParser(json, context);
+        parser.parse();
+        return parser;
+    }
+
+    @Override
+    public ResumableParser createParser(Reader reader, SurfingContext context) {
+        final JsonReader jsonReader = new JsonReader(reader);
+        final JsonProvider jsonProvider = context.getConfig().getJsonProvider();
+
+        AbstractPrimitiveHolder stringHolder = new AbstractPrimitiveHolder(context.getConfig()) {
+            @Override
+            public Object doGetValue() throws IOException {
+                return jsonProvider.primitive(jsonReader.nextString());
+            }
+
+            @Override
+            public void doSkipValue() throws IOException {
+                jsonReader.skipValue();
+            }
+        };
+        AbstractPrimitiveHolder numberHolder = new AbstractPrimitiveHolder(context.getConfig()) {
+            @Override
+            public Object doGetValue() throws IOException {
+                return jsonProvider.primitive(jsonReader.nextDouble());
+            }
+
+            @Override
+            public void doSkipValue() throws IOException {
+                jsonReader.skipValue();
+            }
+        };
+        AbstractPrimitiveHolder booleanHolder = new AbstractPrimitiveHolder(context.getConfig()) {
+            @Override
+            public Object doGetValue() throws IOException {
+                return jsonProvider.primitive(jsonReader.nextBoolean());
+            }
+
+            @Override
+            public void doSkipValue() throws IOException {
+                jsonReader.skipValue();
+            }
+        };
+        AbstractPrimitiveHolder nullHolder = new AbstractPrimitiveHolder(context.getConfig()) {
+            @Override
+            public Object doGetValue() throws IOException {
+                jsonReader.nextNull();
+                return jsonProvider.primitiveNull();
+            }
+
+            @Override
+            public void doSkipValue() throws IOException {
+                jsonReader.skipValue();
+            }
+        };
+        return new GsonResumableParser(jsonReader, context, stringHolder, numberHolder, booleanHolder, nullHolder);
+    }
+
+    @Override
+    public ResumableParser createParser(String json, SurfingContext context) {
+        return createParser(new StringReader(json), context);
     }
 
 }
