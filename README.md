@@ -134,6 +134,14 @@ or
         surfer.surf(sample1, config);
         surfer.surf(sample2, config);
 ```
+#### Compiled JsonPath
+JsonPath object is immutable and can be reused safely. 
+
+**Tips:** Most of JsonSurfer API have two version: accepting raw JsonPath string or JsonPath object. The latter is always faster than the former without compiling JsonPath.
+```java
+        JsonPath compiledPath = JsonPathCompiler.compile("$..book[1,3]['author','title']");
+        String value = surfer.collectOne(read("sample.json"), String.class, compiledPath);
+```
 #### Collect the first matched value and stop immediately
 ```java
         JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
@@ -143,11 +151,6 @@ or
 ```java
         JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
         Collection<Object> multipleResults = jsonSurfer.collectAll(sample, "$.store.book[*]");
-```
-#### Compile JsonPath
-```java
-        JsonPath compiledPath = JsonPathCompiler.compile("$..book[1,3]['author','title']");
-        String value = surfer.collectOne(read("sample.json"), String.class, compiledPath);
 ```
 #### Filters
 * Filter operators
@@ -180,12 +183,8 @@ which prints "Leo".
         System.out.println(compile("$.list[1]").resolve(map, JavaCollectionProvider.INSTANCE));
 ```
 which prints "bar".
-#### Stop parsing on the fly
-* Refer to [Stoppable parsing](#stoppable-parsing)
 #### Share data among processors
-
 Since JsonSurfer emit data in the way of callback, it may become difficult if one of your processing depends one another. Therefore a simple transient map is added for sharing data among your processors. Following unit test shows how to use it:
-
 ```java
         surfer.configBuilder().bind("$.store.book[1]", new JsonPathListener() {
             @Override
@@ -204,7 +203,21 @@ Since JsonSurfer emit data in the way of callback, it may become difficult if on
             }
         }).buildAndSurf(read("sample.json"));
 ```
-
+#### Control parsing
+You can pause, resume or stop parsing anytime.
+TODO
+* Refer to [Stoppable parsing](#stoppable-parsing)
+#### Stream support
+As of 1.4, JsonSurfer can create an iterator from Json source and JsonPath. Matched value can be pulled from the iterator one by one without loading entire json into memory.
+```java
+    Iterator iterator = surfer.iterator(read("sample.json"), JsonPathCompiler.compile("$.store.book[*]"));
+```
+Java8 user can also convert the iterator into a Stream
+```java
+    Stream<Object> targetStream = StreamSupport.stream(
+          Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED),
+          false);
+```
 ### Examples
 
 Sample Json:
@@ -437,7 +450,7 @@ $..book[0,1]
                     @Override
                     public void onValue(Object value, ParsingContext context) {                        
                         System.out.println(value);
-                        context.stopParsing();
+                        context.stop();
                     }
                 })
                 .buildAndSurf(sample);
