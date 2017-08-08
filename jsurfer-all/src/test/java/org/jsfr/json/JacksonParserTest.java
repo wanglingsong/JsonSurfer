@@ -91,7 +91,7 @@ public class JacksonParserTest extends JsonSurferTest {
 
     @Test
     public void testSurfingIterator() throws Exception {
-        Iterator iterator = surfer.iterator(read("sample.json"), "$.store.book[*]");
+        Iterator iterator = surfer.iterator(read("sample.json"), JsonPathCompiler.compile("$.store.book[*]"));
         int count = 0;
         while (iterator.hasNext()) {
             LOGGER.info("Iterator next: {}", iterator.next());

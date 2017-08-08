@@ -36,18 +36,16 @@ public interface JsonParserAdapter {
      *
      * @param reader  reader
      * @param context SurfingContext
-     * @return Resumable Parser
      */
-    ResumableParser parse(Reader reader, SurfingContext context);
+    void parse(Reader reader, SurfingContext context);
 
     /**
      * Create and start a resumable parser
      *
      * @param json    json
      * @param context SurfingContext
-     * @return Resumable Parser
      */
-    ResumableParser parse(String json, SurfingContext context);
+    void parse(String json, SurfingContext context);
 
     /**
      * Create a resumable parser

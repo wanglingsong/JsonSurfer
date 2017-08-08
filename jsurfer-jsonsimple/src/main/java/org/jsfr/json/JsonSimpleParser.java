@@ -37,20 +37,18 @@ public class JsonSimpleParser implements JsonParserAdapter {
     }
 
     @Override
-    public ResumableParser parse(Reader reader, SurfingContext context) {
+    public void parse(Reader reader, SurfingContext context) {
         JSONParser parser = new JSONParser();
         try {
             parser.parse(reader, new JsonSimpleHandlerAdapter(context));
         } catch (Exception e) {
             context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
         }
-        return null;
     }
 
     @Override
-    public ResumableParser parse(String json, SurfingContext context) {
+    public void parse(String json, SurfingContext context) {
         parse(new StringReader(json), context);
-        return null;
     }
 
     @Override

@@ -134,18 +134,13 @@ public class GsonParser implements JsonParserAdapter {
     }
 
     @Override
-    public ResumableParser parse(Reader reader, SurfingContext context) {
-        ResumableParser parser = createParser(reader, context);
-        parser.parse();
-        return parser;
-
+    public void parse(Reader reader, SurfingContext context) {
+        createParser(reader, context).parse();
     }
 
     @Override
-    public ResumableParser parse(String json, SurfingContext context) {
-        ResumableParser parser = createParser(json, context);
-        parser.parse();
-        return parser;
+    public void parse(String json, SurfingContext context) {
+        createParser(json, context).parse();
     }
 
     @Override

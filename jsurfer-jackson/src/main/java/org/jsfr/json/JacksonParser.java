@@ -147,17 +147,13 @@ public class JacksonParser implements JsonParserAdapter {
     }
 
     @Override
-    public ResumableParser parse(Reader reader, final SurfingContext context) {
-        ResumableParser parser = createParser(reader, context);
-        parser.parse();
-        return parser;
+    public void parse(Reader reader, final SurfingContext context) {
+        createParser(reader, context).parse();
     }
 
     @Override
-    public ResumableParser parse(String json, SurfingContext context) {
-        ResumableParser parser = createParser(json, context);
-        parser.parse();
-        return parser;
+    public void parse(String json, SurfingContext context) {
+        createParser(json, context).parse();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.jsfr.json;
 
+import org.jsfr.json.compiler.JsonPathCompiler;
 import org.jsfr.json.provider.FastJsonProvider;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +23,7 @@ public class FastJsonParesrTest extends JsonSurferTest {
 
     @Test
     public void testSurfingIterator() throws Exception {
-        Iterator iterator = surfer.iterator(read("sample.json"), "$.store.book[*]");
+        Iterator iterator = surfer.iterator(read("sample.json"), JsonPathCompiler.compile("$.store.book[*]"));
         int count = 0;
         while (iterator.hasNext()) {
             LOGGER.info("Iterator next: {}", iterator.next());

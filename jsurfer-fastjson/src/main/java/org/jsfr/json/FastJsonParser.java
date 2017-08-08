@@ -50,7 +50,6 @@ public class FastJsonParser implements JsonParserAdapter {
         private void doParse() {
 
             try {
-                StaticPrimitiveHolder staticPrimitiveHolder = new StaticPrimitiveHolder();
                 String tempString = null;
 
                 while (!lexer.isEOF() && !context.isStopped() && !context.isPaused()) {
@@ -131,17 +130,13 @@ public class FastJsonParser implements JsonParserAdapter {
     }
 
     @Override
-    public ResumableParser parse(Reader reader, SurfingContext context) {
-        ResumableParser parser = createParser(reader, context);
-        parser.parse();
-        return parser;
+    public void parse(Reader reader, SurfingContext context) {
+        createParser(reader, context).parse();
     }
 
     @Override
-    public ResumableParser parse(String json, SurfingContext context) {
-        ResumableParser parser = createParser(json, context);
-        parser.parse();
-        return parser;
+    public void parse(String json, SurfingContext context) {
+        createParser(json, context).parse();
     }
 
     @Override

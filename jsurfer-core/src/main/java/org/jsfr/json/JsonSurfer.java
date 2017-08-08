@@ -83,32 +83,33 @@ public class JsonSurfer {
      * @param jsonPath JsonPath
      * @return Streaming iterator
      */
-    public Iterator iterator(Reader reader, String jsonPath) {
+    public Iterator iterator(Reader reader, JsonPath jsonPath) {
+        SurfingContext context = createIteratorContext(jsonPath);
+        final ResumableParser resumableParser = jsonParserAdapter.createParser(reader, context);
+        resumableParser.parse();
+        return createIterator(context, resumableParser);
+    }
 
-        final SurfingConfiguration config = SurfingConfiguration.builder().bind(jsonPath, new JsonPathListener() {
-            @Override
-            public void onValue(Object value, ParsingContext context) {
-                context.save(KEY_MATCH, value);
-                context.save(KEY_HAS_MATCH, true);
-                context.pause();
-            }
-        }).build();
+    /**
+     * Create a streaming iterator which can pull matched value one by one according to provided JsonPath. Internally, only one matched value stored in memory
+     *
+     * @param json     Json source
+     * @param jsonPath JsonPath
+     * @return Streaming iterator
+     */
+    public Iterator iterator(String json, JsonPath jsonPath) {
+        SurfingContext context = createIteratorContext(jsonPath);
+        final ResumableParser resumableParser = jsonParserAdapter.createParser(json, context);
+        resumableParser.parse();
+        return createIterator(context, resumableParser);
+    }
 
-        ensureSetting(config);
-
-        final SurfingContext context = new SurfingContext(config);
-        context.save(KEY_HAS_MATCH, false);
-        context.pause();
-        final ResumableParser resumableParser = jsonParserAdapter.parse(reader, context);
+    private Iterator<Object> createIterator(final SurfingContext context, final ResumableParser resumableParser) {
         return new Iterator<Object>() {
 
             @Override
             public boolean hasNext() {
-                if (context.load(KEY_HAS_MATCH, Boolean.class)) {
-                    return true;
-                } else {
-                    return resumableParser.resume() && context.load(KEY_HAS_MATCH, Boolean.class);
-                }
+                return context.load(KEY_HAS_MATCH, Boolean.class) || resumableParser.resume() && context.load(KEY_HAS_MATCH, Boolean.class);
             }
 
             @Override
@@ -128,6 +129,24 @@ public class JsonSurfer {
                 throw new UnsupportedOperationException("remove unsupported");
             }
         };
+    }
+
+    private SurfingContext createIteratorContext(JsonPath jsonPath) {
+        final SurfingConfiguration config = SurfingConfiguration.builder().bind(jsonPath, new JsonPathListener() {
+            @Override
+            public void onValue(Object value, ParsingContext context) {
+                context.save(KEY_MATCH, value);
+                context.save(KEY_HAS_MATCH, true);
+                context.pause();
+            }
+        }).build();
+
+        ensureSetting(config);
+
+        final SurfingContext context = new SurfingContext(config);
+        context.save(KEY_HAS_MATCH, false);
+        context.pause();
+        return context;
     }
 
     /**
