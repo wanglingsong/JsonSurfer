@@ -204,9 +204,35 @@ Since JsonSurfer emit data in the way of callback, it may become difficult if on
         }).buildAndSurf(read("sample.json"));
 ```
 #### Control parsing
-You can pause, resume or stop parsing anytime.
-TODO
-* Refer to [Stoppable parsing](#stoppable-parsing)
+* Pause and resume parsing.
+```java
+    SurfingConfiguration config = surfer.configBuilder()
+            .bind("$.store.book[0]", new JsonPathListener() {
+                @Override
+                public void onValue(Object value, ParsingContext context) {
+                    LOGGER.info("The first pause");
+                    context.pause();
+                }
+            })
+            .bind("$.store.book[1]", new JsonPathListener() {
+                @Override
+                public void onValue(Object value, ParsingContext context) {
+                    LOGGER.info("The second pause");
+                    context.pause();
+                }
+            }).build();
+    ResumableParser parser = surfer.getResumableParser(read("sample.json"), config);
+    assertFalse(parser.resume());
+    LOGGER.info("Start parsing");
+    parser.parse();
+    LOGGER.info("Resume from the first pause");
+    assertTrue(parser.resume());
+    LOGGER.info("Resume from the second pause");
+    assertTrue(parser.resume());
+    LOGGER.info("Parsing stopped");
+    assertFalse(parser.resume());
+```
+* Completely stop parsing. Refer to [Stoppable parsing](#stoppable-parsing)
 #### Stream support
 As of 1.4, JsonSurfer can create an iterator from Json source and JsonPath. Matched value can be pulled from the iterator one by one without loading entire json into memory.
 ```java
