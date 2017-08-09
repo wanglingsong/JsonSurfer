@@ -46,7 +46,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     private SurfingConfiguration config;
     private Map<String, Object> transientMap;
 
-    public SurfingContext(SurfingConfiguration config) {
+    SurfingContext(SurfingConfiguration config) {
         this.config = config;
     }
 
