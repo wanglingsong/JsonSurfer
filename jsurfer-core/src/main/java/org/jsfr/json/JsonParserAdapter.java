@@ -32,15 +32,37 @@ import java.io.Reader;
 public interface JsonParserAdapter {
 
     /**
+     * Create and start a resumable parser
+     *
      * @param reader  reader
      * @param context SurfingContext
      */
     void parse(Reader reader, SurfingContext context);
 
     /**
-     * @param json json
+     * Create and start a resumable parser
+     *
+     * @param json    json
      * @param context SurfingContext
      */
     void parse(String json, SurfingContext context);
+
+    /**
+     * Create a resumable parser
+     *
+     * @param reader  Json source
+     * @param context Surfing context
+     * @return Resumable Parser
+     */
+    ResumableParser createParser(Reader reader, SurfingContext context);
+
+    /**
+     * Create a resumable parser
+     *
+     * @param json    Json source
+     * @param context Surfing context
+     * @return Resumable parser
+     */
+    ResumableParser createParser(String json, SurfingContext context);
 
 }

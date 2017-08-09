@@ -33,10 +33,11 @@ import org.junit.Test;
 
 import java.io.Reader;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * Created by Leo on 2015/3/29.
@@ -83,6 +84,46 @@ public class GsonParserTest extends JsonSurferTest {
         Collection<Book> book = surfer.collectAll(reader, Book.class, JsonPathCompiler.compile("$..book[0,1]"));
         assertEquals(2, book.size());
         assertEquals("Nigel Rees", book.iterator().next().getAuthor());
+    }
+
+    @Test
+    public void testSurfingIterator() throws Exception {
+        Iterator<Object> iterator = surfer.iterator(read("sample.json"), JsonPathCompiler.compile("$.store.book[*]"));
+        int count = 0;
+        while (iterator.hasNext()) {
+            LOGGER.info("Iterator next: {}", iterator.next());
+            count++;
+        }
+        assertEquals(4, count);
+    }
+
+    @Test
+    public void testResumableParser() throws Exception {
+        SurfingConfiguration config = surfer.configBuilder()
+                .bind("$.store.book[0]", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        LOGGER.info("First pause");
+                        context.pause();
+                    }
+                })
+                .bind("$.store.book[1]", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        LOGGER.info("Second pause");
+                        context.pause();
+                    }
+                }).build();
+        ResumableParser parser = surfer.getResumableParser(read("sample.json"), config);
+        assertFalse(parser.resume());
+        LOGGER.info("Start parsing");
+        parser.parse();
+        LOGGER.info("Resume from the first pause");
+        assertTrue(parser.resume());
+        LOGGER.info("Resume from the second pause");
+        assertTrue(parser.resume());
+        LOGGER.info("Parsing stopped");
+        assertFalse(parser.resume());
     }
 
 }
