@@ -276,7 +276,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         return this.transientMap != null ? tClass.cast(this.transientMap.get(key)) : null;
     }
 
-    private boolean shouldBreak() {
+    public boolean shouldBreak() {
         return this.stopped || this.paused;
     }
 

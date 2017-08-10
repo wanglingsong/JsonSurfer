@@ -52,7 +52,7 @@ public class FastJsonParser implements JsonParserAdapter {
             try {
                 String tempString = null;
 
-                while (!lexer.isEOF() && !context.isStopped() && !context.isPaused()) {
+                while (!lexer.isEOF() && !context.shouldBreak()) {
                     lexer.nextToken();
                     int token = lexer.token();
                     //System.out.println("token: " + token);
@@ -147,6 +147,11 @@ public class FastJsonParser implements JsonParserAdapter {
     @Override
     public ResumableParser createParser(String json, SurfingContext context) {
         return new FastJsonResumableParser(new JSONScanner(json), context, new StaticPrimitiveHolder());
+    }
+
+    @Override
+    public NonBlockingParser createNonBlockingParser(SurfingContext context) {
+        throw new UnsupportedOperationException("Unsupported");
     }
 
 }

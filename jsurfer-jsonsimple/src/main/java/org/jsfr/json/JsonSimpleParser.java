@@ -61,4 +61,9 @@ public class JsonSimpleParser implements JsonParserAdapter {
         throw new UnsupportedOperationException("Unsupported");
     }
 
+    @Override
+    public NonBlockingParser createNonBlockingParser(SurfingContext context) {
+        throw new UnsupportedOperationException("Unsupported");
+    }
+
 }

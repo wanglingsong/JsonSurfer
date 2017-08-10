@@ -85,12 +85,12 @@ public class JsonSurferTest {
                 assertEquals("bar", context.load("foo", String.class));
             }
         })
-        .bind("$.store.book[0]", new JsonPathListener() {
-            @Override
-            public void onValue(Object value, ParsingContext context) {
-                assertNull(context.load("foo", String.class));
-            }
-        }).buildAndSurf(read("sample.json"));
+                .bind("$.store.book[0]", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        assertNull(context.load("foo", String.class));
+                    }
+                }).buildAndSurf(read("sample.json"));
     }
 
     @Test
@@ -328,7 +328,7 @@ public class JsonSurferTest {
         return new InputStreamReader(Resources.getResource(resourceName).openStream(), StandardCharsets.UTF_8);
     }
 
-    private String readAsString(String resourceName) throws IOException {
+    protected String readAsString(String resourceName) throws IOException {
         return Resources.toString(Resources.getResource(resourceName), StandardCharsets.UTF_8);
     }
 

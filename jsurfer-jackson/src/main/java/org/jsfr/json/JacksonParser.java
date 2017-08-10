@@ -27,6 +27,7 @@ package org.jsfr.json;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.json.async.NonBlockingJsonParser;
 import org.jsfr.json.provider.JsonProvider;
 
 import java.io.IOException;
@@ -34,16 +35,57 @@ import java.io.Reader;
 
 public class JacksonParser implements JsonParserAdapter {
 
+    private static class JacksonNonblockingParser implements NonBlockingParser {
+
+        private NonBlockingJsonParser nonBlockingJsonParser;
+        private JacksonResumableParser jacksonResumableParser;
+        private boolean started = false;
+
+        JacksonNonblockingParser(NonBlockingJsonParser nonBlockingJsonParser, JacksonResumableParser jacksonResumableParser) {
+            this.nonBlockingJsonParser = nonBlockingJsonParser;
+            this.jacksonResumableParser = jacksonResumableParser;
+        }
+
+        @Override
+        public boolean feed(byte[] bytes, int start, int end) {
+            try {
+                if (nonBlockingJsonParser.needMoreInput()) {
+                    if (!started) {
+                        jacksonResumableParser.context.startJSON();
+                        started = true;
+                    }
+                    nonBlockingJsonParser.feedInput(bytes, start, end);
+                    jacksonResumableParser.doPare();
+                    return true;
+                }
+            } catch (IOException e) {
+                jacksonResumableParser.context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
+            }
+            return false;
+        }
+
+        @Override
+        public void endOfInput() {
+            nonBlockingJsonParser.endOfInput();
+            try {
+                jacksonResumableParser.doPare();
+            } catch (IOException e) {
+                jacksonResumableParser.context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
+            }
+        }
+
+    }
+
     private static class JacksonResumableParser implements ResumableParser {
 
         private JsonParser jsonParser;
-        private SurfingContext context;
+        SurfingContext context;
         private AbstractPrimitiveHolder stringHolder;
         private AbstractPrimitiveHolder longHolder;
         private AbstractPrimitiveHolder doubleHolder;
         private StaticPrimitiveHolder staticHolder;
 
-        public JacksonResumableParser(JsonParser jsonParser, SurfingContext context, AbstractPrimitiveHolder stringHolder, AbstractPrimitiveHolder longHolder, AbstractPrimitiveHolder doubleHolder, StaticPrimitiveHolder staticHolder) {
+        JacksonResumableParser(JsonParser jsonParser, SurfingContext context, AbstractPrimitiveHolder stringHolder, AbstractPrimitiveHolder longHolder, AbstractPrimitiveHolder doubleHolder, StaticPrimitiveHolder staticHolder) {
             this.jsonParser = jsonParser;
             this.context = context;
             this.stringHolder = stringHolder;
@@ -77,10 +119,9 @@ public class JacksonParser implements JsonParserAdapter {
             }
         }
 
-        private void doPare() throws IOException {
-            final JsonProvider jsonProvider = context.getConfig().getJsonProvider();
-
-            while (!context.isStopped() && !context.isPaused()) {
+        void doPare() throws IOException {
+            JsonProvider jsonProvider = context.getConfig().getJsonProvider();
+            while (!context.shouldBreak()) {
                 JsonToken token = jsonParser.nextToken();
                 if (token == null) {
                     context.endJSON();
@@ -178,7 +219,18 @@ public class JacksonParser implements JsonParserAdapter {
         }
     }
 
-    private ResumableParser createParser(final JsonParser jp, SurfingContext context) {
+    @Override
+    public NonBlockingParser createNonBlockingParser(SurfingContext context) {
+        try {
+            NonBlockingJsonParser jp = (NonBlockingJsonParser) factory.createNonBlockingByteArrayParser();
+            return new JacksonNonblockingParser(jp, createParser(jp, context));
+        } catch (IOException e) {
+            context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
+        }
+        return null;
+    }
+
+    private JacksonResumableParser createParser(final JsonParser jp, SurfingContext context) {
         final JsonProvider jsonProvider = context.getConfig().getJsonProvider();
         AbstractPrimitiveHolder stringHolder = new AbstractPrimitiveHolder(context.getConfig()) {
             @Override

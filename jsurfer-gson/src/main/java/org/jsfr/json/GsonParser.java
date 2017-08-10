@@ -74,7 +74,7 @@ public class GsonParser implements JsonParserAdapter {
 
         private void doParse() {
             try {
-                while (!context.isStopped() && !context.isPaused()) {
+                while (!context.shouldBreak()) {
                     JsonToken token = jsonReader.peek();
                     switch (token) {
                         case BEGIN_ARRAY:
@@ -199,6 +199,11 @@ public class GsonParser implements JsonParserAdapter {
     @Override
     public ResumableParser createParser(String json, SurfingContext context) {
         return createParser(new StringReader(json), context);
+    }
+
+    @Override
+    public NonBlockingParser createNonBlockingParser(SurfingContext context) {
+        throw new UnsupportedOperationException("Unsupported");
     }
 
 }

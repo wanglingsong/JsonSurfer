@@ -159,7 +159,7 @@ public class JsonSurfer {
     }
 
     /**
-     * @param json        Json source
+     * @param json          Json source
      * @param configuration SurfingConfiguration that holds JsonPath binding
      */
     public void surf(Reader json, SurfingConfiguration configuration) {
@@ -175,6 +175,11 @@ public class JsonSurfer {
     public ResumableParser getResumableParser(Reader json, SurfingConfiguration configuration) {
         ensureSetting(configuration);
         return jsonParserAdapter.createParser(json, new SurfingContext(configuration));
+    }
+
+    public NonBlockingParser getNonBlockingParser(SurfingConfiguration configuration) {
+        ensureSetting(configuration);
+        return jsonParserAdapter.createNonBlockingParser(new SurfingContext(configuration));
     }
 
     /**
