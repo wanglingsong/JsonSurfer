@@ -127,7 +127,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         // clear resources
         currentPosition.clear();
         currentPosition = null;
-        this.stopped = true;
+        this.stop();
         return true;
     }
 
@@ -283,6 +283,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     @Override
     public void stop() {
         this.stopped = true;
+        this.paused = false;
     }
 
     @Override

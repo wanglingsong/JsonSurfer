@@ -114,7 +114,7 @@ public class GsonParserTest extends JsonSurferTest {
                         context.pause();
                     }
                 }).build();
-        ResumableParser parser = surfer.getResumableParser(read("sample.json"), config);
+        ResumableParser parser = surfer.createResumableParser(read("sample.json"), config);
         assertFalse(parser.resume());
         LOGGER.info("Start parsing");
         parser.parse();

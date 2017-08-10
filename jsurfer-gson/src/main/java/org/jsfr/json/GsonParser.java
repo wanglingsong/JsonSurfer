@@ -60,7 +60,7 @@ public class GsonParser implements JsonParserAdapter {
         @Override
         public boolean resume() {
             try {
-                if (context.isStopped() || !context.isPaused()) {
+                if (!context.isPaused()) {
                     return false;
                 }
                 context.resume();
@@ -119,7 +119,7 @@ public class GsonParser implements JsonParserAdapter {
                             break;
                         case END_DOCUMENT:
                             context.endJSON();
-                            return;
+                            break;
                     }
                 }
             } catch (Exception e) {
@@ -135,16 +135,16 @@ public class GsonParser implements JsonParserAdapter {
 
     @Override
     public void parse(Reader reader, SurfingContext context) {
-        createParser(reader, context).parse();
+        createResumableParser(reader, context).parse();
     }
 
     @Override
     public void parse(String json, SurfingContext context) {
-        createParser(json, context).parse();
+        createResumableParser(json, context).parse();
     }
 
     @Override
-    public ResumableParser createParser(Reader reader, SurfingContext context) {
+    public ResumableParser createResumableParser(Reader reader, SurfingContext context) {
         final JsonReader jsonReader = new JsonReader(reader);
         final JsonProvider jsonProvider = context.getConfig().getJsonProvider();
 
@@ -197,8 +197,8 @@ public class GsonParser implements JsonParserAdapter {
     }
 
     @Override
-    public ResumableParser createParser(String json, SurfingContext context) {
-        return createParser(new StringReader(json), context);
+    public ResumableParser createResumableParser(String json, SurfingContext context) {
+        return createResumableParser(new StringReader(json), context);
     }
 
     @Override

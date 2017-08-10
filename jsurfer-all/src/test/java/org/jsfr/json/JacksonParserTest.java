@@ -119,7 +119,7 @@ public class JacksonParserTest extends JsonSurferTest {
                         context.pause();
                     }
                 }).build();
-        ResumableParser parser = surfer.getResumableParser(read("sample.json"), config);
+        ResumableParser parser = surfer.createResumableParser(read("sample.json"), config);
         assertFalse(parser.resume());
         LOGGER.info("Start parsing");
         parser.parse();
@@ -141,7 +141,7 @@ public class JacksonParserTest extends JsonSurferTest {
         byte[] part2 = "34, \"bar\": \"ab".getBytes("UTF-8");
         byte[] part3 = "cd\"}".getBytes("UTF-8");
 
-        NonBlockingParser nonBlockingParser = surfer.getNonBlockingParser(config);
+        NonBlockingParser nonBlockingParser = surfer.createNonBlockingParser(config);
         assertTrue(nonBlockingParser.feed(part1, 0, part1.length));
         assertTrue(nonBlockingParser.feed(part2, 0, part2.length));
         assertTrue(nonBlockingParser.feed(part3, 0, part3.length));
