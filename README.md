@@ -252,7 +252,27 @@ Java8 user can also convert the iterator into a Stream
 #### Non-Blocking parsing
 As of 1.4, JsonSurfer support non-blocking parsing for JacksonParser. You can achieve 100% non-blocking JSON processing with JsonSurfer in a NIO application. Let's take a Vertx request handler as an example:
 ```java
-TODO
+    Vertx vertx = Vertx.vertx();
+    HttpServer server = vertx.createHttpServer(new HttpServerOptions());
+    JsonSurfer surfer = JsonSurferJackson.INSTANCE;
+    SurfingConfiguration config = surfer.configBuilder()
+            .bind("$[*]", (JsonPathListener) (value, context) -> {
+                // Handle json
+                System.out.println(value);
+            }).build();
+    server.requestHandler(request -> {
+        NonBlockingParser parser = surfer.createNonBlockingParser(config);
+        request.handler(buffer -> {
+            byte[] bytes = buffer.getBytes();
+            System.out.println("Received " + bytes.length + " bytes");
+            parser.feed(bytes, 0, bytes.length);
+        });
+        request.endHandler(aVoid -> {
+            parser.endOfInput();
+            System.out.println("End of request");
+            request.response().end();
+        });
+    }).listen(8080);
 ```
 ### Examples
 
