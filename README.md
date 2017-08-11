@@ -18,6 +18,10 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 * Stoppable
 
     JsonSurfer is built on stoppable SAX-like interface that allows the processor to stop itself if necessary.
+
+* Non-Blocking
+
+    JsonSurfer is event-driven and offers non-blocking parser interface.
     
 ## Getting started
 
@@ -120,7 +124,8 @@ or
                 })
                 .buildAndSurf(sample);
 ```
-#### Reuse listener binding
+#### Reuse listener binding.
+SurfingConfiguration is thread-safe as long as your listeners are stateless.
 ```java
         JsonSurfer surfer = JsonSurferGson.INSTANCE;
         SurfingConfiguration config = surfer.configBuilder()
@@ -147,7 +152,7 @@ JsonPath object is immutable and can be reused safely.
         JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
         Object singleResult = jsonSurfer.collectOne(sample, "$.store.book[0]");
 ```
-#### Colllect every matched value in a collection
+#### Colllect every matched value into a collection
 ```java
         JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
         Collection<Object> multipleResults = jsonSurfer.collectAll(sample, "$.store.book[*]");
@@ -243,6 +248,11 @@ Java8 user can also convert the iterator into a Stream
     Stream<Object> targetStream = StreamSupport.stream(
           Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED),
           false);
+```
+#### Non-Blocking parsing
+As of 1.4, JsonSurfer support non-blocking parsing for JacksonParser. You can achieve 100% non-blocking JSON processing with JsonSurfer in a NIO application. Let's take a Vertx request handler as an example:
+```java
+TODO
 ```
 ### Examples
 
