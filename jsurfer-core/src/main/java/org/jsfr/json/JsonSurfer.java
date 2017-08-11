@@ -150,6 +150,8 @@ public class JsonSurfer {
     }
 
     /**
+     * Start surfing
+     *
      * @param json          json
      * @param configuration SurfingConfiguration that holds JsonPath binding
      */
@@ -159,6 +161,8 @@ public class JsonSurfer {
     }
 
     /**
+     * Start surfing
+     *
      * @param json          Json source
      * @param configuration SurfingConfiguration that holds JsonPath binding
      */
@@ -167,16 +171,36 @@ public class JsonSurfer {
         jsonParserAdapter.parse(json, new SurfingContext(configuration));
     }
 
+    /**
+     * Create resumable parser
+     *
+     * @param json          Json source
+     * @param configuration SurfingConfiguration
+     * @return Resumable parser
+     */
     public ResumableParser createResumableParser(String json, SurfingConfiguration configuration) {
         ensureSetting(configuration);
         return jsonParserAdapter.createResumableParser(json, new SurfingContext(configuration));
     }
 
+    /**
+     * Create resumable parser
+     *
+     * @param json          Json source
+     * @param configuration SurfingConfiguration
+     * @return Resumable parser
+     */
     public ResumableParser createResumableParser(Reader json, SurfingConfiguration configuration) {
         ensureSetting(configuration);
         return jsonParserAdapter.createResumableParser(json, new SurfingContext(configuration));
     }
 
+    /**
+     * Create non-blocking parser
+     *
+     * @param configuration
+     * @return
+     */
     public NonBlockingParser createNonBlockingParser(SurfingConfiguration configuration) {
         ensureSetting(configuration);
         return jsonParserAdapter.createNonBlockingParser(new SurfingContext(configuration));

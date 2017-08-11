@@ -1,7 +1,7 @@
 package org.jsfr.json;
 
 /**
- * Resumable Parser
+ * A parser can be paused and resumed
  */
 public interface ResumableParser {
 
