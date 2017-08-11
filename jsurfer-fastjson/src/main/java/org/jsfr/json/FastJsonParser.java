@@ -35,7 +35,7 @@ public class FastJsonParser implements JsonParserAdapter {
         @Override
         public boolean resume() {
             try {
-                if (context.isStopped() || !context.isPaused()) {
+                if (!context.isPaused()) {
                     return false;
                 }
                 context.resume();
@@ -52,7 +52,7 @@ public class FastJsonParser implements JsonParserAdapter {
             try {
                 String tempString = null;
 
-                while (!lexer.isEOF() && !context.isStopped() && !context.isPaused()) {
+                while (!lexer.isEOF() && !context.shouldBreak()) {
                     lexer.nextToken();
                     int token = lexer.token();
                     //System.out.println("token: " + token);
@@ -131,22 +131,27 @@ public class FastJsonParser implements JsonParserAdapter {
 
     @Override
     public void parse(Reader reader, SurfingContext context) {
-        createParser(reader, context).parse();
+        createResumableParser(reader, context).parse();
     }
 
     @Override
     public void parse(String json, SurfingContext context) {
-        createParser(json, context).parse();
+        createResumableParser(json, context).parse();
     }
 
     @Override
-    public ResumableParser createParser(Reader reader, SurfingContext context) {
+    public ResumableParser createResumableParser(Reader reader, SurfingContext context) {
         return new FastJsonResumableParser(new JSONReaderScanner(reader), context, new StaticPrimitiveHolder());
     }
 
     @Override
-    public ResumableParser createParser(String json, SurfingContext context) {
+    public ResumableParser createResumableParser(String json, SurfingContext context) {
         return new FastJsonResumableParser(new JSONScanner(json), context, new StaticPrimitiveHolder());
+    }
+
+    @Override
+    public NonBlockingParser createNonBlockingParser(SurfingContext context) {
+        throw new UnsupportedOperationException("Unsupported");
     }
 
 }

@@ -52,12 +52,17 @@ public class JsonSimpleParser implements JsonParserAdapter {
     }
 
     @Override
-    public ResumableParser createParser(Reader reader, SurfingContext context) {
+    public ResumableParser createResumableParser(Reader reader, SurfingContext context) {
         throw new UnsupportedOperationException("Unsupported");
     }
 
     @Override
-    public ResumableParser createParser(String json, SurfingContext context) {
+    public ResumableParser createResumableParser(String json, SurfingContext context) {
+        throw new UnsupportedOperationException("Unsupported");
+    }
+
+    @Override
+    public NonBlockingParser createNonBlockingParser(SurfingContext context) {
         throw new UnsupportedOperationException("Unsupported");
     }
 

@@ -40,6 +40,8 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 /**
  * Created by Leo on 2015/3/30.
@@ -117,7 +119,7 @@ public class JacksonParserTest extends JsonSurferTest {
                         context.pause();
                     }
                 }).build();
-        ResumableParser parser = surfer.getResumableParser(read("sample.json"), config);
+        ResumableParser parser = surfer.createResumableParser(read("sample.json"), config);
         assertFalse(parser.resume());
         LOGGER.info("Start parsing");
         parser.parse();
@@ -127,6 +129,26 @@ public class JacksonParserTest extends JsonSurferTest {
         assertTrue(parser.resume());
         LOGGER.info("Parsing stopped");
         assertFalse(parser.resume());
+    }
+
+    @Test
+    public void testNonBlockingParser() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        SurfingConfiguration config = surfer.configBuilder()
+                .bind("$['foo','bar']", mockListener)
+                .build();
+        byte[] part1 = "{\"foo\": 12".getBytes("UTF-8");
+        byte[] part2 = "34, \"bar\": \"ab".getBytes("UTF-8");
+        byte[] part3 = "cd\"}".getBytes("UTF-8");
+
+        NonBlockingParser nonBlockingParser = surfer.createNonBlockingParser(config);
+        assertTrue(nonBlockingParser.feed(part1, 0, part1.length));
+        assertTrue(nonBlockingParser.feed(part2, 0, part2.length));
+        assertTrue(nonBlockingParser.feed(part3, 0, part3.length));
+        nonBlockingParser.endOfInput();
+        assertFalse(nonBlockingParser.feed(part1, 0, 100));
+        verify(mockListener).onValue(eq(provider.primitive(1234L)), any(ParsingContext.class));
+        verify(mockListener).onValue(eq(provider.primitive("abcd")), any(ParsingContext.class));
     }
 
 }

@@ -85,7 +85,7 @@ public class JsonSurfer {
      */
     public Iterator<Object> iterator(Reader reader, JsonPath jsonPath) {
         SurfingContext context = createIteratorContext(jsonPath);
-        final ResumableParser resumableParser = jsonParserAdapter.createParser(reader, context);
+        final ResumableParser resumableParser = jsonParserAdapter.createResumableParser(reader, context);
         resumableParser.parse();
         return createIterator(context, resumableParser);
     }
@@ -99,7 +99,7 @@ public class JsonSurfer {
      */
     public Iterator<Object> iterator(String json, JsonPath jsonPath) {
         SurfingContext context = createIteratorContext(jsonPath);
-        final ResumableParser resumableParser = jsonParserAdapter.createParser(json, context);
+        final ResumableParser resumableParser = jsonParserAdapter.createResumableParser(json, context);
         resumableParser.parse();
         return createIterator(context, resumableParser);
     }
@@ -159,7 +159,7 @@ public class JsonSurfer {
     }
 
     /**
-     * @param json        Json source
+     * @param json          Json source
      * @param configuration SurfingConfiguration that holds JsonPath binding
      */
     public void surf(Reader json, SurfingConfiguration configuration) {
@@ -167,14 +167,19 @@ public class JsonSurfer {
         jsonParserAdapter.parse(json, new SurfingContext(configuration));
     }
 
-    public ResumableParser getResumableParser(String json, SurfingConfiguration configuration) {
+    public ResumableParser createResumableParser(String json, SurfingConfiguration configuration) {
         ensureSetting(configuration);
-        return jsonParserAdapter.createParser(json, new SurfingContext(configuration));
+        return jsonParserAdapter.createResumableParser(json, new SurfingContext(configuration));
     }
 
-    public ResumableParser getResumableParser(Reader json, SurfingConfiguration configuration) {
+    public ResumableParser createResumableParser(Reader json, SurfingConfiguration configuration) {
         ensureSetting(configuration);
-        return jsonParserAdapter.createParser(json, new SurfingContext(configuration));
+        return jsonParserAdapter.createResumableParser(json, new SurfingContext(configuration));
+    }
+
+    public NonBlockingParser createNonBlockingParser(SurfingConfiguration configuration) {
+        ensureSetting(configuration);
+        return jsonParserAdapter.createNonBlockingParser(new SurfingContext(configuration));
     }
 
     /**

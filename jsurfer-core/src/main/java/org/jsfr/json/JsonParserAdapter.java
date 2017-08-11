@@ -54,7 +54,7 @@ public interface JsonParserAdapter {
      * @param context Surfing context
      * @return Resumable Parser
      */
-    ResumableParser createParser(Reader reader, SurfingContext context);
+    ResumableParser createResumableParser(Reader reader, SurfingContext context);
 
     /**
      * Create a resumable parser
@@ -63,6 +63,14 @@ public interface JsonParserAdapter {
      * @param context Surfing context
      * @return Resumable parser
      */
-    ResumableParser createParser(String json, SurfingContext context);
+    ResumableParser createResumableParser(String json, SurfingContext context);
+
+    /**
+     * Create a NonBlockingParser
+     *
+     * @param context Surfing context
+     * @return NonBlockingParser
+     */
+    NonBlockingParser createNonBlockingParser(SurfingContext context);
 
 }

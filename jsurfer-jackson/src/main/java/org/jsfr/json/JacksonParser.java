@@ -27,6 +27,7 @@ package org.jsfr.json;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.json.async.NonBlockingJsonParser;
 import org.jsfr.json.provider.JsonProvider;
 
 import java.io.IOException;
@@ -34,28 +35,92 @@ import java.io.Reader;
 
 public class JacksonParser implements JsonParserAdapter {
 
+    private static class JacksonNonblockingParser extends JacksonResumableParser implements NonBlockingParser {
+
+        private NonBlockingJsonParser nonBlockingJsonParser;
+
+        JacksonNonblockingParser(NonBlockingJsonParser jsonParser, SurfingContext context) {
+            super(jsonParser, context);
+            this.nonBlockingJsonParser = jsonParser;
+        }
+
+        @Override
+        public boolean feed(byte[] bytes, int start, int end) {
+            try {
+                if (nonBlockingJsonParser.needMoreInput() && !context.isStopped()) {
+                    nonBlockingJsonParser.feedInput(bytes, start, end);
+                    if (context.isPaused()) {
+                        context.resume();
+                        doPare();
+                    } else {
+                        parse();
+                    }
+                    return true;
+                }
+            } catch (IOException e) {
+                context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
+            }
+            return false;
+        }
+
+        @Override
+        public void endOfInput() {
+            nonBlockingJsonParser.endOfInput();
+            resume();
+        }
+
+    }
+
     private static class JacksonResumableParser implements ResumableParser {
 
         private JsonParser jsonParser;
-        private SurfingContext context;
+        SurfingContext context;
         private AbstractPrimitiveHolder stringHolder;
         private AbstractPrimitiveHolder longHolder;
         private AbstractPrimitiveHolder doubleHolder;
         private StaticPrimitiveHolder staticHolder;
 
-        public JacksonResumableParser(JsonParser jsonParser, SurfingContext context, AbstractPrimitiveHolder stringHolder, AbstractPrimitiveHolder longHolder, AbstractPrimitiveHolder doubleHolder, StaticPrimitiveHolder staticHolder) {
+        JacksonResumableParser(final JsonParser jsonParser, SurfingContext context) {
             this.jsonParser = jsonParser;
             this.context = context;
-            this.stringHolder = stringHolder;
-            this.longHolder = longHolder;
-            this.doubleHolder = doubleHolder;
-            this.staticHolder = staticHolder;
+            final JsonProvider jsonProvider = context.getConfig().getJsonProvider();
+            this.stringHolder = new AbstractPrimitiveHolder(context.getConfig()) {
+                @Override
+                public Object doGetValue() throws IOException {
+                    return jsonProvider.primitive(jsonParser.getText());
+                }
+
+                @Override
+                public void doSkipValue() throws IOException {
+                }
+            };
+            this.longHolder = new AbstractPrimitiveHolder(context.getConfig()) {
+                @Override
+                public Object doGetValue() throws IOException {
+                    return jsonProvider.primitive(jsonParser.getLongValue());
+                }
+
+                @Override
+                public void doSkipValue() throws IOException {
+                }
+            };
+            this.doubleHolder = new AbstractPrimitiveHolder(context.getConfig()) {
+                @Override
+                public Object doGetValue() throws IOException {
+                    return jsonProvider.primitive(jsonParser.getDoubleValue());
+                }
+
+                @Override
+                public void doSkipValue() throws IOException {
+                }
+            };
+            this.staticHolder = new StaticPrimitiveHolder();
         }
 
         @Override
         public boolean resume() {
             try {
-                if (context.isStopped() || !context.isPaused()) {
+                if (!context.isPaused()) {
                     return false;
                 }
                 context.resume();
@@ -77,18 +142,18 @@ public class JacksonParser implements JsonParserAdapter {
             }
         }
 
-        private void doPare() throws IOException {
-            final JsonProvider jsonProvider = context.getConfig().getJsonProvider();
-
-            while (!context.isStopped() && !context.isPaused()) {
+        void doPare() throws IOException {
+            JsonProvider jsonProvider = context.getConfig().getJsonProvider();
+            while (!context.shouldBreak()) {
                 JsonToken token = jsonParser.nextToken();
                 if (token == null) {
                     context.endJSON();
-                    return;
+                    break;
                 }
                 switch (token) {
                     case NOT_AVAILABLE:
-                        return;
+                        context.pause();
+                        break;
                     case START_OBJECT:
                         context.startObject();
                         break;
@@ -148,19 +213,19 @@ public class JacksonParser implements JsonParserAdapter {
 
     @Override
     public void parse(Reader reader, final SurfingContext context) {
-        createParser(reader, context).parse();
+        createResumableParser(reader, context).parse();
     }
 
     @Override
     public void parse(String json, SurfingContext context) {
-        createParser(json, context).parse();
+        createResumableParser(json, context).parse();
     }
 
     @Override
-    public ResumableParser createParser(Reader reader, SurfingContext context) {
+    public ResumableParser createResumableParser(Reader reader, SurfingContext context) {
         try {
             final JsonParser jp = this.factory.createParser(reader);
-            return createParser(jp, context);
+            return createResumableParser(jp, context);
         } catch (Exception e) {
             context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
             return null;
@@ -168,50 +233,29 @@ public class JacksonParser implements JsonParserAdapter {
     }
 
     @Override
-    public ResumableParser createParser(String json, SurfingContext context) {
+    public ResumableParser createResumableParser(String json, SurfingContext context) {
         try {
             final JsonParser jp = this.factory.createParser(json);
-            return createParser(jp, context);
+            return createResumableParser(jp, context);
         } catch (Exception e) {
             context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
             return null;
         }
     }
 
-    private ResumableParser createParser(final JsonParser jp, SurfingContext context) {
-        final JsonProvider jsonProvider = context.getConfig().getJsonProvider();
-        AbstractPrimitiveHolder stringHolder = new AbstractPrimitiveHolder(context.getConfig()) {
-            @Override
-            public Object doGetValue() throws IOException {
-                return jsonProvider.primitive(jp.getText());
-            }
+    @Override
+    public NonBlockingParser createNonBlockingParser(SurfingContext context) {
+        try {
+            NonBlockingJsonParser jp = (NonBlockingJsonParser) factory.createNonBlockingByteArrayParser();
+            return new JacksonNonblockingParser(jp, context);
+        } catch (IOException e) {
+            context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
+        }
+        return null;
+    }
 
-            @Override
-            public void doSkipValue() throws IOException {
-            }
-        };
-        AbstractPrimitiveHolder longHolder = new AbstractPrimitiveHolder(context.getConfig()) {
-            @Override
-            public Object doGetValue() throws IOException {
-                return jsonProvider.primitive(jp.getLongValue());
-            }
-
-            @Override
-            public void doSkipValue() throws IOException {
-            }
-        };
-        AbstractPrimitiveHolder doubleHolder = new AbstractPrimitiveHolder(context.getConfig()) {
-            @Override
-            public Object doGetValue() throws IOException {
-                return jsonProvider.primitive(jp.getDoubleValue());
-            }
-
-            @Override
-            public void doSkipValue() throws IOException {
-            }
-        };
-        StaticPrimitiveHolder staticPrimitiveHolder = new StaticPrimitiveHolder();
-        return new JacksonResumableParser(jp, context, stringHolder, longHolder, doubleHolder, staticPrimitiveHolder);
+    private JacksonResumableParser createResumableParser(final JsonParser jp, SurfingContext context) {
+        return new JacksonResumableParser(jp, context);
     }
 
 }

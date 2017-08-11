@@ -13,7 +13,7 @@ public interface ResumableParser {
     /**
      * Resume parsing. It should not be invoked before parse()!
      *
-     * @return true if parser is not stopped and in paused state before calling resume()
+     * @return true if parser was in paused state before invoking resume()
      */
     boolean resume();
 
