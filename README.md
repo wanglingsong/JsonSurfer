@@ -157,7 +157,7 @@ JsonPath object is immutable and can be reused safely.
         JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
         Collection<Object> multipleResults = jsonSurfer.collectAll(sample, "$.store.book[*]");
 ```
-#### Filters
+#### JsonPath Filters
 * Filter operators
 
 | Operator                  |   Description     |
@@ -189,7 +189,7 @@ which prints "Leo".
 ```
 which prints "bar".
 #### Share data among processors
-Since JsonSurfer emit data in the way of callback, it may become difficult if one of your processing depends one another. Therefore a simple transient map is added for sharing data among your processors. Following unit test shows how to use it:
+Since JsonSurfer emit data in the way of callback, it would be difficult if one of your processing depends one another. Therefore a simple transient map is added for sharing data among your processors. Following unit test shows how to use it:
 ```java
         surfer.configBuilder().bind("$.store.book[1]", new JsonPathListener() {
             @Override
@@ -209,7 +209,7 @@ Since JsonSurfer emit data in the way of callback, it may become difficult if on
         }).buildAndSurf(read("sample.json"));
 ```
 #### Control parsing
-* Pause and resume parsing.
+* How to pause and resume parsing.
 ```java
     SurfingConfiguration config = surfer.configBuilder()
             .bind("$.store.book[0]", new JsonPathListener() {
@@ -239,7 +239,7 @@ Since JsonSurfer emit data in the way of callback, it may become difficult if on
 ```
 * Completely stop parsing. Refer to [Stoppable parsing](#stoppable-parsing)
 #### Stream support
-As of 1.4, JsonSurfer can create an iterator from Json source and JsonPath. Matched value can be pulled from the iterator one by one without loading entire json into memory.
+As of 1.4, JsonSurfer can create an iterator from Json and JsonPath. Matched value can be pulled from the iterator one by one without loading entire json into memory.
 ```java
     Iterator iterator = surfer.iterator(read("sample.json"), JsonPathCompiler.compile("$.store.book[*]"));
 ```
