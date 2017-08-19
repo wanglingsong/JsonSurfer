@@ -18,6 +18,10 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 * Stoppable
 
     JsonSurfer is built on stoppable SAX-like interface that allows the processor to stop itself if necessary.
+
+* Non-Blocking
+
+    JsonSurfer is event-driven and offers non-blocking parser interface.
     
 ## Getting started
 
@@ -46,25 +50,25 @@ JsonSurfer has drivers for most of popular json libraries including: Gson, Jacks
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-gson</artifactId>
-    <version>1.3.2</version>
+    <version>1.4</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-jackson</artifactId>
-    <version>1.3.2</version>
+    <version>1.4</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-fastjson</artifactId>
-    <version>1.3.2</version>
+    <version>1.4</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-jsonsimple</artifactId>
-    <version>1.3.2</version>
+    <version>1.4</version>
 </dependency>
 
 ```
@@ -120,7 +124,8 @@ or
                 })
                 .buildAndSurf(sample);
 ```
-#### Reuse listener binding
+#### Reuse listener binding.
+SurfingConfiguration is thread-safe as long as your listeners are stateless.
 ```java
         JsonSurfer surfer = JsonSurferGson.INSTANCE;
         SurfingConfiguration config = surfer.configBuilder()
@@ -134,22 +139,25 @@ or
         surfer.surf(sample1, config);
         surfer.surf(sample2, config);
 ```
+#### Compiled JsonPath
+JsonPath object is immutable and can be reused safely. 
+
+**Tips:** Most of JsonSurfer API have two version: accepting raw JsonPath string or JsonPath object. The latter is always faster than the former without compiling JsonPath.
+```java
+        JsonPath compiledPath = JsonPathCompiler.compile("$..book[1,3]['author','title']");
+        String value = surfer.collectOne(read("sample.json"), String.class, compiledPath);
+```
 #### Collect the first matched value and stop immediately
 ```java
         JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
         Object singleResult = jsonSurfer.collectOne(sample, "$.store.book[0]");
 ```
-#### Colllect every matched value in a collection
+#### Colllect every matched value into a collection
 ```java
         JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
         Collection<Object> multipleResults = jsonSurfer.collectAll(sample, "$.store.book[*]");
 ```
-#### Compile JsonPath
-```java
-        JsonPath compiledPath = JsonPathCompiler.compile("$..book[1,3]['author','title']");
-        String value = surfer.collectOne(read("sample.json"), String.class, compiledPath);
-```
-#### Filters
+#### JsonPath Filters
 * Filter operators
 
 | Operator                  |   Description     |
@@ -180,12 +188,8 @@ which prints "Leo".
         System.out.println(compile("$.list[1]").resolve(map, JavaCollectionProvider.INSTANCE));
 ```
 which prints "bar".
-#### Stop parsing on the fly
-* Refer to [Stoppable parsing](#stoppable-parsing)
 #### Share data among processors
-
-Since JsonSurfer emit data in the way of callback, it may become difficult if one of your processing depends one another. Therefore a simple transient map is added for sharing data among your processors. Following unit test shows how to use it:
-
+Since JsonSurfer emit data in the way of callback, it would be difficult if one of your processing depends one another. Therefore a simple transient map is added for sharing data among your processors. Following unit test shows how to use it:
 ```java
         surfer.configBuilder().bind("$.store.book[1]", new JsonPathListener() {
             @Override
@@ -204,7 +208,72 @@ Since JsonSurfer emit data in the way of callback, it may become difficult if on
             }
         }).buildAndSurf(read("sample.json"));
 ```
-
+#### Control parsing
+* How to pause and resume parsing.
+```java
+    SurfingConfiguration config = surfer.configBuilder()
+            .bind("$.store.book[0]", new JsonPathListener() {
+                @Override
+                public void onValue(Object value, ParsingContext context) {
+                    LOGGER.info("The first pause");
+                    context.pause();
+                }
+            })
+            .bind("$.store.book[1]", new JsonPathListener() {
+                @Override
+                public void onValue(Object value, ParsingContext context) {
+                    LOGGER.info("The second pause");
+                    context.pause();
+                }
+            }).build();
+    ResumableParser parser = surfer.getResumableParser(read("sample.json"), config);
+    assertFalse(parser.resume());
+    LOGGER.info("Start parsing");
+    parser.parse();
+    LOGGER.info("Resume from the first pause");
+    assertTrue(parser.resume());
+    LOGGER.info("Resume from the second pause");
+    assertTrue(parser.resume());
+    LOGGER.info("Parsing stopped");
+    assertFalse(parser.resume());
+```
+* Completely stop parsing. Refer to [Stoppable parsing](#stoppable-parsing)
+#### Stream support
+As of 1.4, JsonSurfer can create an iterator from Json and JsonPath. Matched value can be pulled from the iterator one by one without loading entire json into memory.
+```java
+    Iterator iterator = surfer.iterator(read("sample.json"), JsonPathCompiler.compile("$.store.book[*]"));
+```
+Java8 user can also convert the iterator into a Stream
+```java
+    Stream<Object> targetStream = StreamSupport.stream(
+          Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED),
+          false);
+```
+#### Non-Blocking parsing
+As of 1.4, JsonSurfer support non-blocking parsing for JacksonParser. You can achieve 100% non-blocking JSON processing with JsonSurfer in a NIO application. Let's take a Vertx request handler as an example:
+```java
+    Vertx vertx = Vertx.vertx();
+    HttpServer server = vertx.createHttpServer(new HttpServerOptions());
+    JsonSurfer surfer = JsonSurferJackson.INSTANCE;
+    SurfingConfiguration config = surfer.configBuilder()
+            .bind("$[*]", (JsonPathListener) (value, context) -> {
+                // Handle json
+                System.out.println(value);
+            }).build();
+    server.requestHandler(request -> {
+        NonBlockingParser parser = surfer.createNonBlockingParser(config);
+        request.handler(buffer -> {
+            byte[] bytes = buffer.getBytes();
+            System.out.println("Received " + bytes.length + " bytes");
+            parser.feed(bytes, 0, bytes.length);
+        });
+        request.endHandler(aVoid -> {
+            parser.endOfInput();
+            System.out.println("End of request");
+            request.response().end();
+        });
+    }).listen(8080);
+```
 ### Examples
 
 Sample Json:
@@ -254,7 +323,7 @@ Sample Json:
 | ```$..author```              | [All authors](#all-authors)                    |
 | ```$.store.*```              | [All things in store](#all-things-in-store)                   |
 | ```$.store..price``` | [The price of everything in the store](#the-price-of-everything-in-the-store)  |
-| ```$..book[2]```              | [The thrid book](#the-thrid-book)                   |
+| ```$..book[2]```              | [The third book](#the-third-book)                   |
 | ```$..book[0,1]```              | [The first two books](#the-first-two-books)                 |
 | ```$.store.book[?(@.price==8.95)]``` | [Filter all books whose price equals to 8.95](#filter-all-books-whose-price-equals-to-8.95)  |
 | ```$.store.book[?(@.category=='fiction')]```              | [Filter all books which belong to fiction category](#filter-all-books-which-belong-to-fiction-category)                   |
@@ -346,7 +415,7 @@ Output
 22.99
 19.95
 ```
-#### The thrid book
+#### The third book
 ```javascript
 $..book[2]
 ```
@@ -437,7 +506,7 @@ $..book[0,1]
                     @Override
                     public void onValue(Object value, ParsingContext context) {                        
                         System.out.println(value);
-                        context.stopParsing();
+                        context.stop();
                     }
                 })
                 .buildAndSurf(sample);
