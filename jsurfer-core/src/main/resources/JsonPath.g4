@@ -29,7 +29,7 @@ exprExist:  '@.' KEY;
 exprGtNum:  '@.' KEY '>' NUM;
 exprLtNum:  '@.' KEY '<' NUM;
 exprEqualNum: '@.' KEY '==' NUM;
-exprEqualStr: '@.' KEY '==\'' KEY '\'';
+exprEqualStr: '@.' KEY '==' QUOTED_STRING;
 //exprArrayIdx: '@.length-' NUM;
 AndOperator: '&&';
 OrOperator: '||';

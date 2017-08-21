@@ -77,10 +77,14 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
         String[] strings = new String[ctx.QUOTED_STRING().size()];
         for (TerminalNode node : ctx.QUOTED_STRING()) {
             String quotedString = node.getText();
-            strings[i++] = quotedString.substring(1, quotedString.length()-1);
+            strings[i++] = removeQuote(quotedString);
         }
         builder.children(strings);
         return super.visitChildren(ctx);
+    }
+
+    private String removeQuote(String quotedString) {
+        return quotedString.substring(1, quotedString.length() - 1);
     }
 
     @Override
@@ -105,7 +109,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
         Integer left = null;
         Integer right;
         Integer temp = null;
-        for (ParseTree node:ctx.children) {
+        for (ParseTree node : ctx.children) {
             if (node instanceof TerminalNode) {
                 TerminalNode tNode = (TerminalNode) node;
                 if (((TerminalNode) node).getSymbol().getType() == JsonPathParser.COLON) {
@@ -168,7 +172,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
     @Override
     public Void visitExprEqualNum(JsonPathParser.ExprEqualNumContext ctx) {
         JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY().getText()).build();
-        filterBuilder.append(new EqualityNumPredicate( relativePath, new BigDecimal(ctx.NUM().getText())));
+        filterBuilder.append(new EqualityNumPredicate(relativePath, new BigDecimal(ctx.NUM().getText())));
         return super.visitExprEqualNum(ctx);
     }
 
@@ -189,14 +193,14 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
     @Override
     public Void visitExprLtNum(JsonPathParser.ExprLtNumContext ctx) {
         JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY().getText()).build();
-        filterBuilder.append(new LessThanNumPredicate( relativePath, new BigDecimal(ctx.NUM().getText())));
+        filterBuilder.append(new LessThanNumPredicate(relativePath, new BigDecimal(ctx.NUM().getText())));
         return super.visitExprLtNum(ctx);
     }
 
     @Override
     public Void visitExprEqualStr(JsonPathParser.ExprEqualStrContext ctx) {
-        JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY(0).getText()).build();
-        filterBuilder.append(new EqualityStrPredicate( relativePath, ctx.KEY(1).getText()));
+        JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY().getText()).build();
+        filterBuilder.append(new EqualityStrPredicate(relativePath, removeQuote(ctx.QUOTED_STRING().getText())));
         return super.visitExprEqualStr(ctx);
     }
 
