@@ -1,5 +1,6 @@
 package org.jsfr.json.provider;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -74,7 +75,11 @@ public class FastJsonProvider implements JsonProvider<JSONObject, JSONArray, Obj
 
     @Override
     public <T> T cast(Object value, Class<T> tClass) {
-        return tClass.cast(value);
+        if (value instanceof JSON) {
+            return JSON.toJavaObject((JSON) value, tClass);
+        } else {
+            return tClass.cast(value);
+        }
     }
 
 }

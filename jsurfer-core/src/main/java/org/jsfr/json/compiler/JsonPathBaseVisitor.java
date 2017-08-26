@@ -26,6 +26,13 @@ public class JsonPathBaseVisitor<T> extends AbstractParseTreeVisitor<T> implemen
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitRelativePath(JsonPathParser.RelativePathContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitSearchChild(JsonPathParser.SearchChildContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -103,40 +110,40 @@ public class JsonPathBaseVisitor<T> extends AbstractParseTreeVisitor<T> implemen
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExpr(JsonPathParser.ExprContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFilterExpr(JsonPathParser.FilterExprContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExprExist(JsonPathParser.ExprExistContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFilterExist(JsonPathParser.FilterExistContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExprGtNum(JsonPathParser.ExprGtNumContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFilterGtNum(JsonPathParser.FilterGtNumContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExprLtNum(JsonPathParser.ExprLtNumContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFilterLtNum(JsonPathParser.FilterLtNumContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExprEqualNum(JsonPathParser.ExprEqualNumContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFilterEqualNum(JsonPathParser.FilterEqualNumContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitExprEqualStr(JsonPathParser.ExprEqualStrContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFilterEqualStr(JsonPathParser.FilterEqualStrContext ctx) { return visitChildren(ctx); }
 }

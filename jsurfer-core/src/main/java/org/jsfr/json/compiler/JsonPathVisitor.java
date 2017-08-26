@@ -19,6 +19,12 @@ public interface JsonPathVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitPath(JsonPathParser.PathContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link JsonPathParser#relativePath}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRelativePath(JsonPathParser.RelativePathContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link JsonPathParser#searchChild}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -85,39 +91,39 @@ public interface JsonPathVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFilter(JsonPathParser.FilterContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link JsonPathParser#expr}.
+	 * Visit a parse tree produced by {@link JsonPathParser#filterExpr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExpr(JsonPathParser.ExprContext ctx);
+	T visitFilterExpr(JsonPathParser.FilterExprContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link JsonPathParser#exprExist}.
+	 * Visit a parse tree produced by {@link JsonPathParser#filterExist}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExprExist(JsonPathParser.ExprExistContext ctx);
+	T visitFilterExist(JsonPathParser.FilterExistContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link JsonPathParser#exprGtNum}.
+	 * Visit a parse tree produced by {@link JsonPathParser#filterGtNum}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExprGtNum(JsonPathParser.ExprGtNumContext ctx);
+	T visitFilterGtNum(JsonPathParser.FilterGtNumContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link JsonPathParser#exprLtNum}.
+	 * Visit a parse tree produced by {@link JsonPathParser#filterLtNum}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExprLtNum(JsonPathParser.ExprLtNumContext ctx);
+	T visitFilterLtNum(JsonPathParser.FilterLtNumContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link JsonPathParser#exprEqualNum}.
+	 * Visit a parse tree produced by {@link JsonPathParser#filterEqualNum}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExprEqualNum(JsonPathParser.ExprEqualNumContext ctx);
+	T visitFilterEqualNum(JsonPathParser.FilterEqualNumContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link JsonPathParser#exprEqualStr}.
+	 * Visit a parse tree produced by {@link JsonPathParser#filterEqualStr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExprEqualStr(JsonPathParser.ExprEqualStrContext ctx);
+	T visitFilterEqualStr(JsonPathParser.FilterEqualStrContext ctx);
 }

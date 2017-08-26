@@ -171,6 +171,9 @@ public class JsonPath implements Iterable<PathOperator> {
         }
         Object current = document;
         for (PathOperator pathOperator : this) {
+            if (current == null) {
+                return null;
+            }
             current = pathOperator.resolve(current, resolver);
         }
         return current;

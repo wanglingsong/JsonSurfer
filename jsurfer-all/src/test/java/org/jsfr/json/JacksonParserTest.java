@@ -24,22 +24,12 @@
 
 package org.jsfr.json;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.TreeNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jsfr.json.compiler.JsonPathCompiler;
 import org.jsfr.json.provider.JacksonProvider;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.Reader;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicLong;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -48,87 +38,10 @@ import static org.mockito.Mockito.*;
  */
 public class JacksonParserTest extends JsonSurferTest {
 
-    @Override
     @Before
     public void setUp() throws Exception {
         provider = new JacksonProvider();
         surfer = new JsonSurfer(JacksonParser.INSTANCE, provider);
-    }
-
-    @Test
-    public void testLargeJsonJackson() throws Exception {
-        final AtomicLong counter = new AtomicLong();
-        ObjectMapper om = new ObjectMapper();
-        JsonFactory f = new JsonFactory();
-        JsonParser jp = f.createParser(read("allthethings.json"));
-        long start = System.currentTimeMillis();
-        jp.nextToken();
-        jp.nextToken();
-        jp.nextToken();
-        while (jp.nextToken() == JsonToken.FIELD_NAME) {
-            if (jp.nextToken() == JsonToken.START_OBJECT) {
-                TreeNode tree = om.readTree(jp);
-                counter.incrementAndGet();
-                LOGGER.trace("value: {}", tree);
-            }
-        }
-        jp.close();
-        LOGGER.info("Jackson processes {} value in {} millisecond", counter.get(), System.currentTimeMillis() - start);
-    }
-
-    @Test
-    public void testJacksonTypeBindingOne() throws Exception {
-        Reader reader = read("sample.json");
-        Book book = surfer.collectOne(reader, Book.class, JsonPathCompiler.compile("$..book[1]"));
-        assertEquals("Evelyn Waugh", book.getAuthor());
-    }
-
-    @Test
-    public void testJacksonTypeBindingCollection() throws Exception {
-        Reader reader = read("sample.json");
-        Collection<Book> book = surfer.collectAll(reader, Book.class, JsonPathCompiler.compile("$..book[0,1]"));
-        assertEquals(2, book.size());
-        assertEquals("Nigel Rees", book.iterator().next().getAuthor());
-    }
-
-    @Test
-    public void testSurfingIterator() throws Exception {
-        Iterator<Object> iterator = surfer.iterator(read("sample.json"), JsonPathCompiler.compile("$.store.book[*]"));
-        int count = 0;
-        while (iterator.hasNext()) {
-            LOGGER.info("Iterator next: {}", iterator.next());
-            count++;
-        }
-        assertEquals(4, count);
-    }
-
-    @Test
-    public void testResumableParser() throws Exception {
-        SurfingConfiguration config = surfer.configBuilder()
-                .bind("$.store.book[0]", new JsonPathListener() {
-                    @Override
-                    public void onValue(Object value, ParsingContext context) {
-                        LOGGER.info("First pause");
-                        context.pause();
-                    }
-                })
-                .bind("$.store.book[1]", new JsonPathListener() {
-                    @Override
-                    public void onValue(Object value, ParsingContext context) {
-                        LOGGER.info("Second pause");
-                        context.pause();
-                    }
-                }).build();
-        ResumableParser parser = surfer.createResumableParser(read("sample.json"), config);
-        assertFalse(parser.resume());
-        LOGGER.info("Start parsing");
-        parser.parse();
-        LOGGER.info("Resume from the first pause");
-        assertTrue(parser.resume());
-        LOGGER.info("Resume from the second pause");
-        assertTrue(parser.resume());
-        LOGGER.info("Parsing stopped");
-        assertFalse(parser.resume());
     }
 
     @Test

@@ -4,7 +4,8 @@ grammar JsonPath;
 package org.jsfr.json.compiler;
 }
 
-path: '$' (searchChild|search|index|indexes|slicing|childNode|childrenNode|anyChild|anyIndex|any)* filter? EOF;
+path: '$' relativePath* filter? EOF;
+relativePath: searchChild|search|index|indexes|slicing|childNode|childrenNode|anyChild|anyIndex|any;
 searchChild: '..' KEY;
 search: '..' ;
 anyChild: '.*' ;
@@ -16,20 +17,20 @@ slicing: '[' NUM? COLON NUM? ']';
 COLON : ':';
 childNode: '.' KEY ;
 childrenNode: '[' QUOTED_STRING ( ',' QUOTED_STRING )* ']' ;
-filter: '[?(' expr ')]';
-expr : expr AndOperator expr
-           | expr OrOperator expr
-           | exprEqualNum
-           | exprEqualStr
-           | exprGtNum
-           | exprLtNum
-           | exprExist
+filter: '[?(' filterExpr ')]';
+filterExpr : filterExpr AndOperator filterExpr
+           | filterExpr OrOperator filterExpr
+           | filterEqualNum
+           | filterEqualStr
+           | filterGtNum
+           | filterLtNum
+           | filterExist
            ;
-exprExist:  '@.' KEY;
-exprGtNum:  '@.' KEY '>' NUM;
-exprLtNum:  '@.' KEY '<' NUM;
-exprEqualNum: '@.' KEY '==' NUM;
-exprEqualStr: '@.' KEY '==' QUOTED_STRING;
+filterExist:  '@' relativePath+;
+filterGtNum:  '@' relativePath+ '>' NUM;
+filterLtNum:  '@' relativePath+ '<' NUM;
+filterEqualNum: '@' relativePath+ '==' NUM;
+filterEqualStr: '@' relativePath+ '==' QUOTED_STRING;
 //exprArrayIdx: '@.length-' NUM;
 AndOperator: '&&';
 OrOperator: '||';

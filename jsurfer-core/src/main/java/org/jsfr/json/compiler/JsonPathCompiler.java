@@ -39,35 +39,37 @@ import java.math.BigDecimal;
  */
 public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
 
-    private JsonPath.Builder builder;
+    private JsonPath.Builder pathBuilder;
 
     private FilterBuilder filterBuilder;
 
-    public JsonPath.Builder getBuilder() {
-        return builder;
-    }
+    private JsonPath.Builder filterPathBuilder;
 
     @Override
     public Void visitPath(JsonPathParser.PathContext ctx) {
-        builder = JsonPath.Builder.start();
+        pathBuilder = JsonPath.Builder.start();
         return super.visitPath(ctx);
+    }
+
+    private JsonPath.Builder currentPathBuilder() {
+        return filterPathBuilder != null ? filterPathBuilder : pathBuilder;
     }
 
     @Override
     public Void visitSearchChild(JsonPathParser.SearchChildContext ctx) {
-        builder.scan().child(ctx.KEY().getText());
+        currentPathBuilder().scan().child(ctx.KEY().getText());
         return super.visitSearchChild(ctx);
     }
 
     @Override
     public Void visitSearch(JsonPathParser.SearchContext ctx) {
-        builder.scan();
+        currentPathBuilder().scan();
         return super.visitSearch(ctx);
     }
 
     @Override
     public Void visitChildNode(JsonPathParser.ChildNodeContext ctx) {
-        builder.child(ctx.KEY().getText());
+        currentPathBuilder().child(ctx.KEY().getText());
         return super.visitChildNode(ctx);
     }
 
@@ -79,7 +81,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
             String quotedString = node.getText();
             strings[i++] = removeQuote(quotedString);
         }
-        builder.children(strings);
+        currentPathBuilder().children(strings);
         return super.visitChildren(ctx);
     }
 
@@ -89,7 +91,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
 
     @Override
     public Void visitIndex(JsonPathParser.IndexContext ctx) {
-        builder.index(Integer.parseInt(ctx.NUM().getText()));
+        currentPathBuilder().index(Integer.parseInt(ctx.NUM().getText()));
         return super.visitIndex(ctx);
     }
 
@@ -100,7 +102,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
         for (TerminalNode key : ctx.NUM()) {
             keys[i++] = Integer.parseInt(key.getText());
         }
-        builder.indexes(keys);
+        currentPathBuilder().indexes(keys);
         return super.visitIndexes(ctx);
     }
 
@@ -121,87 +123,98 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
             }
         }
         right = temp;
-        builder.slicing(left, right);
+        pathBuilder.slicing(left, right);
         return super.visitSlicing(ctx);
     }
 
     @Override
     public Void visitAnyChild(JsonPathParser.AnyChildContext ctx) {
-        builder.anyChild();
+        currentPathBuilder().anyChild();
         return super.visitAnyChild(ctx);
     }
 
     @Override
     public Void visitAnyIndex(JsonPathParser.AnyIndexContext ctx) {
-        builder.anyIndex();
+        currentPathBuilder().anyIndex();
         return super.visitAnyIndex(ctx);
     }
 
     @Override
     public Void visitAny(JsonPathParser.AnyContext ctx) {
-        builder.any();
+        currentPathBuilder().any();
         return super.visitAny(ctx);
     }
 
     @Override
     public Void visitFilter(JsonPathParser.FilterContext ctx) {
-        builder.any();
+        pathBuilder.any();
         filterBuilder = new FilterBuilder();
         Void rst = super.visitFilter(ctx);
-        builder.withFilter(filterBuilder.build());
+        pathBuilder.withFilter(filterBuilder.build());
         return rst;
     }
 
     @Override
-    public Void visitExpr(JsonPathParser.ExprContext ctx) {
+    public Void visitFilterExpr(JsonPathParser.FilterExprContext ctx) {
         Void rst;
         if (ctx.AndOperator() != null) {
             filterBuilder.startAndPredicate();
-            rst = super.visitExpr(ctx);
+            rst = super.visitFilterExpr(ctx);
             filterBuilder.endAndPredicate();
         } else if (ctx.OrOperator() != null) {
             filterBuilder.startOrPredicate();
-            rst = super.visitExpr(ctx);
+            rst = super.visitFilterExpr(ctx);
             filterBuilder.endOrPredicate();
         } else {
-            rst = super.visitExpr(ctx);
+            rst = super.visitFilterExpr(ctx);
         }
         return rst;
     }
 
     @Override
-    public Void visitExprEqualNum(JsonPathParser.ExprEqualNumContext ctx) {
-        JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY().getText()).build();
-        filterBuilder.append(new EqualityNumPredicate(relativePath, new BigDecimal(ctx.NUM().getText())));
-        return super.visitExprEqualNum(ctx);
+    public Void visitFilterEqualNum(JsonPathParser.FilterEqualNumContext ctx) {
+//        JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY().getText()).build();
+        filterPathBuilder = JsonPath.Builder.start();
+        Void rst = super.visitFilterEqualNum(ctx);
+        filterBuilder.append(new EqualityNumPredicate(filterPathBuilder.build(), new BigDecimal(ctx.NUM().getText())));
+        filterPathBuilder = null;
+        return rst;
     }
 
     @Override
-    public Void visitExprExist(JsonPathParser.ExprExistContext ctx) {
-        JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY().getText()).build();
-        filterBuilder.append(new ExistencePredicate(relativePath));
-        return super.visitExprExist(ctx);
+    public Void visitFilterExist(JsonPathParser.FilterExistContext ctx) {
+        filterPathBuilder = JsonPath.Builder.start();
+        Void rst = super.visitFilterExist(ctx);
+        filterBuilder.append(new ExistencePredicate(filterPathBuilder.build()));
+        filterPathBuilder = null;
+        return rst;
     }
 
     @Override
-    public Void visitExprGtNum(JsonPathParser.ExprGtNumContext ctx) {
-        JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY().getText()).build();
-        filterBuilder.append(new GreaterThanNumPredicate(relativePath, new BigDecimal(ctx.NUM().getText())));
-        return super.visitExprGtNum(ctx);
+    public Void visitFilterGtNum(JsonPathParser.FilterGtNumContext ctx) {
+        filterPathBuilder = JsonPath.Builder.start();
+        Void rst = super.visitFilterGtNum(ctx);
+        filterBuilder.append(new GreaterThanNumPredicate(filterPathBuilder.build(), new BigDecimal(ctx.NUM().getText())));
+        filterPathBuilder = null;
+        return rst;
     }
 
     @Override
-    public Void visitExprLtNum(JsonPathParser.ExprLtNumContext ctx) {
-        JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY().getText()).build();
-        filterBuilder.append(new LessThanNumPredicate(relativePath, new BigDecimal(ctx.NUM().getText())));
-        return super.visitExprLtNum(ctx);
+    public Void visitFilterLtNum(JsonPathParser.FilterLtNumContext ctx) {
+        filterPathBuilder = JsonPath.Builder.start();
+        Void rst = super.visitFilterLtNum(ctx);
+        filterBuilder.append(new LessThanNumPredicate(filterPathBuilder.build(), new BigDecimal(ctx.NUM().getText())));
+        filterPathBuilder = null;
+        return rst;
     }
 
     @Override
-    public Void visitExprEqualStr(JsonPathParser.ExprEqualStrContext ctx) {
-        JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY().getText()).build();
-        filterBuilder.append(new EqualityStrPredicate(relativePath, removeQuote(ctx.QUOTED_STRING().getText())));
-        return super.visitExprEqualStr(ctx);
+    public Void visitFilterEqualStr(JsonPathParser.FilterEqualStrContext ctx) {
+        filterPathBuilder = JsonPath.Builder.start();
+        Void rst = super.visitFilterEqualStr(ctx);
+        filterBuilder.append(new EqualityStrPredicate(filterPathBuilder.build(), removeQuote(ctx.QUOTED_STRING().getText())));
+        filterPathBuilder = null;
+        return rst;
     }
 
     public static JsonPath[] compile(String... paths) {
@@ -220,7 +233,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
         JsonPathParser.PathContext tree = parser.path();
         JsonPathCompiler compiler = new JsonPathCompiler();
         compiler.visit(tree);
-        return compiler.getBuilder().build();
+        return compiler.pathBuilder.build();
     }
 
 //    public static void main(String[] s) {
