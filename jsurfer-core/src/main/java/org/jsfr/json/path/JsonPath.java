@@ -87,7 +87,7 @@ public class JsonPath implements Iterable<PathOperator> {
         }
 
         public Builder anyChild() {
-            jsonPath.push(AnyChild.instance());
+            jsonPath.push(Wildcard.SINGLETON);
             return this;
         }
 
@@ -103,7 +103,7 @@ public class JsonPath implements Iterable<PathOperator> {
         }
 
         public Builder anyIndex() {
-            jsonPath.push(AnyIndex.instance());
+            jsonPath.push(Wildcard.SINGLETON);
             return this;
         }
 

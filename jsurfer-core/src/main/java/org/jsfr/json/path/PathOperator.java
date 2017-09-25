@@ -37,7 +37,6 @@ public abstract class PathOperator implements Resolvable {
         DEEP_SCAN
     }
 
-
     abstract public Type getType();
 
     public boolean match(PathOperator pathOperator) {

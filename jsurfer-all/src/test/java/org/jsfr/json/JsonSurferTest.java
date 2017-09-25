@@ -65,6 +65,22 @@ public abstract class JsonSurferTest {
     };
 
     @Test
+    public void testWildcardAtRoot() throws Exception {
+        Collection<Object> collection = surfer.collectAll("[\n" +
+                "    {\n" +
+                "      \"type\"  : \"iPhone\",\n" +
+                "      \"number\": \"0123-4567-8888\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"type\"  : \"home\",\n" +
+                "      \"number\": \"0123-4567-8910\"\n" +
+                "    }\n" +
+                "  ]", JsonPathCompiler.compile("$.*"));
+        LOGGER.debug("Collect all at root - {}", collection);
+        assertEquals(2, collection.size());
+    }
+
+    @Test
     public void testTypeBindingOne() throws Exception {
         Reader reader = read("sample.json");
         Book book = surfer.collectOne(reader, Book.class, JsonPathCompiler.compile("$..book[1]"));
@@ -84,7 +100,7 @@ public abstract class JsonSurferTest {
         Iterator<Object> iterator = surfer.iterator(read("sample.json"), JsonPathCompiler.compile("$.store.book[*]"));
         int count = 0;
         while (iterator.hasNext()) {
-            LOGGER.info("Iterator next: {}", iterator.next());
+            LOGGER.debug("Iterator next: {}", iterator.next());
             count++;
         }
         assertEquals(4, count);
@@ -96,26 +112,26 @@ public abstract class JsonSurferTest {
                 .bind("$.store.book[0]", new JsonPathListener() {
                     @Override
                     public void onValue(Object value, ParsingContext context) {
-                        LOGGER.info("First pause");
+                        LOGGER.debug("First pause");
                         context.pause();
                     }
                 })
                 .bind("$.store.book[1]", new JsonPathListener() {
                     @Override
                     public void onValue(Object value, ParsingContext context) {
-                        LOGGER.info("Second pause");
+                        LOGGER.debug("Second pause");
                         context.pause();
                     }
                 }).build();
         ResumableParser parser = surfer.createResumableParser(read("sample.json"), config);
         assertFalse(parser.resume());
-        LOGGER.info("Start parsing");
+        LOGGER.debug("Start parsing");
         parser.parse();
-        LOGGER.info("Resume from the first pause");
+        LOGGER.debug("Resume from the first pause");
         assertTrue(parser.resume());
-        LOGGER.info("Resume from the second pause");
+        LOGGER.debug("Resume from the second pause");
         assertTrue(parser.resume());
-        LOGGER.info("Parsing stopped");
+        LOGGER.debug("Parsing stopped");
         assertFalse(parser.resume());
     }
 
@@ -151,7 +167,6 @@ public abstract class JsonSurferTest {
                 return provider.primitive("Sayings of the Century").equals(provider.resolve(o, "title"));
             }
         }), any(ParsingContext.class));
-
     }
 
     @Test
