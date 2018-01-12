@@ -26,6 +26,7 @@ package org.jsfr.json.resolver;
 
 import org.jsfr.json.exception.ResolverException;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -52,7 +53,7 @@ public class PoJoResolver implements DocumentResolver<Object, Object> {
         if (list instanceof List) {
             return ((List) list).get(index);
         } else if (list.getClass().isArray()) {
-            // TODO should resolve array
+            return Array.get(list, index);
         }
         throw new UnsupportedOperationException("Unsupported list object " + list);
     }
