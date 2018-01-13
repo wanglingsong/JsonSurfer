@@ -65,6 +65,11 @@ public class JsonPathTest {
         map.put("list", list);
         assertEquals("bar", compile("$[1]").resolve(list, new PoJoResolver()));
         assertEquals("bar", compile("$.list[1]").resolve(map, JavaCollectionProvider.INSTANCE));
+
+        int[] array = new int[]{12, 34};
+        assertEquals(34, compile("$[1]").resolve(array, new PoJoResolver()));
+        assertEquals(12, compile("$[0]").resolve(array, new PoJoResolver()));
+
     }
 
     @Test
