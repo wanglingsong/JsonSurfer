@@ -85,4 +85,12 @@ public interface ParsingContext {
      */
     <T> T load(String key, Class<T> tClass);
 
+    /**
+     * @param object object to cast
+     * @param tClass type
+     * @param <T>    type
+     * @return casted object
+     */
+    <T> T cast(Object object, Class<T> tClass);
+
 }

@@ -16,6 +16,13 @@ public class JsonSimpleParserTest extends JsonSurferTest {
         surfer = new JsonSurfer(JsonSimpleParser.INSTANCE, provider);
     }
 
+    @Ignore
+    @Override
+    public void testTypeCasting() throws Exception {
+        // ignore
+    }
+
+    @Ignore
     @Override
     public void testTypeBindingOne() throws Exception {
         // ignore

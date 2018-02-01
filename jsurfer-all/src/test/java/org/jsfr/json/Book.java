@@ -32,6 +32,8 @@ public class Book {
 
     private Double price;
 
+    private String isbn;
+
     public String getCategory() {
         return category;
     }
@@ -62,5 +64,13 @@ public class Book {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public String getIsbn() {
+        return isbn;
+    }
+
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
     }
 }

@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -63,6 +63,35 @@ public abstract class JsonSurferTest {
             LOGGER.debug("Received value: {}", value);
         }
     };
+
+    @Test
+    public void testTypeCasting() throws Exception {
+        surfer.configBuilder()
+                .bind("$.store.book[*]", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        assertNotNull(context.cast(value, Book.class));
+                    }
+                })
+                .bind("$.expensive", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        assertEquals(10L, context.cast(value, Long.class).longValue());
+                    }
+                })
+                .bind("$.store.book[0].price", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        assertEquals(8.95d, context.cast(value, Double.class), 0);
+                    }
+                })
+                .bind("$.store.book[1].title", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        assertEquals("Sword of Honour", context.cast(value, String.class));
+                    }
+                }).buildAndSurf(read("sample.json"));
+    }
 
     @Test
     public void testWildcardAtRoot() throws Exception {
@@ -90,8 +119,8 @@ public abstract class JsonSurferTest {
     @Test
     public void testTypeBindingCollection() throws Exception {
         Reader reader = read("sample.json");
-        Collection<Book> book = surfer.collectAll(reader, Book.class, JsonPathCompiler.compile("$..book[0,1]"));
-        assertEquals(2, book.size());
+        Collection<Book> book = surfer.collectAll(reader, Book.class, JsonPathCompiler.compile("$..book[*]"));
+        assertEquals(4, book.size());
         assertEquals("Nigel Rees", book.iterator().next().getAuthor());
     }
 
@@ -393,11 +422,11 @@ public abstract class JsonSurferTest {
     }
 
     protected Reader read(String resourceName) throws IOException {
-        return new InputStreamReader(Resources.getResource(resourceName).openStream(), StandardCharsets.UTF_8);
+        return new InputStreamReader(Resources.getResource(resourceName).openStream(), Charset.forName("UTF-8"));
     }
 
     protected String readAsString(String resourceName) throws IOException {
-        return Resources.toString(Resources.getResource(resourceName), StandardCharsets.UTF_8);
+        return Resources.toString(Resources.getResource(resourceName), Charset.forName("UTF-8"));
     }
 
     @Test
