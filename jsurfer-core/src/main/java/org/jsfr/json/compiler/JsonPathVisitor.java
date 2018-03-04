@@ -1,4 +1,4 @@
-// Generated from JsonPath.g4 by ANTLR 4.7
+// Generated from JsonPath.g4 by ANTLR 4.7.1
 
 package org.jsfr.json.compiler;
 

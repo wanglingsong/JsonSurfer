@@ -50,7 +50,7 @@ import profilers.FlightRecordingProfiler;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
@@ -83,7 +83,7 @@ public class BenchmarkCollectSingleValue {
         fastjsonSurfer = JsonSurferFastJson.INSTANCE;
         collectOneListener = new CollectOneListener(true);
         surfingConfiguration = SurfingConfiguration.builder().bind("$.store.book[0].author", collectOneListener).build();
-        json = Resources.toString(Resources.getResource("sample.json"), StandardCharsets.UTF_8);
+        json = Resources.toString(Resources.getResource("sample.json"), Charset.forName("UTF-8"));
     }
 
     @Benchmark

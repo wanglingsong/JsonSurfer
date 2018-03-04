@@ -48,7 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -70,7 +70,7 @@ public class BenchmarkParseLargeJsonWithoutStreaming {
     public void setup() throws IOException {
         gson = new GsonBuilder().create();
         om = new ObjectMapper();
-        json = Resources.toString(Resources.getResource("allthethings.json"), StandardCharsets.UTF_8);
+        json = Resources.toString(Resources.getResource("allthethings.json"), Charset.forName("UTF-8"));
     }
 
     @Benchmark

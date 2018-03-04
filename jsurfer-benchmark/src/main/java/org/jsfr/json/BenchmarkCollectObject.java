@@ -39,7 +39,7 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -68,12 +68,12 @@ public class BenchmarkCollectObject {
             private Blackhole blackhole = new Blackhole();
 
             @Override
-            public void onTypedValue(Object value, ParsingContext context) throws Exception {
+            public void onTypedValue(Object value, ParsingContext context) {
                 blackhole.consume(value);
             }
         };
         surfingConfiguration = SurfingConfiguration.builder().bind("$.store.book[*]", Map.class, collectOneListener).build();
-        json = Resources.toString(Resources.getResource("sample.json"), StandardCharsets.UTF_8);
+        json = Resources.toString(Resources.getResource("sample.json"), Charset.forName("UTF-8"));
     }
 
 
