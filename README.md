@@ -239,7 +239,7 @@ Since JsonSurfer emit data in the way of callback, it would be difficult if one 
     assertFalse(parser.resume());
 ```
 * Completely stop parsing. Refer to [Stoppable parsing](#stoppable-parsing)
-#### Stream support
+#### Java 8 Streams API support
 As of 1.4, JsonSurfer can create an iterator from Json and JsonPath. Matched value can be pulled from the iterator one by one without loading entire json into memory.
 ```java
     Iterator iterator = surfer.iterator(read("sample.json"), JsonPathCompiler.compile("$.store.book[*]"));
@@ -249,6 +249,25 @@ Java8 user can also convert the iterator into a Stream
     Stream<Object> targetStream = StreamSupport.stream(
           Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED),
           false);
+```
+Functions implmented by Streams API
+```java
+    public static Stream<Object> toStream(String json, String path) {
+        Iterator<Object> iterator = JsonSurferJackson.INSTANCE.iterator(json, JsonPathCompiler.compile(path));
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
+    }
+
+    public static void main(String[] s) throws Exception {
+        String json = "[1,3,5,7,11]";
+        // Count
+        System.out.println(toStream(json, "$[*]").count());
+        // Max
+        toStream(json, "$[*]").mapToInt(o -> ((LongNode) o).asInt()).max().ifPresent(System.out::println);
+        // Min
+        toStream(json, "$[*]").mapToInt(o -> ((LongNode) o).asInt()).min().ifPresent(System.out::println);
+        // Average
+        toStream(json, "$[*]").mapToDouble(o -> ((LongNode) o).asDouble()).average().ifPresent(System.out::println);
+    }
 ```
 #### Non-Blocking parsing
 As of 1.4, JsonSurfer support non-blocking parsing for JacksonParser. You can achieve 100% non-blocking JSON processing with JsonSurfer in a NIO application. Let's take a Vertx request handler as an example:
