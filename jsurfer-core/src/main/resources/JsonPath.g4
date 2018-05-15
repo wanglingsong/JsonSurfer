@@ -18,7 +18,8 @@ COLON : ':';
 childNode: '.' KEY ;
 childrenNode: '[' QUOTED_STRING ( ',' QUOTED_STRING )* ']' ;
 filter: '[?(' filterExpr ')]';
-filterExpr : filterExpr AndOperator filterExpr
+filterExpr : NegationOperator '(' filterExpr ')'
+           | filterExpr AndOperator filterExpr
            | filterExpr OrOperator filterExpr
            | filterEqualNum
            | filterEqualStr
@@ -32,6 +33,7 @@ filterLtNum:  '@' relativePath+ '<' NUM;
 filterEqualNum: '@' relativePath+ '==' NUM;
 filterEqualStr: '@' relativePath+ '==' QUOTED_STRING;
 //exprArrayIdx: '@.length-' NUM;
+NegationOperator: '!';
 AndOperator: '&&';
 OrOperator: '||';
 NUM
@@ -44,7 +46,7 @@ fragment EXP :   [Ee] [+\-]? INT ; // \- since - means "range" inside [...]
 
 QUOTED_STRING : '\'' ( ~('\''|'\\') | ('\\' .) )* '\'';
 
-KEY :  (ESC | ~(["\\] | '.' | '*' | '[' | ']' | '(' | ')' | ',' | ':'| '=' | '@' | '?' | '&' | '|' | '>' | '<' | '\'' | [ \t\n\r]))+  ;
+KEY :  (ESC | ~(["\\] | '.' | '*' | '[' | ']' | '(' | ')' | ',' | ':'| '=' | '@' | '?' | '&' | '|' | '>' | '<' | '\''| '!' | [ \t\n\r]))+  ;
 fragment ESC :   '\\' (["\\/bfnrt] | UNICODE) ;
 fragment UNICODE : 'u' HEX HEX HEX HEX ;
 fragment HEX : [0-9a-fA-F] ;

@@ -157,7 +157,12 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
     @Override
     public Void visitFilterExpr(JsonPathParser.FilterExprContext ctx) {
         Void rst;
-        if (ctx.AndOperator() != null) {
+        if (ctx.NegationOperator() != null) {
+            filterBuilder.startNegationPredicate();
+            rst = super.visitFilterExpr(ctx);
+            filterBuilder.endNegationAndPredicate();
+        }
+        else if (ctx.AndOperator() != null) {
             filterBuilder.startAndPredicate();
             rst = super.visitFilterExpr(ctx);
             filterBuilder.endAndPredicate();

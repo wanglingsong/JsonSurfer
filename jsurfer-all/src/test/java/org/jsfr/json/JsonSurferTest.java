@@ -288,6 +288,7 @@ public abstract class JsonSurferTest {
 
     @Test
     public void testJsonPathFilterExistence() throws Exception {
+
         JsonPathListener mockListener = mock(JsonPathListener.class);
         surfer.configBuilder().bind("$.store.book[?(@.isbn)]", mockListener)
                 .buildAndSurf(read("sample_filter.json"));
@@ -309,9 +310,32 @@ public abstract class JsonSurferTest {
     }
 
     @Test
+    public void testJsonPathFilterNegation() throws Exception {
+
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$.store.book[?(!(@.isbn))]", mockListener)
+                .buildAndSurf(read("sample_filter.json"));
+
+        verify(mockListener, times(1)).onValue(argThat(new CustomMatcher<Object>("test filter") {
+            @Override
+            public boolean matches(Object o) {
+                return provider.primitive("Sayings of the Century").equals(provider.resolve(o, "title"));
+            }
+        }), any(ParsingContext.class));
+
+        verify(mockListener, times(1)).onValue(argThat(new CustomMatcher<Object>("test filter") {
+            @Override
+            public boolean matches(Object o) {
+                return provider.primitive("Sword of Honour").equals(provider.resolve(o, "title"));
+            }
+        }), any(ParsingContext.class));
+
+    }
+
+    @Test
     public void testJsonPathFilterAggregate() throws Exception {
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        surfer.configBuilder().bind("$.store.book[?(@.price < 10 || @.category && @.isbn && @.price>10)]", mockListener)
+        surfer.configBuilder().bind("$.store.book[?(@.price < 10 || @.category && @.isbn && !(@.price<10))]", mockListener)
                 .buildAndSurf(read("sample_filter.json"));
 
         verify(mockListener, times(1)).onValue(argThat(new CustomMatcher<Object>("test filter") {

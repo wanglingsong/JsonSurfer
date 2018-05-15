@@ -12,6 +12,20 @@ public class FilterBuilder {
 
     private JsonPathFilter resultFilter;
 
+    public FilterBuilder startNegationPredicate() {
+        NegationPredicate negationPredicate = new NegationPredicate();
+        if (!this.stack.isEmpty()) {
+            this.append(negationPredicate);
+        }
+        this.stack.push(negationPredicate);
+        return this;
+    }
+
+    public FilterBuilder endNegationAndPredicate() {
+        this.resultFilter = this.stack.pop();
+        return this;
+    }
+
     public FilterBuilder startAndPredicate() {
         AndPredicate newPredicate = new AndPredicate();
         if (!this.stack.isEmpty()) {
