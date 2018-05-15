@@ -39,9 +39,7 @@ public class PoJoResolver implements DocumentResolver<Object, Object> {
             Field declaredField = object.getClass().getDeclaredField(field);
             declaredField.setAccessible(true);
             value = declaredField.get(object);
-        } catch (IllegalAccessException e) {
-            throw new ResolverException("Failed to resolve field: " + field, e);
-        } catch (NoSuchFieldException e) {
+        } catch (IllegalAccessException | NoSuchFieldException e) {
             throw new ResolverException("Failed to resolve field: " + field, e);
         }
         return value;

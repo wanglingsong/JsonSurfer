@@ -112,7 +112,6 @@ public class FastJsonParser implements JsonParserAdapter {
                             throw new JSONException("syntax error, " + lexer.info());
                     }
                 }
-                ;
 
                 if (tempString != null) {
                     context.primitive(staticPrimitiveHolder.withValue(tempString));
