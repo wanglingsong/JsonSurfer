@@ -26,6 +26,8 @@ package org.jsfr.json;
 
 import org.json.simple.parser.JSONParser;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 
@@ -38,6 +40,10 @@ public class JsonSimpleParser implements JsonParserAdapter {
 
     @Override
     public void parse(Reader reader, SurfingContext context) {
+        parseImpl(reader, context);
+    }
+
+    private void parseImpl(Reader reader, SurfingContext context) {
         JSONParser parser = new JSONParser();
         try {
             parser.parse(reader, new JsonSimpleHandlerAdapter(context));
@@ -48,7 +54,12 @@ public class JsonSimpleParser implements JsonParserAdapter {
 
     @Override
     public void parse(String json, SurfingContext context) {
-        parse(new StringReader(json), context);
+        parseImpl(new StringReader(json), context);
+    }
+
+    @Override
+    public void parse(InputStream inputStream, SurfingContext context) {
+        parseImpl(new InputStreamReader(inputStream, context.getConfig().getParserCharset()), context);
     }
 
     @Override
@@ -58,6 +69,11 @@ public class JsonSimpleParser implements JsonParserAdapter {
 
     @Override
     public ResumableParser createResumableParser(String json, SurfingContext context) {
+        throw new UnsupportedOperationException("Unsupported");
+    }
+
+    @Override
+    public ResumableParser createResumableParser(InputStream json, SurfingContext context) {
         throw new UnsupportedOperationException("Unsupported");
     }
 

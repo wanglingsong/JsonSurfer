@@ -27,7 +27,9 @@ package org.jsfr.json;
 import org.jsfr.json.path.JsonPath;
 import org.jsfr.json.provider.JsonProvider;
 
+import java.io.InputStream;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,7 +43,7 @@ import static org.jsfr.json.compiler.JsonPathCompiler.compile;
  */
 public class SurfingConfiguration {
 
-    public static Builder builder() {
+    static Builder builder() {
         Builder builder = new Builder();
         builder.configuration = new SurfingConfiguration();
         return builder;
@@ -70,13 +72,6 @@ public class SurfingConfiguration {
 
     }
 
-    private static final Comparator<IndefinitePathBinding> INDEFINITE_BINDING_COMPARATOR = new Comparator<IndefinitePathBinding>() {
-        @Override
-        public int compare(IndefinitePathBinding o1, IndefinitePathBinding o2) {
-            return Integer.compare(o1.minimumPathDepth, o2.minimumPathDepth);
-        }
-    };
-
     public static class Builder {
 
         private JsonSurfer jsonSurfer;
@@ -95,6 +90,7 @@ public class SurfingConfiguration {
                     configuration.definitePathLookup[entry.getKey() - configuration.minDepth] = entry.getValue().toArray(new Binding[entry.getValue().size()]);
                 }
             }
+            configuration.parserCharset = jsonSurfer.getParserCharset();
             return configuration;
         }
 
@@ -122,9 +118,20 @@ public class SurfingConfiguration {
          * Build the configuration and then surf with it and the associated JsonSurfer
          *
          * @param jsonReader jsonReader
+         * @deprecated use {@link #buildAndSurf(InputStream)} instead
          */
+        @Deprecated
         public void buildAndSurf(Reader jsonReader) {
             this.jsonSurfer.surf(jsonReader, this.build());
+        }
+
+        /**
+         * Build the configuration and then surf with it and the associated JsonSurfer
+         *
+         * @param inputStream json
+         */
+        public void buildAndSurf(InputStream inputStream) {
+            this.jsonSurfer.surf(inputStream, this.build());
         }
 
         public Builder bind(String path, JsonPathListener... jsonPathListeners) {
@@ -194,6 +201,14 @@ public class SurfingConfiguration {
 
     }
 
+    private static final Comparator<IndefinitePathBinding> INDEFINITE_BINDING_COMPARATOR = new Comparator<IndefinitePathBinding>() {
+        @Override
+        public int compare(IndefinitePathBinding o1, IndefinitePathBinding o2) {
+            return Integer.compare(o1.minimumPathDepth, o2.minimumPathDepth);
+        }
+    };
+
+    private Charset parserCharset;
     private int minDepth = Integer.MAX_VALUE;
     private int maxDepth = -1;
     private boolean skipOverlappedPath = false;
@@ -253,4 +268,9 @@ public class SurfingConfiguration {
             return null;
         }
     }
+
+    public Charset getParserCharset() {
+        return parserCharset;
+    }
+
 }

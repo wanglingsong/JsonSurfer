@@ -4,8 +4,12 @@ import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.parser.JSONLexerBase;
 import com.alibaba.fastjson.parser.JSONReaderScanner;
 import com.alibaba.fastjson.parser.JSONScanner;
+import org.jsfr.json.exception.JsonSurfingException;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 
 import static com.alibaba.fastjson.parser.JSONToken.*;
 
@@ -139,6 +143,11 @@ public class FastJsonParser implements JsonParserAdapter {
     }
 
     @Override
+    public void parse(InputStream inputStream, SurfingContext context) {
+        createResumableParser(inputStream, context).parse();
+    }
+
+    @Override
     public ResumableParser createResumableParser(Reader reader, SurfingContext context) {
         return new FastJsonResumableParser(new JSONReaderScanner(reader), context, new StaticPrimitiveHolder());
     }
@@ -146,6 +155,11 @@ public class FastJsonParser implements JsonParserAdapter {
     @Override
     public ResumableParser createResumableParser(String json, SurfingContext context) {
         return new FastJsonResumableParser(new JSONScanner(json), context, new StaticPrimitiveHolder());
+    }
+
+    @Override
+    public ResumableParser createResumableParser(InputStream json, SurfingContext context) {
+        return new FastJsonResumableParser(new JSONReaderScanner(new InputStreamReader(json, context.getConfig().getParserCharset())), context, new StaticPrimitiveHolder());
     }
 
     @Override

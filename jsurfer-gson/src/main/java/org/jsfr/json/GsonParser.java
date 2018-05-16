@@ -29,6 +29,8 @@ import com.google.gson.stream.JsonToken;
 import org.jsfr.json.provider.JsonProvider;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 
@@ -144,7 +146,16 @@ public class GsonParser implements JsonParserAdapter {
     }
 
     @Override
+    public void parse(InputStream inputStream, SurfingContext context) {
+        createResumableParser(inputStream, context).parse();
+    }
+
+    @Override
     public ResumableParser createResumableParser(Reader reader, SurfingContext context) {
+        return createResumableParserImpl(reader, context);
+    }
+
+    private ResumableParser createResumableParserImpl(Reader reader, SurfingContext context) {
         final JsonReader jsonReader = new JsonReader(reader);
         final JsonProvider jsonProvider = context.getConfig().getJsonProvider();
 
@@ -199,6 +210,11 @@ public class GsonParser implements JsonParserAdapter {
     @Override
     public ResumableParser createResumableParser(String json, SurfingContext context) {
         return createResumableParser(new StringReader(json), context);
+    }
+
+    @Override
+    public ResumableParser createResumableParser(InputStream json, SurfingContext context) {
+        return createResumableParserImpl(new InputStreamReader(json, context.getConfig().getParserCharset()), context);
     }
 
     @Override

@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
@@ -63,6 +64,14 @@ public abstract class JsonSurferTest {
             LOGGER.debug("Received value: {}", value);
         }
     };
+
+    protected InputStream read(String resourceName) throws IOException {
+        return Resources.getResource(resourceName).openStream();
+    }
+
+    protected String readAsString(String resourceName) throws IOException {
+        return Resources.toString(Resources.getResource(resourceName), surfer.getParserCharset());
+    }
 
     @Test
     public void testTypeCasting() throws Exception {
@@ -111,15 +120,13 @@ public abstract class JsonSurferTest {
 
     @Test
     public void testTypeBindingOne() throws Exception {
-        Reader reader = read("sample.json");
-        Book book = surfer.collectOne(reader, Book.class, JsonPathCompiler.compile("$..book[1]"));
+        Book book = surfer.collectOne(read("sample.json"), Book.class, JsonPathCompiler.compile("$..book[1]"));
         assertEquals("Evelyn Waugh", book.getAuthor());
     }
 
     @Test
     public void testTypeBindingCollection() throws Exception {
-        Reader reader = read("sample.json");
-        Collection<Book> book = surfer.collectAll(reader, Book.class, JsonPathCompiler.compile("$..book[*]"));
+        Collection<Book> book = surfer.collectAll(read("sample.json"), Book.class, JsonPathCompiler.compile("$..book[*]"));
         assertEquals(4, book.size());
         assertEquals("Nigel Rees", book.iterator().next().getAuthor());
     }
@@ -443,14 +450,6 @@ public abstract class JsonSurferTest {
                 .buildAndSurf(read("sample.json"));
         verify(mockListener, times(4))
                 .onValue(anyObject(), any(ParsingContext.class));
-    }
-
-    protected Reader read(String resourceName) throws IOException {
-        return new InputStreamReader(Resources.getResource(resourceName).openStream(), Charset.forName("UTF-8"));
-    }
-
-    protected String readAsString(String resourceName) throws IOException {
-        return Resources.toString(Resources.getResource(resourceName), Charset.forName("UTF-8"));
     }
 
     @Test

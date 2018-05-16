@@ -24,9 +24,21 @@
 
 package org.jsfr.json;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.avro.AvroFactory;
+import com.fasterxml.jackson.dataformat.avro.AvroMapper;
+import com.fasterxml.jackson.dataformat.avro.AvroSchema;
+import com.fasterxml.jackson.dataformat.protobuf.ProtobufFactory;
+import com.fasterxml.jackson.dataformat.protobuf.ProtobufMapper;
+import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchema;
+import com.fasterxml.jackson.dataformat.protobuf.schema.ProtobufSchemaLoader;
+import org.apache.avro.Schema;
 import org.jsfr.json.provider.JacksonProvider;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -62,6 +74,72 @@ public class JacksonParserTest extends JsonSurferTest {
         assertFalse(nonBlockingParser.feed(part1, 0, 100));
         verify(mockListener).onValue(eq(provider.primitive(1234L)), any(ParsingContext.class));
         verify(mockListener).onValue(eq(provider.primitive("abcd")), any(ParsingContext.class));
+    }
+
+    @Ignore
+    @Test
+    public void testProtobufParser() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+
+        ObjectMapper mapper = new ProtobufMapper();
+        String protobuf_str = "message Employee {\n"
+                + " required string name = 1;\n"
+                + " required int32 age = 2;\n"
+                + " repeated string emails = 3;\n"
+                + " optional Employee boss = 4;\n"
+                + "}\n";
+        final ProtobufSchema schema = ProtobufSchemaLoader.std.parse(protobuf_str);
+
+//        Employee boss = new Employee();
+//        boss.age = 30;
+//        boss.emails = new String[]{"bar@gmail.com"};
+//        boss.name = "bar";
+
+        Employee empl = new Employee();
+        empl.age = 30;
+        empl.emails = new String[]{"foo@gmail.com"};
+        empl.name = "foo";
+//        empl.boss = boss;
+
+        byte[] protobufData = mapper.writer(schema)
+                .writeValueAsBytes(empl);
+
+        // TODO Jackson's bug
+        JsonSurfer protobufSurfer = new JsonSurfer(new JacksonParser(new ProtobufFactory(), schema), provider);
+        SurfingConfiguration config = protobufSurfer.configBuilder().bind("$.name", mockListener).build();
+        protobufSurfer.surf(new ByteArrayInputStream(protobufData), config);
+        verify(mockListener).onValue(eq(provider.primitive("foo")), any(ParsingContext.class));
+    }
+
+    @Test
+    public void testAvroParser() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+
+        String SCHEMA_JSON = "{\n"
+                + "\"type\": \"record\",\n"
+                + "\"name\": \"Employee\",\n"
+                + "\"fields\": [\n"
+                + " {\"name\": \"name\", \"type\": \"string\"},\n"
+                + " {\"name\": \"age\", \"type\": \"int\"},\n"
+                + " {\"name\": \"emails\", \"type\": {\"type\": \"array\", \"items\": \"string\"}},\n"
+                + " {\"name\": \"boss\", \"type\": [\"Employee\",\"null\"]}\n"
+                + "]}";
+        Schema raw = new Schema.Parser().setValidate(true).parse(SCHEMA_JSON);
+        final AvroSchema schema = new AvroSchema(raw);
+
+        Employee empl = new Employee();
+        empl.age = 30;
+        empl.emails = new String[]{"foo@gmail.com"};
+        empl.name = "foo";
+
+        AvroMapper mapper = new AvroMapper();
+        byte[] avroData = mapper.writer(schema)
+                .writeValueAsBytes(empl);
+
+        JsonSurfer avroSurfer = new JsonSurfer(new JacksonParser(new AvroFactory(), schema), provider);
+        SurfingConfiguration config = avroSurfer.configBuilder().bind("$.name", mockListener).build();
+        avroSurfer.surf(new ByteArrayInputStream(avroData), config);
+        verify(mockListener).onValue(eq(provider.primitive("foo")), any(ParsingContext.class));
     }
 
 }

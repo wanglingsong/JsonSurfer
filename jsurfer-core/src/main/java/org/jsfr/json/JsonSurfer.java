@@ -27,7 +27,10 @@ package org.jsfr.json;
 import org.jsfr.json.path.JsonPath;
 import org.jsfr.json.provider.JsonProvider;
 
+import java.io.InputStream;
 import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -47,6 +50,7 @@ public class JsonSurfer {
     private JsonProvider jsonProvider;
     private JsonParserAdapter jsonParserAdapter;
     private ErrorHandlingStrategy errorHandlingStrategy;
+    private Charset parserCharset = StandardCharsets.UTF_8;
 
     /**
      * @param jsonParserAdapter jsonParserAdapter
@@ -82,10 +86,26 @@ public class JsonSurfer {
      * @param reader   Json source
      * @param jsonPath JsonPath
      * @return Streaming iterator
+     * @deprecated Use {@link #iterator(InputStream, JsonPath)} instead.
      */
+    @Deprecated
     public Iterator<Object> iterator(Reader reader, JsonPath jsonPath) {
         SurfingContext context = createIteratorContext(jsonPath);
         final ResumableParser resumableParser = jsonParserAdapter.createResumableParser(reader, context);
+        resumableParser.parse();
+        return createIterator(context, resumableParser);
+    }
+
+    /**
+     * Create a streaming iterator which can pull matched value one by one according to provided JsonPath. Internally, only one matched value stored in memory
+     *
+     * @param inputStream Json source
+     * @param jsonPath    JsonPath
+     * @return Streaming iterator
+     */
+    public Iterator<Object> iterator(InputStream inputStream, JsonPath jsonPath) {
+        SurfingContext context = createIteratorContext(jsonPath);
+        final ResumableParser resumableParser = jsonParserAdapter.createResumableParser(inputStream, context);
         resumableParser.parse();
         return createIterator(context, resumableParser);
     }
@@ -132,7 +152,7 @@ public class JsonSurfer {
     }
 
     private SurfingContext createIteratorContext(JsonPath jsonPath) {
-        final SurfingConfiguration config = SurfingConfiguration.builder().bind(jsonPath, new JsonPathListener() {
+        final SurfingConfiguration config = configBuilder().bind(jsonPath, new JsonPathListener() {
             @Override
             public void onValue(Object value, ParsingContext context) {
                 context.save(KEY_MATCH, value);
@@ -165,8 +185,19 @@ public class JsonSurfer {
      *
      * @param json          Json source
      * @param configuration SurfingConfiguration that holds JsonPath binding
+     * @deprecated use {@link #surf(InputStream, SurfingConfiguration)} instead
      */
+    @Deprecated
     public void surf(Reader json, SurfingConfiguration configuration) {
+        ensureSetting(configuration);
+        jsonParserAdapter.parse(json, new SurfingContext(configuration));
+    }
+
+    /**
+     * @param json          Json InputStream
+     * @param configuration SurfingConfiguration that holds JsonPath binding
+     */
+    public void surf(InputStream json, SurfingConfiguration configuration) {
         ensureSetting(configuration);
         jsonParserAdapter.parse(json, new SurfingContext(configuration));
     }
@@ -189,8 +220,22 @@ public class JsonSurfer {
      * @param json          Json source
      * @param configuration SurfingConfiguration
      * @return Resumable parser
+     * @deprecated use {@link #createResumableParser(InputStream, SurfingConfiguration)} instead
      */
+    @Deprecated
     public ResumableParser createResumableParser(Reader json, SurfingConfiguration configuration) {
+        ensureSetting(configuration);
+        return jsonParserAdapter.createResumableParser(json, new SurfingContext(configuration));
+    }
+
+    /**
+     * Create resumable parser
+     *
+     * @param json          Json source
+     * @param configuration SurfingConfiguration
+     * @return Resumable parser
+     */
+    public ResumableParser createResumableParser(InputStream json, SurfingConfiguration configuration) {
         ensureSetting(configuration);
         return jsonParserAdapter.createResumableParser(json, new SurfingContext(configuration));
     }
@@ -251,7 +296,9 @@ public class JsonSurfer {
      * @param reader Json reader
      * @param paths  JsonPath
      * @return values
+     * @deprecated use {@link #collectAll(InputStream, String...)} instead
      */
+    @Deprecated
     public Collection<Object> collectAll(Reader reader, String... paths) {
         return collectAll(reader, compile(paths));
     }
@@ -262,7 +309,9 @@ public class JsonSurfer {
      * @param reader Json reader
      * @param paths  JsonPath
      * @return All matched value
+     * @deprecated use {@link #collectAll(InputStream, JsonPath...)} instead
      */
+    @Deprecated
     public Collection<Object> collectAll(Reader reader, JsonPath... paths) {
         return collectAll(reader, Object.class, paths);
     }
@@ -275,7 +324,9 @@ public class JsonSurfer {
      * @param paths  JsonPath
      * @param <T>    type
      * @return typed value
+     * @deprecated use {@link #collectAll(InputStream, Class, JsonPath...)} instead
      */
+    @Deprecated
     public <T> Collection<T> collectAll(Reader reader, Class<T> tClass, JsonPath... paths) {
         CollectAllListener<T> listener = new CollectAllListener<T>(jsonProvider, tClass);
         SurfingConfiguration.Builder builder = configBuilder();
@@ -283,6 +334,47 @@ public class JsonSurfer {
             builder.bind(jsonPath, listener);
         }
         surf(reader, builder.build());
+        return listener.getCollection();
+    }
+
+    /**
+     * Collect all matched value into a collection
+     *
+     * @param inputStream Json reader
+     * @param paths       JsonPath
+     * @return values
+     */
+    public Collection<Object> collectAll(InputStream inputStream, String... paths) {
+        return collectAll(inputStream, compile(paths));
+    }
+
+    /**
+     * Collect all matched value into a collection
+     *
+     * @param inputStream Json reader
+     * @param paths       JsonPath
+     * @return All matched value
+     */
+    public Collection<Object> collectAll(InputStream inputStream, JsonPath... paths) {
+        return collectAll(inputStream, Object.class, paths);
+    }
+
+    /**
+     * Collect all matched value into a collection
+     *
+     * @param inputStream Json reader
+     * @param tClass      type
+     * @param paths       JsonPath
+     * @param <T>         type
+     * @return typed value
+     */
+    public <T> Collection<T> collectAll(InputStream inputStream, Class<T> tClass, JsonPath... paths) {
+        CollectAllListener<T> listener = new CollectAllListener<T>(jsonProvider, tClass);
+        SurfingConfiguration.Builder builder = configBuilder();
+        for (JsonPath jsonPath : paths) {
+            builder.bind(jsonPath, listener);
+        }
+        surf(inputStream, builder.build());
         return listener.getCollection();
     }
 
@@ -332,7 +424,9 @@ public class JsonSurfer {
      * @param reader Json reader
      * @param paths  JsonPath
      * @return Value
+     * @deprecated use {@link #collectOne(InputStream, String...)} instead
      */
+    @Deprecated
     public Object collectOne(Reader reader, String... paths) {
         return collectOne(reader, compile(paths));
     }
@@ -343,7 +437,9 @@ public class JsonSurfer {
      * @param reader json reader
      * @param paths  JsonPath
      * @return Matched value
+     * @deprecated use {@link #collectOne(InputStream, JsonPath...)} instead
      */
+    @Deprecated
     public Object collectOne(Reader reader, JsonPath... paths) {
         return collectOne(reader, Object.class, paths);
     }
@@ -356,8 +452,10 @@ public class JsonSurfer {
      * @param paths  JsonPath
      * @param <T>    type
      * @return typed value
+     * @deprecated use {@link #collectOne(InputStream, Class, JsonPath...)} instead
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     public <T> T collectOne(Reader reader, Class<T> tClass, JsonPath... paths) {
         CollectOneListener listener = new CollectOneListener(true);
         SurfingConfiguration.Builder builder = configBuilder().skipOverlappedPath();
@@ -369,6 +467,49 @@ public class JsonSurfer {
         return tClass.cast(jsonProvider.cast(value, tClass));
     }
 
+    /**
+     * Collect the first matched value and stop parsing immediately
+     *
+     * @param inputStream Json inpustream
+     * @param paths       JsonPath
+     * @return Value
+     */
+    public Object collectOne(InputStream inputStream, String... paths) {
+        return collectOne(inputStream, compile(paths));
+    }
+
+    /**
+     * Collect the first matched value and stop parsing immediately
+     *
+     * @param inputStream json inpustream
+     * @param paths       JsonPath
+     * @return Matched value
+     */
+    public Object collectOne(InputStream inputStream, JsonPath... paths) {
+        return collectOne(inputStream, Object.class, paths);
+    }
+
+    /**
+     * Collect the first matched value and stop parsing immediately
+     *
+     * @param inputStream Json inpustream
+     * @param tClass      type
+     * @param paths       JsonPath
+     * @param <T>         type
+     * @return typed value
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T collectOne(InputStream inputStream, Class<T> tClass, JsonPath... paths) {
+        CollectOneListener listener = new CollectOneListener(true);
+        SurfingConfiguration.Builder builder = configBuilder().skipOverlappedPath();
+        for (JsonPath jsonPath : paths) {
+            builder.bind(jsonPath, listener);
+        }
+        surf(inputStream, builder.build());
+        Object value = listener.getValue();
+        return tClass.cast(jsonProvider.cast(value, tClass));
+    }
+
     private void ensureSetting(SurfingConfiguration configuration) {
         if (configuration.getJsonProvider() == null) {
             configuration.setJsonProvider(jsonProvider);
@@ -376,6 +517,14 @@ public class JsonSurfer {
         if (configuration.getErrorHandlingStrategy() == null) {
             configuration.setErrorHandlingStrategy(errorHandlingStrategy);
         }
+    }
+
+    public Charset getParserCharset() {
+        return parserCharset;
+    }
+
+    public void setParserCharset(Charset parserCharset) {
+        this.parserCharset = parserCharset;
     }
 
 }

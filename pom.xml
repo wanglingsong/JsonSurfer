@@ -14,6 +14,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sonar.host.url>http://localhost:32768</sonar.host.url>
+        <jackson.version>2.9.4</jackson.version>
     </properties>
 
     <developers>

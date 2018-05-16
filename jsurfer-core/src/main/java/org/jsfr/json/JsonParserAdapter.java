@@ -24,6 +24,7 @@
 
 package org.jsfr.json;
 
+import java.io.InputStream;
 import java.io.Reader;
 
 /**
@@ -36,7 +37,9 @@ public interface JsonParserAdapter {
      *
      * @param reader  reader
      * @param context SurfingContext
+     * @deprecated use {@link #parse(InputStream, SurfingContext)} instead
      */
+    @Deprecated
     void parse(Reader reader, SurfingContext context);
 
     /**
@@ -48,12 +51,22 @@ public interface JsonParserAdapter {
     void parse(String json, SurfingContext context);
 
     /**
+     * Create and start a resumable parser
+     *
+     * @param inputStream inputStream
+     * @param context     SurfingContext
+     */
+    void parse(InputStream inputStream, SurfingContext context);
+
+    /**
      * Create a resumable parser
      *
      * @param reader  Json source
      * @param context Surfing context
      * @return Resumable Parser
+     * @deprecated use {@link #createResumableParser(InputStream, SurfingContext)} instead
      */
+    @Deprecated
     ResumableParser createResumableParser(Reader reader, SurfingContext context);
 
     /**
@@ -64,6 +77,15 @@ public interface JsonParserAdapter {
      * @return Resumable parser
      */
     ResumableParser createResumableParser(String json, SurfingContext context);
+
+    /**
+     * Create a resumable parser
+     *
+     * @param json    Json source
+     * @param context Surfing context
+     * @return Resumable Parser
+     */
+    ResumableParser createResumableParser(InputStream json, SurfingContext context);
 
     /**
      * Create a NonBlockingParser
