@@ -43,7 +43,7 @@ import static org.jsfr.json.compiler.JsonPathCompiler.compile;
  */
 public class SurfingConfiguration {
 
-    static Builder builder() {
+    public static Builder builder() {
         Builder builder = new Builder();
         builder.configuration = new SurfingConfiguration();
         return builder;
@@ -51,7 +51,7 @@ public class SurfingConfiguration {
 
     public static class Binding {
 
-        public Binding(JsonPath jsonPath, JsonPathListener[] listeners) {
+        Binding(JsonPath jsonPath, JsonPathListener[] listeners) {
             this.jsonPath = jsonPath;
             this.listeners = listeners;
         }
@@ -65,7 +65,7 @@ public class SurfingConfiguration {
 
         int minimumPathDepth;
 
-        public IndefinitePathBinding(JsonPath jsonPath, JsonPathListener[] listeners, int minimumPathDepth) {
+        IndefinitePathBinding(JsonPath jsonPath, JsonPathListener[] listeners, int minimumPathDepth) {
             super(jsonPath, listeners);
             this.minimumPathDepth = minimumPathDepth;
         }
@@ -90,8 +90,18 @@ public class SurfingConfiguration {
                     configuration.definitePathLookup[entry.getKey() - configuration.minDepth] = entry.getValue().toArray(new Binding[entry.getValue().size()]);
                 }
             }
-            configuration.parserCharset = jsonSurfer.getParserCharset();
             return configuration;
+        }
+
+        /**
+         * Associated with a Charset
+         *
+         * @param charset charset
+         * @return builder
+         */
+        public Builder withCharset(Charset charset) {
+            configuration.parserCharset = charset;
+            return this;
         }
 
         /**
@@ -257,7 +267,7 @@ public class SurfingConfiguration {
         this.errorHandlingStrategy = errorHandlingStrategy;
     }
 
-    public boolean withinRange(int currentDepth) {
+    private boolean withinRange(int currentDepth) {
         return minDepth <= currentDepth && currentDepth <= maxDepth;
     }
 
@@ -271,6 +281,10 @@ public class SurfingConfiguration {
 
     public Charset getParserCharset() {
         return parserCharset;
+    }
+
+    public void setParserCharset(Charset parserCharset) {
+        this.parserCharset = parserCharset;
     }
 
 }

@@ -517,6 +517,9 @@ public class JsonSurfer {
         if (configuration.getErrorHandlingStrategy() == null) {
             configuration.setErrorHandlingStrategy(errorHandlingStrategy);
         }
+        if (configuration.getParserCharset() == null) {
+            configuration.setParserCharset(parserCharset);
+        }
     }
 
     public Charset getParserCharset() {

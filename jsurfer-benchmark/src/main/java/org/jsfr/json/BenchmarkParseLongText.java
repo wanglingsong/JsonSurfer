@@ -44,7 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -74,10 +74,10 @@ public class BenchmarkParseLongText {
         simpleSurfer = JsonSurferJsonSimple.INSTANCE;
         fastjsonSurfer = JsonSurferFastJson.INSTANCE;
         collectOneListener = new CollectOneListener(true);
-        surfingConfiguration = SurfingConfiguration.builder().bind("$.findMe", collectOneListener).build();
+        surfingConfiguration = SurfingConfiguration.builder().bind("$.findMe", collectOneListener).withCharset(StandardCharsets.UTF_8).build();
         gson = new GsonBuilder().create();
         om = new ObjectMapper();
-        json = Resources.toString(Resources.getResource("longText.json"), Charset.forName("UTF-8"));
+        json = Resources.toString(Resources.getResource("longText.json"), StandardCharsets.UTF_8);
     }
 
     @Benchmark

@@ -46,11 +46,9 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import profilers.FlightRecordingProfiler;
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
@@ -82,8 +80,8 @@ public class BenchmarkCollectSingleValue {
         simpleSurfer = JsonSurferJsonSimple.INSTANCE;
         fastjsonSurfer = JsonSurferFastJson.INSTANCE;
         collectOneListener = new CollectOneListener(true);
-        surfingConfiguration = SurfingConfiguration.builder().bind("$.store.book[0].author", collectOneListener).build();
-        json = Resources.toString(Resources.getResource("sample.json"), Charset.forName("UTF-8"));
+        surfingConfiguration = SurfingConfiguration.builder().bind("$.store.book[0].author", collectOneListener).withCharset(StandardCharsets.UTF_8).build();
+        json = Resources.toString(Resources.getResource("sample.json"), StandardCharsets.UTF_8);
     }
 
     @Benchmark

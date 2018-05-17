@@ -76,8 +76,8 @@ public class JacksonParserTest extends JsonSurferTest {
         verify(mockListener).onValue(eq(provider.primitive("abcd")), any(ParsingContext.class));
     }
 
-    @Ignore
     @Test
+    @Ignore
     public void testProtobufParser() throws Exception {
         JsonPathListener mockListener = mock(JsonPathListener.class);
 
@@ -90,21 +90,14 @@ public class JacksonParserTest extends JsonSurferTest {
                 + "}\n";
         final ProtobufSchema schema = ProtobufSchemaLoader.std.parse(protobuf_str);
 
-//        Employee boss = new Employee();
-//        boss.age = 30;
-//        boss.emails = new String[]{"bar@gmail.com"};
-//        boss.name = "bar";
-
         Employee empl = new Employee();
         empl.age = 30;
         empl.emails = new String[]{"foo@gmail.com"};
         empl.name = "foo";
-//        empl.boss = boss;
 
         byte[] protobufData = mapper.writer(schema)
                 .writeValueAsBytes(empl);
-
-        // TODO Jackson's bug
+        // TODO Jackson's bug to be fixed in 2.9.6
         JsonSurfer protobufSurfer = new JsonSurfer(new JacksonParser(new ProtobufFactory(), schema), provider);
         SurfingConfiguration config = protobufSurfer.configBuilder().bind("$.name", mockListener).build();
         protobufSurfer.surf(new ByteArrayInputStream(protobufData), config);

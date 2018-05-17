@@ -41,10 +41,9 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import profilers.FlightRecordingProfiler;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 @Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
@@ -79,8 +78,8 @@ public class BenchmarkParseLargeJson {
                 blackhole.consume(value);
             }
         };
-        surfingConfiguration = SurfingConfiguration.builder().bind(jsonPath, blackHoleListener).skipOverlappedPath().build();
-        json = Resources.toString(Resources.getResource("allthethings.json"), Charset.forName("UTF-8"));
+        surfingConfiguration = SurfingConfiguration.builder().bind(jsonPath, blackHoleListener).skipOverlappedPath().withCharset(StandardCharsets.UTF_8).build();
+        json = Resources.toString(Resources.getResource("allthethings.json"), StandardCharsets.UTF_8);
     }
 
     @Benchmark
