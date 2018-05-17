@@ -185,6 +185,8 @@ public class JsonPath implements Iterable<PathOperator> {
         if (!get(pointer1).match(jsonPath.get(pointer2))) {
             return false;
         }
+        pointer1--;
+        pointer2--;
         while (pointer1 >= 0) {
             if (!(pointer2 >= 0)) {
                 return false;
