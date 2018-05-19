@@ -10,11 +10,11 @@
 Jsonsurfer is dedicated in processing **big and complicated json** data with three major features.
 * Streaming
 
-    No need to deserialize entire json into memory
+    No need to deserialize entire json into memory.
     
 * JsonPath
 
-    Selectively extract json data by the power of JsonPath
+    Selectively extract json data by the power of JsonPath.
 
 * Stoppable
 
@@ -23,7 +23,11 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 * Non-Blocking
 
     JsonSurfer is event-driven and offers non-blocking parser interface.
-    
+
+* Binary format
+
+    Support multiple binary data formats including Avro, CBOR, Protobuf, Smile and Ion.
+
 ## Getting started
 
 ### [What is JsonPath?](http://goessner.net/articles/JsonPath/)
@@ -293,6 +297,21 @@ As of 1.4, JsonSurfer support non-blocking parsing for JacksonParser. You can ac
             request.response().end();
         });
     }).listen(8080);
+```
+#### Binaray format (Jackson only)
+By importing [Jackson binary format backend](https://github.com/FasterXML/jackson-dataformats-binary), JsonSurfer is capable to surfer with multiple binary object representation formats such as Avro, CBOR, Protobuf(A known bug to be fixed in Jackson 2.9.6), Smile and Ion.
+
+For example, if you want to surfer with CBOR data, firstly, CBOR format backend need to be imported as dependency.
+```
+    <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-cbor</artifactId>
+        <version>${jackson.version}</version>
+    </dependency>
+```
+Then create a JsonSurfer with CBOR-backed JacksonParser and surfer as usual
+```java
+    surfer = new JsonSurfer(new JacksonParser(new CBORFactory()), provider);
 ```
 ### Examples
 
