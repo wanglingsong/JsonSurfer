@@ -26,7 +26,7 @@ Jsonsurfer is dedicated in processing **big and complicated json** data with thr
 
 * Binary format
 
-    Support multiple binary data formats including Avro, CBOR, Protobuf, Smile and Ion.
+    Support multiple binary data formats including Avro, CBOR, Protobuf, Smile and Ion.
 
 ## Getting started
 
