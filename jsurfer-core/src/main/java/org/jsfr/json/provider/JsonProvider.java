@@ -26,6 +26,8 @@ package org.jsfr.json.provider;
 
 import org.jsfr.json.resolver.DocumentResolver;
 
+import java.math.BigInteger;
+
 public interface JsonProvider<O, A, P> extends DocumentResolver<O, A> {
 
     O createObject();
@@ -39,6 +41,8 @@ public interface JsonProvider<O, A, P> extends DocumentResolver<O, A> {
     P primitive(boolean value);
 
     P primitive(int value);
+
+    P primitive(BigInteger value);
 
     P primitive(double value);
 

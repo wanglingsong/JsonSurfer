@@ -32,6 +32,8 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
+import java.math.BigInteger;
+
 public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonElement> {
 
     public final static GsonProvider INSTANCE = new GsonProvider();
@@ -83,6 +85,11 @@ public class GsonProvider implements JsonProvider<JsonObject, JsonArray, JsonEle
 
     @Override
     public JsonElement primitive(int value) {
+        return new JsonPrimitive(value);
+    }
+
+    @Override
+    public JsonElement primitive(BigInteger value) {
         return new JsonPrimitive(value);
     }
 
