@@ -176,6 +176,7 @@ You can use logical operators '&&' and '||' to create more complex filter expres
 $.store.book[?(@.price < 10 || @.category && @.isbn && @.price>10)]
 ```
 #### Resolver API:
+* Limitation: **Wildcard** and **Recursive Descent** are **NOT** supported.
 * As of 1.2.6, JsonSurfer provides another way of processing json. You can directly resolve value with JsonPath from a well-built DOM like HashMap or even POJO:
 ```java
         Book book = new Book();
@@ -193,6 +194,23 @@ which prints "Leo".
         System.out.println(compile("$.list[1]").resolve(map, JavaCollectionProvider.INSTANCE));
 ```
 which prints "bar".
+* If you want to **process POJO with full JsonPath feature**, you can convert the POJO into binary format and then surfer on it.
+#### Binaray format (Jackson only)
+By importing [Jackson binary format backend](https://github.com/FasterXML/jackson-dataformats-binary), JsonSurfer is capable to surfer with multiple binary object representation formats such as Avro, CBOR, Protobuf(A known bug to be fixed in Jackson 2.9.6), Smile and Ion.
+
+For example, if you want to surfer with CBOR data, firstly, CBOR format backend need to be imported as dependency.
+```
+    <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-cbor</artifactId>
+        <version>${jackson.version}</version>
+    </dependency>
+```
+Then create a JsonSurfer with CBOR-backed JacksonParser and surfer as usual
+```java
+    surfer = new JsonSurfer(new JacksonParser(new CBORFactory()), provider);
+```
+Find more examples here: https://github.com/jsurfer/JsonSurfer/blob/master/jsurfer-all/src/test/java/org/jsfr/json/JacksonParserTest.java
 #### Share data among processors
 Since JsonSurfer emit data in the way of callback, it would be difficult if one of your processing depends one another. Therefore a simple transient map is added for sharing data among your processors. Following unit test shows how to use it:
 ```java
@@ -297,21 +315,6 @@ As of 1.4, JsonSurfer support non-blocking parsing for JacksonParser. You can ac
             request.response().end();
         });
     }).listen(8080);
-```
-#### Binaray format (Jackson only)
-By importing [Jackson binary format backend](https://github.com/FasterXML/jackson-dataformats-binary), JsonSurfer is capable to surfer with multiple binary object representation formats such as Avro, CBOR, Protobuf(A known bug to be fixed in Jackson 2.9.6), Smile and Ion.
-
-For example, if you want to surfer with CBOR data, firstly, CBOR format backend need to be imported as dependency.
-```
-    <dependency>
-        <groupId>com.fasterxml.jackson.dataformat</groupId>
-        <artifactId>jackson-dataformat-cbor</artifactId>
-        <version>${jackson.version}</version>
-    </dependency>
-```
-Then create a JsonSurfer with CBOR-backed JacksonParser and surfer as usual
-```java
-    surfer = new JsonSurfer(new JacksonParser(new CBORFactory()), provider);
 ```
 ### Examples
 
