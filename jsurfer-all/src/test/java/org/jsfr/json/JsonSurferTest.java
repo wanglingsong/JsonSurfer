@@ -742,6 +742,7 @@ public abstract class JsonSurferTest {
     @Test
     public void testCollectOneFoundNothing() throws Exception {
         String jsonPathFoundNothing = "$..authors";
-        surfer.collectOne(read("sample.json"), jsonPathFoundNothing);
+        Object expireNull = surfer.collectOne(read("sample.json"), jsonPathFoundNothing);
+        assertNull(expireNull);
     }
 }
