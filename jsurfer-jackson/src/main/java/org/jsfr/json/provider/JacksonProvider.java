@@ -33,82 +33,82 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jsfr.json.exception.JsonSurfingException;
 
 public class JacksonProvider implements JsonProvider<ObjectNode, ArrayNode, JsonNode> {
-    
+
     public static final JacksonProvider INSTANCE = new JacksonProvider();
-    
+
     private ObjectMapper om;
-    
+
     private JsonNodeFactory factory;
-    
+
     public JacksonProvider() {
         this(new ObjectMapper());
     }
-    
+
     public JacksonProvider(ObjectMapper om) {
         this.om = om;
         this.factory = om.getNodeFactory();
     }
-    
+
     @Override
     public ObjectNode createObject() {
         return factory.objectNode();
     }
-    
+
     @Override
     public ArrayNode createArray() {
         return factory.arrayNode();
     }
-    
+
     @Override
     public void put(ObjectNode object, String key, JsonNode value) {
         object.set(key, value);
     }
-    
+
     @Override
     public void add(ArrayNode array, JsonNode value) {
         array.add(value);
     }
-    
+
     @Override
     public Object resolve(ObjectNode object, String key) {
         return object.get(key);
     }
-    
+
     @Override
     public Object resolve(ArrayNode array, int index) {
         return array.get(index);
     }
-    
+
     @Override
     public JsonNode primitive(boolean value) {
         return factory.booleanNode(value);
     }
-    
+
     @Override
     public JsonNode primitive(int value) {
         return factory.numberNode(value);
     }
-    
+
     @Override
     public JsonNode primitive(double value) {
         return factory.numberNode(value);
     }
-    
+
     @Override
     public JsonNode primitive(long value) {
         return factory.numberNode(value);
     }
-    
+
     @Override
     public JsonNode primitive(String value) {
         return factory.textNode(value);
     }
-    
+
     @Override
     public JsonNode primitiveNull() {
         return factory.nullNode();
     }
-    
+
     @Override
     public <T> T cast(JsonNode value, Class<T> tClass) {
         try {
@@ -123,5 +123,5 @@ public class JacksonProvider implements JsonProvider<ObjectNode, ArrayNode, Json
             throw new JsonSurfingException(e);
         }
     }
-    
+
 }
