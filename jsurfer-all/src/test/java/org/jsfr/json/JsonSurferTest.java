@@ -738,5 +738,10 @@ public abstract class JsonSurferTest {
         }
         verify(mock, times(2)).onValue(anyObject(), any(ParsingContext.class));
     }
-
+    
+    @Test
+    public void testCollectOneFoundNothing() throws Exception {
+        String jsonPathFoundNothing = "$..authors";
+        surfer.collectOne(read("sample.json"), jsonPathFoundNothing);
+    }
 }
