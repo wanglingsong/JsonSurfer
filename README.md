@@ -173,7 +173,11 @@ JsonPath object is immutable and can be reused safely.
 
 You can use logical operators '&&' and '||' to create more complex filter expression. For example:
 ```
-$.store.book[?(@.price < 10 || @.category && @.isbn && @.price>10)]
+$.store.book[?(@.price < 10 || @.category && @.isbn && @.price>10)]  // VALID
+```
+**Limitation:** Any path after the filter clause is not supported.
+```
+$.store.book[?(@.price < 10 || @.category && @.isbn && @.price>10)].price  // INVALID
 ```
 #### Resolver API:
 * Limitation: **Wildcard** and **Recursive Descent** are **NOT** supported.
