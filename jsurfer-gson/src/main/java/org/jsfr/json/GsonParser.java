@@ -132,7 +132,14 @@ public class GsonParser implements JsonParserAdapter {
 
     public final static GsonParser INSTANCE = new GsonParser();
 
-    private GsonParser() {
+    private JsonReaderFactory jsonReaderFactory;
+
+    public GsonParser() {
+        this.jsonReaderFactory = new DefaultJsonReaderFactory();
+    }
+
+    public GsonParser(JsonReaderFactory jsonReaderFactory) {
+        this.jsonReaderFactory = jsonReaderFactory;
     }
 
     @Override
@@ -156,7 +163,8 @@ public class GsonParser implements JsonParserAdapter {
     }
 
     private ResumableParser createResumableParserImpl(Reader reader, SurfingContext context) {
-        final JsonReader jsonReader = new JsonReader(reader);
+
+        final JsonReader jsonReader = this.jsonReaderFactory.createJsonReader(reader);
         final JsonProvider jsonProvider = context.getConfig().getJsonProvider();
 
         AbstractPrimitiveHolder stringHolder = new AbstractPrimitiveHolder(context.getConfig()) {
