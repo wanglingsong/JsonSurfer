@@ -121,6 +121,12 @@ public interface JsonPathVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFilterEqualNum(JsonPathParser.FilterEqualNumContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link JsonPathParser#filterEqualBool}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFilterEqualBool(JsonPathParser.FilterEqualBoolContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link JsonPathParser#filterEqualStr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

@@ -37,20 +37,24 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public abstract class JsonSurferTest {
 
@@ -189,6 +193,20 @@ public abstract class JsonSurferTest {
                 assertNull(context.load("foo", String.class));
             }
         }).buildAndSurf(read("sample.json"));
+    }
+
+    @Test
+    public void testJsonPathFilterEqualBoolean() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$.store.book[?(@.marked==true)]", mockListener)
+                .buildAndSurf(read("sample_filter.json"));
+
+        verify(mockListener, times(1)).onValue(argThat(new CustomMatcher<Object>("test filter") {
+            @Override
+            public boolean matches(Object o) {
+                return provider.primitive("Moby Dick").equals(provider.resolve(o, "title"));
+            }
+        }), any(ParsingContext.class));
     }
 
     @Test
@@ -738,7 +756,7 @@ public abstract class JsonSurferTest {
         }
         verify(mock, times(2)).onValue(anyObject(), any(ParsingContext.class));
     }
-    
+
     @Test
     public void testCollectOneFoundNothing() throws Exception {
         String jsonPathFoundNothing = "$..authors";

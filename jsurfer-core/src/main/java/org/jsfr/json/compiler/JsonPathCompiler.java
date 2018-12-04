@@ -187,6 +187,15 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
     }
 
     @Override
+    public Void visitFilterEqualBool(JsonPathParser.FilterEqualBoolContext ctx) {
+        filterPathBuilder = JsonPath.Builder.start();
+        Void rst = super.visitFilterEqualBool(ctx);
+        filterBuilder.append(new EqualityBoolPredicate(filterPathBuilder.build(), Boolean.parseBoolean(ctx.BOOL().getText())));
+        filterPathBuilder = null;
+        return rst;
+    }
+
+    @Override
     public Void visitFilterExist(JsonPathParser.FilterExistContext ctx) {
         filterPathBuilder = JsonPath.Builder.start();
         Void rst = super.visitFilterExist(ctx);
