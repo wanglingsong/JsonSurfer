@@ -29,7 +29,21 @@
         "author": "J. R. R. Tolkien",
         "title": "The Lord of the Rings",
         "isbn": "0-395-19395-8",
-        "price": 22.99
+        "price": 22.99,
+        "volumes": [
+          {
+            "title": "The Fellowship of the Ring",
+            "year": "1954"
+          },
+          {
+            "title": "The Two Towers",
+            "year": "1954"
+          },
+          {
+            "title": "The Return of the King",
+            "year": "1955"
+          }
+        ]
       }
     ],
     "car": [
