@@ -4,8 +4,8 @@ grammar JsonPath;
 package org.jsfr.json.compiler;
 }
 
-path: '$' relativePath* filter? EOF;
-relativePath: searchChild|search|index|indexes|slicing|childNode|childrenNode|anyChild|anyIndex|any;
+path: '$' relativePath* EOF;
+relativePath: searchChild|search|index|indexes|slicing|childNode|childrenNode|anyChild|anyIndex|any|filter;
 searchChild: '..' KEY;
 search: '..' ;
 anyChild: '.*' ;
