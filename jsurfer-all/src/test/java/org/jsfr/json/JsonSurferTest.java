@@ -390,15 +390,16 @@ public abstract class JsonSurferTest {
     public void testJsonPathFilterThenChild() throws Exception {
         JsonPathListener mockListener = mock(JsonPathListener.class);
         surfer.configBuilder().bind("$.store.book[?(@.description.year=='2010')].author", mockListener)
-                .buildAndSurf(read("sample_filter.json"));
+                .buildAndSurf(read("sample_filter2.json"));
         verify(mockListener, times(1)).onValue(eq(provider.primitive("Evelyn Waugh")), any(ParsingContext.class));
+        verify(mockListener, times(1)).onValue(eq(provider.primitive("Nigel Rees")), any(ParsingContext.class));
     }
 
     @Test
     public void testJsonPathDoubleFilter() throws Exception {
         JsonPathListener mockListener = mock(JsonPathListener.class);
         surfer.configBuilder().bind("$.store.book[?(@.category=='fiction')].volumes[?(@.year=='1954')]", mockListener)
-                .buildAndSurf(read("sample_filter.json"));
+                .buildAndSurf(read("sample_filter2.json"));
 
         verify(mockListener, times(1)).onValue(argThat(new CustomMatcher<Object>("test filter") {
             @Override
@@ -413,6 +414,14 @@ public abstract class JsonSurferTest {
                 return provider.primitive("The Two Towers").equals(provider.resolve(o, "title"));
             }
         }), any(ParsingContext.class));
+
+        verify(mockListener, times(0)).onValue(argThat(new CustomMatcher<Object>("test filter") {
+            @Override
+            public boolean matches(Object o) {
+                return provider.primitive("The Return of the King").equals(provider.resolve(o, "title"));
+            }
+        }), any(ParsingContext.class));
+
     }
 
     @Test
