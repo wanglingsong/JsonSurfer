@@ -41,20 +41,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doNothing;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public abstract class JsonSurferTest {
 
@@ -396,6 +386,26 @@ public abstract class JsonSurferTest {
     }
 
     @Test
+    public void testJsonPathFilterThenChildDeepScan() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$.store.book[?(@.price==8.95)]..year", mockListener)
+                .buildAndSurf(read("sample_filter2.json"));
+        verify(mockListener, times(1)).onValue(eq(provider.primitive("2010")), any(ParsingContext.class));
+        verify(mockListener, times(2)).onValue(eq(provider.primitive("1997")), any(ParsingContext.class));
+        verify(mockListener, times(1)).onValue(eq(provider.primitive("1998")), any(ParsingContext.class));
+    }
+
+    @Test
+    public void testJsonPathFilterAggregateThenChild() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$.store.book[?(@.author=='Nigel Rees'||@.description.year=='2010')].title", mockListener)
+                .buildAndSurf(read("sample_filter2.json"));
+        verify(mockListener, times(2)).onValue(eq(provider.primitive("Sayings of the Century")), any(ParsingContext.class));
+        verify(mockListener, times(1)).onValue(eq(provider.primitive("Sword of Honour")), any(ParsingContext.class));
+
+    }
+
+    @Test
     public void testJsonPathDoubleFilter() throws Exception {
         JsonPathListener mockListener = mock(JsonPathListener.class);
         surfer.configBuilder().bind("$.store.book[?(@.category=='fiction')].volumes[?(@.year=='1954')]", mockListener)
@@ -422,6 +432,17 @@ public abstract class JsonSurferTest {
             }
         }), any(ParsingContext.class));
 
+    }
+
+    @Test
+    public void testJsonPathDoubleFilterThenChild() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$.store.book[?(@.category=='fiction')].volumes[?(@.year=='1954')].title", mockListener)
+                .buildAndSurf(read("sample_filter2.json"));
+
+        verify(mockListener, times(1)).onValue(eq(provider.primitive("The Fellowship of the Ring")), any(ParsingContext.class));
+        verify(mockListener, times(1)).onValue(eq(provider.primitive("The Two Towers")), any(ParsingContext.class));
+        verify(mockListener, times(0)).onValue(eq(provider.primitive("The Return of the King")), any(ParsingContext.class));
     }
 
     @Test

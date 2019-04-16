@@ -19,4 +19,14 @@ public class ExistencePredicate implements JsonPathFilter {
         return relativePath.resolve(jsonNode, jsonProvider) != null;
     }
 
+    @Override
+    public boolean notApply(Object jsonNode, JsonProvider jsonProvider) {
+        return !apply(jsonNode, jsonProvider);
+    }
+
+    @Override
+    public boolean couldApply(JsonPath jsonPath) {
+        return jsonPath.isSubPathOf(relativePath);
+    }
+
 }

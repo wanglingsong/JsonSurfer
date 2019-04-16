@@ -30,11 +30,7 @@ import org.jsfr.json.provider.JsonProvider;
 import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.jsfr.json.compiler.JsonPathCompiler.compile;
 
@@ -54,10 +50,37 @@ public class SurfingConfiguration {
         Binding(JsonPath jsonPath, JsonPathListener[] listeners) {
             this.jsonPath = jsonPath;
             this.listeners = listeners;
+            this.filteredListeners = new FilteredJsonPathListener[listeners.length];
         }
 
         JsonPath jsonPath;
         JsonPathListener[] listeners;
+        FilteredJsonPathListener[] filteredListeners;
+
+        FilteredJsonPathListener[] wrapWithFilteredListener(ParsingContext context, SurfingConfiguration config) {
+            for (int i = 0; i < listeners.length; i++)
+                filteredListeners[i] = new FilteredJsonPathListener(getListeners()[i], context, config);
+            return filteredListeners;
+        }
+
+        JsonPathListener[] getListeners() {
+            if (filteredListeners[0] == null) // if empty
+                return listeners;
+            else
+                return filteredListeners;
+        }
+
+        void unwrapListeners() {
+            for (int i = 0; i < filteredListeners.length; i++) {
+                if (filteredListeners[i].getUnderlyingListener() instanceof FilteredJsonPathListener) {
+                    FilteredJsonPathListener filteredListener = filteredListeners[i];
+                    filteredListeners[i] = (FilteredJsonPathListener) filteredListener.getUnderlyingListener();
+                    filteredListener.clear();
+                } else {
+                    filteredListeners[i] = null;
+                }
+            }
+        }
 
     }
 
@@ -277,6 +300,10 @@ public class SurfingConfiguration {
         } else {
             return null;
         }
+    }
+
+    public Binding[][] getDefinitePathBindings() {
+        return this.definitePathLookup;
     }
 
     public Charset getParserCharset() {

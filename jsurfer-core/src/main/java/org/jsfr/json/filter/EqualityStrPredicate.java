@@ -22,7 +22,18 @@ public class EqualityStrPredicate implements JsonPathFilter {
     @Override
     public boolean apply(Object jsonNode, JsonProvider jsonProvider) {
         Object candidate = relativePath.resolve(jsonNode, jsonProvider);
-        return Objects.equals(candidate, jsonProvider.primitive(value));
+        return candidate != null && Objects.equals(candidate, jsonProvider.primitive(value));
+    }
+
+    @Override
+    public boolean notApply(Object jsonNode, JsonProvider jsonProvider) {
+        Object candidate = relativePath.resolve(jsonNode, jsonProvider);
+        return candidate != null && !Objects.equals(candidate, jsonProvider.primitive(value));
+    }
+
+    @Override
+    public boolean couldApply(JsonPath jsonPath) {
+        return jsonPath.isSubPathOf(relativePath);
     }
 
 }
