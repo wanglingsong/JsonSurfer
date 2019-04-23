@@ -125,8 +125,12 @@ public class JsonPath implements Iterable<PathOperator> {
             return this;
         }
 
+        public Builder arrayFilter(JsonPathFilter jsonPathFilter) {
+            jsonPath.push(new ArrayFilter(jsonPathFilter));
+            return this;
+        }
+
         public Builder withFilter(JsonPathFilter jsonPathFilter) {
-            jsonPath.jsonPathFilter = jsonPathFilter;
             return this;
         }
 
@@ -153,16 +157,10 @@ public class JsonPath implements Iterable<PathOperator> {
     protected PathOperator[] operators;
     protected int size;
 
-    private JsonPathFilter jsonPathFilter;
-
     protected JsonPath() {
         operators = new PathOperator[JSON_PATH_INITIAL_CAPACITY];
         operators[0] = Root.instance();
         size = 1;
-    }
-
-    public JsonPathFilter getJsonPathFilter() {
-        return jsonPathFilter;
     }
 
     public Object resolve(Object document, DocumentResolver resolver) {
@@ -182,6 +180,10 @@ public class JsonPath implements Iterable<PathOperator> {
     public boolean match(JsonPath jsonPath) {
         int pointer1 = this.size - 1;
         int pointer2 = jsonPath.size - 1;
+        return matchPartial(jsonPath, pointer1, pointer2);
+    }
+
+    public boolean matchPartial(JsonPath jsonPath, int pointer1, int pointer2) {
         if (!get(pointer1).match(jsonPath.get(pointer2))) {
             return false;
         }
@@ -195,7 +197,9 @@ public class JsonPath implements Iterable<PathOperator> {
             PathOperator o2 = jsonPath.get(pointer2--);
             if (o1.getType() == PathOperator.Type.DEEP_SCAN) {
                 PathOperator prevScan = this.get(pointer1--);
-                while (!prevScan.match(o2) && pointer2 >= 0) {
+                // operatorsMatch needed because otherwise array indexes can be matched with the wrong array filters
+                // pointer1 and pointer2 refer to the parents so it essentially compares the parent operators
+                while (!(prevScan.match(o2) && operatorsMatch(jsonPath, pointer1, pointer2)) && pointer2 >= 0) {
                     o2 = jsonPath.get(pointer2--);
                 }
             } else {
@@ -207,7 +211,42 @@ public class JsonPath implements Iterable<PathOperator> {
         return !(pointer2 >= 0);
     }
 
-    private PathOperator get(int i) {
+    private boolean operatorsMatch(JsonPath jsonPath, int p1, int p2) {
+        return p1 <= 0 || p2 <= 0 || this.get(p1).match(jsonPath.get(p2));
+    }
+
+    public JsonPath subPath(int size) {
+        JsonPath newJsonPath = new JsonPath();
+        newJsonPath.operators = Arrays.copyOf(operators, size);
+        newJsonPath.definite = true;
+        for (PathOperator operator : newJsonPath) {
+            if (operator.getType() == PathOperator.Type.DEEP_SCAN) {
+                newJsonPath.definite = false;
+                break;
+            }
+        }
+        newJsonPath.size = size;
+        newJsonPath.minimumDepth = 0;
+        if (!newJsonPath.definite) {
+            // calculate minimum depth
+            for (PathOperator operator : newJsonPath) {
+                if (!(operator.getType() == PathOperator.Type.DEEP_SCAN)) {
+                    newJsonPath.minimumDepth++;
+                }
+            }
+        }
+        return newJsonPath;
+    }
+
+    public boolean isSubPathOf(JsonPath jsonPath) {
+        int pathDepth = pathDepth();
+        // When a new object is created, the first child is a dummy with key is null
+        if (peek() instanceof ChildNode && ((ChildNode) peek()).getKey() == null)
+            pathDepth--; // we can ignore this dummy child
+        return pathDepth <= jsonPath.pathDepth() && jsonPath.matchPartial(this, pathDepth - 1, pathDepth - 1);
+    }
+
+    public PathOperator get(int i) {
         return operators[i];
     }
 
