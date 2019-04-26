@@ -1,4 +1,4 @@
-// Generated from JsonPath.g4 by ANTLR 4.7.1
+// Generated from JsonPath.g4 by ANTLR 4.7.2
 
 package org.jsfr.json.compiler;
 
@@ -132,4 +132,12 @@ public interface JsonPathVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitFilterEqualStr(JsonPathParser.FilterEqualStrContext ctx);
+
+	/**
+	 * Visit a parse tree produced by {@link JsonPathParser#filterMatchRegex}.
+	 *
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFilterMatchRegex(JsonPathParser.FilterMatchRegexContext ctx);
 }

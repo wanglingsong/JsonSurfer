@@ -33,6 +33,8 @@ import org.jsfr.json.filter.*;
 import org.jsfr.json.path.JsonPath;
 
 import java.math.BigDecimal;
+import java.util.InputMismatchException;
+import java.util.regex.Pattern;
 
 /**
  * Created by Leo on 2015/4/1.
@@ -229,6 +231,37 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
         filterBuilder.append(new EqualityStrPredicate(filterPathBuilder.build(), removeQuote(ctx.QUOTED_STRING().getText())));
         filterPathBuilder = null;
         return rst;
+    }
+
+    @Override
+    public Void visitFilterMatchRegex(JsonPathParser.FilterMatchRegexContext ctx) {
+        filterPathBuilder = JsonPath.Builder.start();
+        Void rst = super.visitFilterMatchRegex(ctx);
+        filterBuilder.append(new MatchRegexPredicate(filterPathBuilder.build(), toPattern(ctx.REGEX().getText())));
+        filterPathBuilder = null;
+        return rst;
+    }
+
+    private static Pattern toPattern(String str) {
+        String[] split = str.split("(?<!\\\\)\\/"); // slash not escaped by backslash
+        if (split.length == 3) { // includes flags
+            String regex = split[1];
+            String flagsStr = split[2];
+            int flags = 0;
+            if (flagsStr.contains("i")) flags |= Pattern.CASE_INSENSITIVE;
+            if (flagsStr.contains("d")) flags |= Pattern.UNIX_LINES;
+            if (flagsStr.contains("m")) flags |= Pattern.MULTILINE;
+            if (flagsStr.contains("s")) flags |= Pattern.DOTALL;
+            if (flagsStr.contains("u")) flags |= Pattern.UNICODE_CASE;
+            if (flagsStr.contains("x")) flags |= Pattern.COMMENTS;
+            if (flagsStr.contains("U")) flags |= Pattern.UNICODE_CHARACTER_CLASS;
+            return Pattern.compile(regex, flags);
+        } else if (split.length == 2 && str.endsWith("/")) { // no flags defined
+            String regex = split[1];
+            return Pattern.compile(regex);
+        } else {
+            throw new InputMismatchException(null);
+        }
     }
 
     public static JsonPath[] compile(String... paths) {

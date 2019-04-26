@@ -23,6 +23,7 @@ filterExpr : NegationOperator '(' filterExpr ')'
            | filterExpr OrOperator filterExpr
            | filterEqualNum
            | filterEqualStr
+           | filterMatchRegex
            | filterEqualBool
            | filterGtNum
            | filterLtNum
@@ -34,6 +35,7 @@ filterLtNum:  '@' relativePath+ '<' NUM;
 filterEqualNum: '@' relativePath+ '==' NUM;
 filterEqualBool: '@' relativePath+ '==' BOOL;
 filterEqualStr: '@' relativePath+ '==' QUOTED_STRING;
+filterMatchRegex: '@' relativePath+ '=~' REGEX;
 //exprArrayIdx: '@.length-' NUM;
 NegationOperator: '!';
 AndOperator: '&&';
@@ -44,6 +46,7 @@ NUM
     |   '-'? INT                 // -3, 45
     ;
 QUOTED_STRING : '\'' ( ~('\''|'\\') | ('\\' .) )* '\'';
+REGEX : '/' ( ~('/'|'\\') | ('\\' .) )* '/' [idmsuxU]*;
 BOOL: 'true'|'false';
 KEY :  (ESC | ~(["\\] | '.' | '*' | '[' | ']' | '(' | ')' | ',' | ':'| '=' | '@' | '?' | '&' | '|' | '>' | '<' | '\''| '!' | [ \t\n\r]))+  ;
 

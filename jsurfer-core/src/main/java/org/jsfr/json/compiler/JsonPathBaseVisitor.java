@@ -1,4 +1,4 @@
-// Generated from JsonPath.g4 by ANTLR 4.7.1
+// Generated from JsonPath.g4 by ANTLR 4.7.2
 
 package org.jsfr.json.compiler;
 
@@ -153,4 +153,15 @@ public class JsonPathBaseVisitor<T> extends AbstractParseTreeVisitor<T> implemen
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitFilterEqualStr(JsonPathParser.FilterEqualStrContext ctx) { return visitChildren(ctx); }
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override
+	public T visitFilterMatchRegex(JsonPathParser.FilterMatchRegexContext ctx) {
+		return visitChildren(ctx);
+	}
 }

@@ -25,6 +25,8 @@
 package org.jsfr.json;
 
 import com.google.common.io.Resources;
+import org.antlr.v4.runtime.InputMismatchException;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.hamcrest.CustomMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
@@ -41,20 +43,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doNothing;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public abstract class JsonSurferTest {
 
@@ -384,6 +376,42 @@ public abstract class JsonSurferTest {
             }
         }), any(ParsingContext.class));
 
+    }
+
+    @Test
+    public void testJsonPathFilterMatchRegexInputMismatch() throws Exception {
+        try {
+            JsonPathCompiler.compile("$.store.book[?(@.author=~ /abc)]"); // not a valid regular expression
+        } catch (ParseCancellationException e) {
+            assertTrue(e.getCause() instanceof InputMismatchException);
+        }
+    }
+
+    @Test
+    public void testJsonPathFilterMatchRegex() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$.store.book[?(@.isbn=~/\\d-\\d\\d\\d-21311-\\d/)]", mockListener)
+                .buildAndSurf(read("sample_filter.json"));
+        verify(mockListener, times(1)).onValue(argThat(new CustomMatcher<Object>("Test filter") {
+            @Override
+            public boolean matches(Object o) {
+                return provider.primitive("Moby Dick").equals(provider.resolve(o, "title"));
+            }
+        }), any(ParsingContext.class));
+    }
+
+    @Test
+    public void testJsonPathFilterMatchRegexFlags() throws Exception {
+//        surfer.configBuilder().bind("$.store.book[?(@.description.year=='2010')]", mockListener)
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$.store.book[?(@.author =~ /tolkien/i)]", mockListener) // we assume other flags work too
+                .buildAndSurf(read("sample_filter.json"));
+        verify(mockListener, times(1)).onValue(argThat(new CustomMatcher<Object>("Test filter") {
+            @Override
+            public boolean matches(Object o) {
+                return provider.primitive("The Lord of the Rings").equals(provider.resolve(o, "title"));
+            }
+        }), any(ParsingContext.class));
     }
 
     @Test
