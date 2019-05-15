@@ -44,15 +44,7 @@ class JsonCollector extends JsonDomBuilder {
         super.endObject();
         if (isInRoot()) {
             Object result = rootValue();
-            for (JsonPathListener jsonPathListener : jsonPathListeners) {
-                if (!context.isStopped()) {
-                    try {
-                        jsonPathListener.onValue(result, context);
-                    } catch (Exception e) {
-                        config.getErrorHandlingStrategy().handleExceptionFromListener(e, context);
-                    }
-                }
-            }
+            DispatchUtil.dispatchValueToListeners(result, jsonPathListeners, context, config.getErrorHandlingStrategy());
             this.clear();
             return false;
         }
@@ -64,15 +56,7 @@ class JsonCollector extends JsonDomBuilder {
         super.endArray();
         if (isInRoot()) {
             Object result = rootValue();
-            for (JsonPathListener jsonPathListener : jsonPathListeners) {
-                if (!context.isStopped()) {
-                    try {
-                        jsonPathListener.onValue(result, context);
-                    } catch (Exception e) {
-                        config.getErrorHandlingStrategy().handleExceptionFromListener(e, context);
-                    }
-                }
-            }
+            DispatchUtil.dispatchValueToListeners(result, jsonPathListeners, context, config.getErrorHandlingStrategy());
             this.clear();
             return false;
         }

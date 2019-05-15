@@ -30,6 +30,12 @@ public class JsonSimpleParserTest extends JsonSurferTest {
 
     @Ignore
     @Override
+    public void testTypeBindingOneWithFilter() throws Exception {
+        // ignore
+    }
+
+    @Ignore
+    @Override
     public void testTypeBindingCollection() throws Exception {
         // ignore
     }

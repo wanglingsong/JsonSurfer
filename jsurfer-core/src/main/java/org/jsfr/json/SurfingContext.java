@@ -163,22 +163,11 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
                 JsonPathListener newListener = filterVerifier.addListener(listener);
                 newListener.onValue(primitive, this);
             }
-        } else {
-            dispatchPrimitive(listeners, primitive);
         }
     }
 
     private void dispatchPrimitive(JsonPathListener[] listeners, Object primitive) {
-        for (JsonPathListener listener : listeners) {
-            if (isStopped()) {
-                break;
-            }
-            try {
-                listener.onValue(primitive, this);
-            } catch (Exception e) {
-                config.getErrorHandlingStrategy().handleExceptionFromListener(e, this);
-            }
-        }
+        DispatchUtil.dispatchValueToListeners(primitive, listeners, this, config.getErrorHandlingStrategy());
     }
 
     @Override

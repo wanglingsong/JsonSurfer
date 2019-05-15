@@ -119,6 +119,12 @@ public abstract class JsonSurferTest {
     }
 
     @Test
+    public void testTypeBindingOneWithFilter() throws Exception {
+        Book book = surfer.collectOne(read("sample.json"), Book.class, JsonPathCompiler.compile("$..book[?(@.category=='fiction')]"), JsonPathCompiler.compile("$..book[?(@.price>9)]"));
+        assertEquals("Evelyn Waugh", book.getAuthor());
+    }
+
+    @Test
     public void testTypeBindingCollection() throws Exception {
         Collection<Book> book = surfer.collectAll(read("sample.json"), Book.class, JsonPathCompiler.compile("$..book[*]"));
         assertEquals(4, book.size());
@@ -396,6 +402,16 @@ public abstract class JsonSurferTest {
     }
 
     @Test
+    public void testJsonPathFilterAfterDeepScanAndThenChildDeepScan() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$..book[?(@.price==8.95)]..year", mockListener)
+                .buildAndSurf(read("sample_filter2.json"));
+        verify(mockListener, times(1)).onValue(eq(provider.primitive("2010")), any(ParsingContext.class));
+        verify(mockListener, times(2)).onValue(eq(provider.primitive("1997")), any(ParsingContext.class));
+        verify(mockListener, times(1)).onValue(eq(provider.primitive("1998")), any(ParsingContext.class));
+    }
+
+    @Test
     public void testJsonPathFilterAggregateThenChild() throws Exception {
         JsonPathListener mockListener = mock(JsonPathListener.class);
         surfer.configBuilder().bind("$.store.book[?(@.author=='Nigel Rees'||@.description.year=='2010')].title", mockListener)
@@ -438,6 +454,25 @@ public abstract class JsonSurferTest {
     public void testJsonPathDoubleFilterThenChild() throws Exception {
         JsonPathListener mockListener = mock(JsonPathListener.class);
         surfer.configBuilder().bind("$.store.book[?(@.category=='fiction')].volumes[?(@.year=='1954')].title", mockListener)
+                .buildAndSurf(read("sample_filter2.json"));
+
+        verify(mockListener, times(1)).onValue(eq(provider.primitive("The Fellowship of the Ring")), any(ParsingContext.class));
+        verify(mockListener, times(1)).onValue(eq(provider.primitive("The Two Towers")), any(ParsingContext.class));
+        verify(mockListener, times(0)).onValue(eq(provider.primitive("The Return of the King")), any(ParsingContext.class));
+    }
+
+    @Test
+    public void testJsonPathFilterNotMatch() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$..book[?(@.category=='comic')]", mockListener)
+                .buildAndSurf(read("sample_filter2.json"));
+        verify(mockListener, times(0)).onValue(any(), any(ParsingContext.class));
+    }
+
+    @Test
+    public void testJsonPathDoubleFilterThenChildWithDeepscan() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$..book[?(@.category=='fiction' && @.volumes[2].year=='1955')]..[?(@.year=='1954')]..title", mockListener)
                 .buildAndSurf(read("sample_filter2.json"));
 
         verify(mockListener, times(1)).onValue(eq(provider.primitive("The Fellowship of the Ring")), any(ParsingContext.class));
