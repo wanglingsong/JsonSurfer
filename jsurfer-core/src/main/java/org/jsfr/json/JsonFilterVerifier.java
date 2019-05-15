@@ -2,31 +2,48 @@ package org.jsfr.json;
 
 import org.jsfr.json.filter.JsonPathFilter;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class JsonFilterVerifier extends JsonDomBuilder {
 
-    private JsonPathFilter filter;
-    private Collection<FilteredJsonPathListener> listeners;
-    private SurfingConfiguration.Binding binding;
-    private ParsingContext context;
+    private SurfingConfiguration config;
+    private JsonPathFilter jsonPathFilter;
+    private Collection<BufferedListener> bufferedListeners;
+    private JsonFilterVerifier dependency;
 
-    public JsonFilterVerifier(JsonPathFilter filter, Collection<FilteredJsonPathListener> listeners, SurfingConfiguration.Binding binding, ParsingContext context) {
-        this.filter = filter;
-        this.listeners = listeners;
-        this.binding = binding;
-        this.context = context;
+    public JsonFilterVerifier(SurfingConfiguration config, JsonPathFilter jsonPathFilter, JsonFilterVerifier dependency) {
+        super(config.getJsonProvider());
+        this.config = config;
+        this.jsonPathFilter = jsonPathFilter;
+        this.dependency = dependency;
+        this.bufferedListeners = new ArrayList<>();
+    }
+
+    public JsonPathListener addListener(JsonPathListener listener) {
+        BufferedListener newListener = new BufferedListener(this.config, listener);
+        this.bufferedListeners.add(newListener);
+        return newListener;
+    }
+
+    private void onObjectCollected(Object obj) {
+        if (jsonPathFilter.apply(obj, config.getJsonProvider())) {
+            if (dependency != null) {
+                dependency.bufferedListeners.addAll(this.bufferedListeners);
+            } else {
+                for (BufferedListener buffer : this.bufferedListeners) {
+                    buffer.invokeBufferedValue();
+                }
+            }
+        }
     }
 
     @Override
     public boolean endObject() {
         super.endObject();
-        if (filter.notApply(rootValue(), getProvider()) || isInRoot()) {
-            for (FilteredJsonPathListener listener : listeners) {
-                if (!context.isStopped())
-                    listener.filterVerified(false);
-            }
-            binding.unwrapListeners();
+        if (isInRoot()) {
+            Object result = rootValue();
+            onObjectCollected(result);
             this.clear();
             return false;
         }
@@ -36,44 +53,13 @@ public class JsonFilterVerifier extends JsonDomBuilder {
     @Override
     public boolean endArray() {
         super.endArray();
-        if (filter.notApply(rootValue(), getProvider()) || isInRoot()) {
-            for (FilteredJsonPathListener listener : listeners) {
-                if (!context.isStopped())
-                    listener.filterVerified(false);
-            }
-            binding.unwrapListeners();
+        if (isInRoot()) {
+            Object result = rootValue();
+            onObjectCollected(result);
             this.clear();
             return false;
         }
         return true;
     }
 
-    @Override
-    public boolean primitive(PrimitiveHolder primitiveHolder) {
-        super.primitive(primitiveHolder);
-        if (filter.apply(rootValue(), getProvider())) {
-            for (FilteredJsonPathListener listener : listeners) {
-                if (!context.isStopped())
-                    listener.filterVerified(true);
-            }
-            binding.unwrapListeners();
-            this.clear();
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    boolean shouldSkip() {
-        return !filter.couldApply(currentPosition); // we can skip if the filter can not apply
-    }
-
-    @Override
-    public void clear() {
-        super.clear();
-        this.filter = null;
-        this.listeners = null;
-        this.binding = null;
-        this.context = null;
-    }
 }

@@ -130,21 +130,9 @@ public class JsonPath implements Iterable<PathOperator> {
             return this;
         }
 
-        public Builder withFilter(JsonPathFilter jsonPathFilter) {
-            return this;
-        }
-
         public JsonPath build() {
             if (jsonPath.peek().getType() == PathOperator.Type.DEEP_SCAN) {
                 throw new IllegalStateException("deep-scan shouldn't be the last operator.");
-            }
-            if (!jsonPath.definite) {
-                // calculate minimum depth
-                for (PathOperator operator : jsonPath) {
-                    if (!(operator.getType() == PathOperator.Type.DEEP_SCAN)) {
-                        jsonPath.minimumDepth++;
-                    }
-                }
             }
             return this.jsonPath;
         }
@@ -152,7 +140,6 @@ public class JsonPath implements Iterable<PathOperator> {
     }
 
     private boolean definite = true;
-    private int minimumDepth = 0;
 
     protected PathOperator[] operators;
     protected int size;
@@ -199,6 +186,7 @@ public class JsonPath implements Iterable<PathOperator> {
                 PathOperator prevScan = this.get(pointer1--);
                 // operatorsMatch needed because otherwise array indexes can be matched with the wrong array filters
                 // pointer1 and pointer2 refer to the parents so it essentially compares the parent operators
+                // TODO
                 while (!(prevScan.match(o2) && operatorsMatch(jsonPath, pointer1, pointer2)) && pointer2 >= 0) {
                     o2 = jsonPath.get(pointer2--);
                 }
@@ -215,35 +203,11 @@ public class JsonPath implements Iterable<PathOperator> {
         return p1 <= 0 || p2 <= 0 || this.get(p1).match(jsonPath.get(p2));
     }
 
-    public JsonPath subPath(int size) {
-        JsonPath newJsonPath = new JsonPath();
-        newJsonPath.operators = Arrays.copyOf(operators, size);
-        newJsonPath.definite = true;
-        for (PathOperator operator : newJsonPath) {
-            if (operator.getType() == PathOperator.Type.DEEP_SCAN) {
-                newJsonPath.definite = false;
-                break;
-            }
-        }
-        newJsonPath.size = size;
-        newJsonPath.minimumDepth = 0;
-        if (!newJsonPath.definite) {
-            // calculate minimum depth
-            for (PathOperator operator : newJsonPath) {
-                if (!(operator.getType() == PathOperator.Type.DEEP_SCAN)) {
-                    newJsonPath.minimumDepth++;
-                }
-            }
-        }
-        return newJsonPath;
-    }
-
-    public boolean isSubPathOf(JsonPath jsonPath) {
-        int pathDepth = pathDepth();
-        // When a new object is created, the first child is a dummy with key is null
-        if (peek() instanceof ChildNode && ((ChildNode) peek()).getKey() == null)
-            pathDepth--; // we can ignore this dummy child
-        return pathDepth <= jsonPath.pathDepth() && jsonPath.matchPartial(this, pathDepth - 1, pathDepth - 1);
+    public JsonPath derivePath(int depth) {
+        JsonPath newPath = new JsonPath();
+        newPath.size = depth;
+        newPath.operators = this.operators;
+        return newPath;
     }
 
     public PathOperator get(int i) {
@@ -279,16 +243,32 @@ public class JsonPath implements Iterable<PathOperator> {
         operators = null;
     }
 
-    public int minimumPathDepth() {
-        if (definite) {
-            return this.pathDepth();
+    public static int minimumPathDepth(JsonPath path) {
+        if (path.definite) {
+            return path.pathDepth();
         } else {
+            int minimumDepth = 0;
+            for (PathOperator operator : path) {
+                if (!(operator.getType() == PathOperator.Type.DEEP_SCAN)) {
+                    minimumDepth++;
+                }
+            }
             return minimumDepth;
         }
     }
 
     public boolean isDefinite() {
         return definite;
+    }
+
+    public boolean checkDefinite() {
+        for (PathOperator operator : this) {
+            if (operator.getType() == PathOperator.Type.DEEP_SCAN) {
+                this.definite = false;
+                return false;
+            }
+        }
+        return true;
     }
 
 

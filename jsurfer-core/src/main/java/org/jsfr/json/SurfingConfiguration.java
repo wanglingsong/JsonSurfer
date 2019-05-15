@@ -24,13 +24,21 @@
 
 package org.jsfr.json;
 
+import org.jsfr.json.filter.JsonPathFilter;
+import org.jsfr.json.path.ArrayFilter;
 import org.jsfr.json.path.JsonPath;
+import org.jsfr.json.path.PathOperator;
 import org.jsfr.json.provider.JsonProvider;
 
 import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.jsfr.json.compiler.JsonPathCompiler.compile;
 
@@ -38,6 +46,25 @@ import static org.jsfr.json.compiler.JsonPathCompiler.compile;
  * SurfingConfiguration is immutable object that hold all JSONPath binding information
  */
 public class SurfingConfiguration {
+
+    public static class FilterConfig {
+        JsonPath filterRootPath;
+        JsonPathFilter filter;
+    }
+
+    public static Collection<FilterConfig> getFilterConfigs(JsonPath path) {
+        ArrayList<FilterConfig> filterConfigs = new ArrayList<>();
+        for (int i = 0; i < path.pathDepth(); i++) {
+            PathOperator operator = path.get(i);
+            if (operator instanceof ArrayFilter) {
+                FilterConfig fc = new FilterConfig();
+                fc.filter = ((ArrayFilter) operator).getJsonPathFilter();
+                fc.filterRootPath = path.derivePath(i + 1);
+                filterConfigs.add(fc);
+            }
+        }
+        return filterConfigs;
+    }
 
     public static Builder builder() {
         Builder builder = new Builder();
@@ -50,37 +77,37 @@ public class SurfingConfiguration {
         Binding(JsonPath jsonPath, JsonPathListener[] listeners) {
             this.jsonPath = jsonPath;
             this.listeners = listeners;
-            this.filteredListeners = new FilteredJsonPathListener[listeners.length];
         }
 
         JsonPath jsonPath;
+        JsonPathFilter filter;
         JsonPathListener[] listeners;
-        FilteredJsonPathListener[] filteredListeners;
+//        FilteredJsonPathListener[] filteredListeners;
 
-        FilteredJsonPathListener[] wrapWithFilteredListener(ParsingContext context, SurfingConfiguration config) {
-            for (int i = 0; i < listeners.length; i++)
-                filteredListeners[i] = new FilteredJsonPathListener(getListeners()[i], context, config);
-            return filteredListeners;
-        }
-
+        //        FilteredJsonPathListener[] wrapWithFilteredListener(ParsingContext context, SurfingConfiguration config) {
+//            for (int i = 0; i < listeners.length; i++)
+//                filteredListeners[i] = new FilteredJsonPathListener(getListeners()[i], context, config);
+//            return filteredListeners;
+//        }
+//
         JsonPathListener[] getListeners() {
-            if (filteredListeners[0] == null) // if empty
-                return listeners;
-            else
-                return filteredListeners;
+//            if (filteredListeners[0] == null) // if empty
+            return listeners;
+//            else
+//                return filteredListeners;
         }
-
-        void unwrapListeners() {
-            for (int i = 0; i < filteredListeners.length; i++) {
-                if (filteredListeners[i].getUnderlyingListener() instanceof FilteredJsonPathListener) {
-                    FilteredJsonPathListener filteredListener = filteredListeners[i];
-                    filteredListeners[i] = (FilteredJsonPathListener) filteredListener.getUnderlyingListener();
-                    filteredListener.clear();
-                } else {
-                    filteredListeners[i] = null;
-                }
-            }
-        }
+//
+//        void unwrapListeners() {
+//            for (int i = 0; i < filteredListeners.length; i++) {
+//                if (filteredListeners[i].getUnderlyingListener() instanceof FilteredJsonPathListener) {
+//                    FilteredJsonPathListener filteredListener = filteredListeners[i];
+//                    filteredListeners[i] = (FilteredJsonPathListener) filteredListener.getUnderlyingListener();
+//                    filteredListener.clear();
+//                } else {
+//                    filteredListeners[i] = null;
+//                }
+//            }
+//        }
 
     }
 
@@ -101,6 +128,7 @@ public class SurfingConfiguration {
         private SurfingConfiguration configuration;
         private Map<Integer, ArrayList<Binding>> definiteBindings = new HashMap<Integer, ArrayList<Binding>>();
         private ArrayList<IndefinitePathBinding> indefiniteBindings = new ArrayList<IndefinitePathBinding>();
+        private boolean hasFilter = false;
 
         public SurfingConfiguration build() {
             if (!indefiniteBindings.isEmpty()) {
@@ -113,6 +141,7 @@ public class SurfingConfiguration {
                     configuration.definitePathLookup[entry.getKey() - configuration.minDepth] = entry.getValue().toArray(new Binding[entry.getValue().size()]);
                 }
             }
+            configuration.hasFilter = this.hasFilter;
             return configuration;
         }
 
@@ -195,24 +224,52 @@ public class SurfingConfiguration {
             return this;
         }
 
+        private ArrayList<Binding> getDefiniteBindings(int depth) {
+            ArrayList<Binding> bindings = definiteBindings.get(depth);
+            if (bindings == null) {
+                bindings = new ArrayList<Binding>();
+                definiteBindings.put(depth, bindings);
+            }
+            return bindings;
+        }
+
+        private void updateMinMaxDepth(int depth) {
+            if (depth > configuration.maxDepth) {
+                configuration.maxDepth = depth;
+            }
+            if (depth < configuration.minDepth) {
+                configuration.minDepth = depth;
+            }
+        }
+
         public Builder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners) {
             if (!jsonPath.isDefinite()) {
-                int minimumDepth = jsonPath.minimumPathDepth();
+                int minimumDepth = JsonPath.minimumPathDepth(jsonPath);
                 indefiniteBindings.add(new IndefinitePathBinding(jsonPath, jsonPathListeners, minimumDepth));
             } else {
                 int depth = jsonPath.pathDepth();
-                if (depth > configuration.maxDepth) {
-                    configuration.maxDepth = depth;
-                }
-                if (depth < configuration.minDepth) {
-                    configuration.minDepth = depth;
-                }
-                ArrayList<Binding> bindings = definiteBindings.get(depth);
-                if (bindings == null) {
-                    bindings = new ArrayList<Binding>();
-                    definiteBindings.put(depth, bindings);
-                }
+                updateMinMaxDepth(depth);
+                ArrayList<Binding> bindings = getDefiniteBindings(depth);
                 bindings.add(new Binding(jsonPath, jsonPathListeners));
+            }
+            Collection<FilterConfig> filterConfigs = getFilterConfigs(jsonPath);
+            if (!filterConfigs.isEmpty()) {
+                this.hasFilter = true;
+            }
+
+            for (FilterConfig fc : filterConfigs) {
+                if (fc.filterRootPath.checkDefinite()) {
+                    ArrayList<Binding> bindings = getDefiniteBindings(fc.filterRootPath.pathDepth());
+                    Binding filterBiding = new Binding(fc.filterRootPath, null);
+                    filterBiding.filter = fc.filter;
+                    bindings.add(filterBiding);
+                    updateMinMaxDepth(fc.filterRootPath.pathDepth());
+                } else {
+                    int minimumDepth = JsonPath.minimumPathDepth(fc.filterRootPath);
+                    IndefinitePathBinding filterBiding = new IndefinitePathBinding(fc.filterRootPath, null, minimumDepth);
+                    filterBiding.filter = fc.filter;
+                    indefiniteBindings.add(filterBiding);
+                }
             }
             return this;
         }
@@ -245,6 +302,7 @@ public class SurfingConfiguration {
     private int minDepth = Integer.MAX_VALUE;
     private int maxDepth = -1;
     private boolean skipOverlappedPath = false;
+    private boolean hasFilter = false;
 
     private Binding[][] definitePathLookup;
 
@@ -312,6 +370,10 @@ public class SurfingConfiguration {
 
     public void setParserCharset(Charset parserCharset) {
         this.parserCharset = parserCharset;
+    }
+
+    public boolean hasFilter() {
+        return hasFilter;
     }
 
 }

@@ -26,15 +26,4 @@ public class EqualityNumPredicate implements JsonPathFilter {
         return candidate != null && Objects.equals(candidate, jsonProvider.primitive(value.doubleValue()));
     }
 
-    @Override
-    public boolean notApply(Object jsonNode, JsonProvider jsonProvider) {
-        Object candidate = relativePath.resolve(jsonNode, jsonProvider);
-        return candidate != null && !Objects.equals(candidate, jsonProvider.primitive(value.doubleValue()));
-    }
-
-    @Override
-    public boolean couldApply(JsonPath jsonPath) {
-        return jsonPath.isSubPathOf(relativePath);
-    }
-
 }

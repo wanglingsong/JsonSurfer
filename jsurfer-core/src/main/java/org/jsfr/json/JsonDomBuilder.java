@@ -43,11 +43,10 @@ public class JsonDomBuilder implements JsonSaxHandler {
     private String propertyName;
 
     private Node[] stack = new Node[32];
-
     private int stackSize = 0;
-    JsonPosition currentPosition = JsonPosition.start();
 
-    {
+    public JsonDomBuilder(JsonProvider provider) {
+        this.provider = provider;
         this.push(ROOT, null);
     }
 
@@ -80,12 +79,8 @@ public class JsonDomBuilder implements JsonSaxHandler {
         return peekNode().value;
     }
 
-    private Node rootNode() {
-        return stack[0];
-    }
-
     protected Object rootValue() {
-        return rootNode().value;
+        return stack[0].value;
     }
 
     private void replaceTop(Object value) {
@@ -94,14 +89,6 @@ public class JsonDomBuilder implements JsonSaxHandler {
 
     private void pop() {
         stackSize--;
-    }
-
-    public JsonProvider getProvider() {
-        return this.provider;
-    }
-
-    public void setProvider(JsonProvider provider) {
-        this.provider = provider;
     }
 
     @Override
@@ -116,10 +103,6 @@ public class JsonDomBuilder implements JsonSaxHandler {
 
     @Override
     public boolean startObject() {
-        currentPosition.stepIntoObject();
-        if (shouldSkip())
-            return true;
-
         Object newObject = provider.createObject();
         Node top = peekNode();
         switch (top.scope) {
@@ -142,7 +125,6 @@ public class JsonDomBuilder implements JsonSaxHandler {
 
     @Override
     public boolean startObjectEntry(String key) {
-        currentPosition.updateObjectEntry(key);
         switch (peek()) {
             case IN_OBJECT:
                 propertyName = key;
@@ -155,10 +137,6 @@ public class JsonDomBuilder implements JsonSaxHandler {
 
     @Override
     public boolean endObject() {
-        currentPosition.stepOutObject();
-        if (shouldSkip())
-            return false;
-
         switch (peek()) {
             case IN_OBJECT:
                 pop();
@@ -171,10 +149,6 @@ public class JsonDomBuilder implements JsonSaxHandler {
 
     @Override
     public boolean startArray() {
-        currentPosition.stepIntoArray();
-        if (shouldSkip())
-            return true;
-
         Object newArray = provider.createArray();
         Node top = peekNode();
         switch (top.scope) {
@@ -197,19 +171,12 @@ public class JsonDomBuilder implements JsonSaxHandler {
 
     @Override
     public boolean endArray() {
-        currentPosition.stepOutArray();
-        if (shouldSkip())
-            return true;
-
         pop();
         return true;
     }
 
     @Override
     public boolean primitive(PrimitiveHolder primitiveHolder) {
-        if (shouldSkip())
-            return true;
-
         Object value = primitiveHolder.getValue();
         Node top = peekNode();
         switch (top.scope) {
@@ -233,16 +200,11 @@ public class JsonDomBuilder implements JsonSaxHandler {
         return peek() == ROOT;
     }
 
-    boolean shouldSkip() {
-        return false; // by default the whole DOM is built
-    }
 
     public void clear() {
         propertyName = null;
         provider = null;
         stack = null;
-        currentPosition.clear();
-        currentPosition = null;
     }
 
 }

@@ -25,15 +25,4 @@ public class GreaterThanNumPredicate implements JsonPathFilter {
         return candidate != null && new BigDecimal(candidate.toString()).compareTo(value) > 0;
     }
 
-    @Override
-    public boolean notApply(Object jsonNode, JsonProvider jsonProvider) {
-        Object candidate = relativePath.resolve(jsonNode, jsonProvider);
-        return candidate != null && !(new BigDecimal(candidate.toString()).compareTo(value) > 0);
-    }
-
-    @Override
-    public boolean couldApply(JsonPath jsonPath) {
-        return jsonPath.isSubPathOf(relativePath);
-    }
-
 }

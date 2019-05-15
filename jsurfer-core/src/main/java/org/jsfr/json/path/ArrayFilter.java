@@ -10,10 +10,10 @@ public class ArrayFilter extends PathOperator {
         this.jsonPathFilter = jsonPathFilter;
     }
 
-    @Override
-    public boolean match(PathOperator pathOperator) {
-        return pathOperator instanceof ArrayIndex; // match any array element, filtering is done in the JsonFilterVerifier
-    }
+//    @Override
+//    public boolean match(PathOperator pathOperator) {
+//        return pathOperator instanceof ArrayIndex; // match any array element, filtering is done in the JsonFilterVerifier
+//    }
 
     public JsonPathFilter getJsonPathFilter() {
         return jsonPathFilter;

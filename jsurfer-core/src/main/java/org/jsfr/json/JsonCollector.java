@@ -33,6 +33,7 @@ class JsonCollector extends JsonDomBuilder {
     private SurfingConfiguration config;
 
     public JsonCollector(Collection<JsonPathListener> jsonPathListeners, ParsingContext context, SurfingConfiguration config) {
+        super(config.getJsonProvider());
         this.jsonPathListeners = jsonPathListeners;
         this.context = context;
         this.config = config;
