@@ -43,10 +43,10 @@ public class JsonDomBuilder implements JsonSaxHandler {
     private String propertyName;
 
     private Node[] stack = new Node[32];
-
     private int stackSize = 0;
 
-    {
+    public JsonDomBuilder(JsonProvider provider) {
+        this.provider = provider;
         this.push(ROOT, null);
     }
 
@@ -79,16 +79,16 @@ public class JsonDomBuilder implements JsonSaxHandler {
         return peekNode().value;
     }
 
+    protected Object rootValue() {
+        return stack[0].value;
+    }
+
     private void replaceTop(Object value) {
         stack[stackSize - 1].value = value;
     }
 
     private void pop() {
         stackSize--;
-    }
-
-    public void setProvider(JsonProvider provider) {
-        this.provider = provider;
     }
 
     @Override
@@ -196,7 +196,7 @@ public class JsonDomBuilder implements JsonSaxHandler {
         return true;
     }
 
-    public boolean isInRoot() {
+    boolean isInRoot() {
         return peek() == ROOT;
     }
 

@@ -35,6 +35,10 @@ class ContentDispatcher implements JsonSaxHandler {
         return this.receiver.isEmpty();
     }
 
+    public int size() {
+        return this.receiver.size();
+    }
+
     @Override
     public boolean startJSON() {
         if (receiver.isEmpty()) {
@@ -150,4 +154,9 @@ class ContentDispatcher implements JsonSaxHandler {
     public void addReceiver(JsonSaxHandler contentHandler) {
         receiver.addFirst(contentHandler);
     }
+
+    public JsonSaxHandler getLastReceiver() {
+        return this.receiver.isEmpty() ? null : this.receiver.getFirst();
+    }
+
 }

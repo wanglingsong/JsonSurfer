@@ -38,6 +38,8 @@ import java.util.List;
 
 import static org.jsfr.json.compiler.JsonPathCompiler.compile;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class JsonPathTest {
 
@@ -76,6 +78,19 @@ public class JsonPathTest {
     public void shallEnsureJsonPathCapacity() throws Exception {
         JsonPath path = compile("$.a.b.c.d.e.f.g.h.a.b.c.d.e.f.g.h.a.b.c.d.e.f.g.h.a.b.c.d.e.f.g.h.a.b.c.d.e.f.g.h");
         assertEquals(41, path.size);
+    }
+
+    @Test
+    public void shallMatch() throws Exception {
+        JsonPath path1 = compile("$..store..book..book[?(@.category=='fiction')]..title");
+        JsonPath path2 = compile("$..store..book.store.book[?(@.category=='fiction')]..title");
+        JsonPath path3 = compile("$..store..book.store[?(@.category=='fiction')]..title");
+        JsonPath path4 = compile("$..book..book..book..store.book[?(@.category=='fiction')]..title");
+        JsonPath position = compile("$.book.store.book.store.book[1].volumes[1].title");
+        assertTrue(path1.match(position));
+        assertTrue(path2.match(position));
+        assertFalse(path3.match(position));
+        assertFalse(path4.match(position));
     }
 
 }

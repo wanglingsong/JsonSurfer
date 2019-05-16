@@ -28,30 +28,23 @@ import java.util.Collection;
 
 class JsonCollector extends JsonDomBuilder {
 
-    private ErrorHandlingStrategy errorHandlingStrategy;
     private Collection<JsonPathListener> jsonPathListeners;
     private ParsingContext context;
+    private SurfingConfiguration config;
 
-    public JsonCollector(Collection<JsonPathListener> jsonPathListeners, ParsingContext context, ErrorHandlingStrategy errorHandlingStrategy) {
+    public JsonCollector(Collection<JsonPathListener> jsonPathListeners, ParsingContext context, SurfingConfiguration config) {
+        super(config.getJsonProvider());
         this.jsonPathListeners = jsonPathListeners;
         this.context = context;
-        this.errorHandlingStrategy = errorHandlingStrategy;
+        this.config = config;
     }
 
     @Override
     public boolean endObject() {
         super.endObject();
         if (isInRoot()) {
-            Object result = peekValue();
-            for (JsonPathListener jsonPathListener : jsonPathListeners) {
-                if (!context.isStopped()) {
-                    try {
-                        jsonPathListener.onValue(result, context);
-                    } catch (Exception e) {
-                        errorHandlingStrategy.handleExceptionFromListener(e, context);
-                    }
-                }
-            }
+            Object result = rootValue();
+            DispatchUtil.dispatchValueToListeners(result, jsonPathListeners, context, config.getErrorHandlingStrategy());
             this.clear();
             return false;
         }
@@ -62,16 +55,8 @@ class JsonCollector extends JsonDomBuilder {
     public boolean endArray() {
         super.endArray();
         if (isInRoot()) {
-            Object result = peekValue();
-            for (JsonPathListener jsonPathListener : jsonPathListeners) {
-                if (!context.isStopped()) {
-                    try {
-                        jsonPathListener.onValue(result, context);
-                    } catch (Exception e) {
-                        errorHandlingStrategy.handleExceptionFromListener(e, context);
-                    }
-                }
-            }
+            Object result = rootValue();
+            DispatchUtil.dispatchValueToListeners(result, jsonPathListeners, context, config.getErrorHandlingStrategy());
             this.clear();
             return false;
         }
@@ -83,7 +68,7 @@ class JsonCollector extends JsonDomBuilder {
         super.clear();
         this.context = null;
         this.jsonPathListeners = null;
-        this.errorHandlingStrategy = null;
+        this.config = null;
     }
 
 

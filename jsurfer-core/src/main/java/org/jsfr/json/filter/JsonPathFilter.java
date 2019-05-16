@@ -7,6 +7,9 @@ import org.jsfr.json.provider.JsonProvider;
  */
 public interface JsonPathFilter {
 
+    /**
+     * Returns whether jsonNode satisfies the filter.
+     */
     boolean apply(Object jsonNode, JsonProvider jsonProvider);
 
 }

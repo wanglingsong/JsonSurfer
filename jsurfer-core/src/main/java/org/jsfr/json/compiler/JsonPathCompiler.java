@@ -147,10 +147,9 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
 
     @Override
     public Void visitFilter(JsonPathParser.FilterContext ctx) {
-        pathBuilder.any();
         filterBuilder = new FilterBuilder();
         Void rst = super.visitFilter(ctx);
-        pathBuilder.withFilter(filterBuilder.build());
+        pathBuilder.arrayFilter(filterBuilder.build());
         return rst;
     }
 

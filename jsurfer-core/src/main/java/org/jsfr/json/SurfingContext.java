@@ -24,6 +24,8 @@
 
 package org.jsfr.json;
 
+import org.jsfr.json.SurfingConfiguration.Binding;
+import org.jsfr.json.SurfingConfiguration.IndefinitePathBinding;
 import org.jsfr.json.path.ArrayIndex;
 import org.jsfr.json.path.ChildNode;
 import org.jsfr.json.path.PathOperator;
@@ -43,74 +45,129 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     private boolean paused = false;
     private JsonPosition currentPosition;
     private ContentDispatcher dispatcher = new ContentDispatcher();
+    private ContentDispatcher filterVerifierDispatcher;
     private SurfingConfiguration config;
     private Map<String, Object> transientMap;
 
     SurfingContext(SurfingConfiguration config) {
         this.config = config;
+        if (config.hasFilter()) {
+            this.filterVerifierDispatcher = new ContentDispatcher();
+            this.dispatcher.addReceiver(this.filterVerifierDispatcher);
+        }
     }
 
     private void doMatching(PrimitiveHolder primitiveHolder) {
 
-        // skip matching if "skipOverlappedPath" is enable
-        if (config.isSkipOverlappedPath() && !dispatcher.isEmpty()) {
-            return;
-        }
         LinkedList<JsonPathListener> listeners = null;
-
         int currentDepth = currentPosition.pathDepth();
-        for (SurfingConfiguration.IndefinitePathBinding binding : config.getIndefinitePathLookup()) {
-            if (binding.minimumPathDepth <= currentDepth) {
-                listeners = doMatching(binding, primitiveHolder, listeners);
-            } else {
-                break;
+
+        if (config.hasFilter()) {
+
+            // skip matching if "skipOverlappedPath" is enable
+            if (config.isSkipOverlappedPath() && dispatcher.size() > 1) {
+                return;
             }
-        }
-        SurfingConfiguration.Binding[] bindings = config.getDefinitePathBind(currentDepth);
-        if (bindings != null) {
-            for (SurfingConfiguration.Binding binding : bindings) {
-                listeners = doMatching(binding, primitiveHolder, listeners);
+            for (IndefinitePathBinding binding : config.getIndefinitePathLookup()) {
+                if (binding.minimumPathDepth <= currentDepth) {
+                    listeners = doMatchingWithFilter(binding, primitiveHolder, listeners);
+                } else {
+                    break;
+                }
             }
+            Binding[] bindings = config.getDefinitePathBind(currentDepth);
+            if (bindings != null) {
+                for (Binding binding : bindings) {
+                    listeners = doMatchingWithFilter(binding, primitiveHolder, listeners);
+                }
+            }
+
+            if (listeners != null) {
+
+                JsonFilterVerifier filterVerifier = (JsonFilterVerifier) this.filterVerifierDispatcher.getLastReceiver();
+                if (filterVerifier != null) {
+                    LinkedList<JsonPathListener> wrappedListeners = new LinkedList<>();
+                    for (JsonPathListener listener : listeners) {
+                        wrappedListeners.add(filterVerifier.addListener(listener));
+                    }
+                    listeners = wrappedListeners;
+                }
+
+            }
+
+        } else {
+            // skip matching if "skipOverlappedPath" is enable
+            if (config.isSkipOverlappedPath() && !dispatcher.isEmpty()) {
+                return;
+            }
+
+            for (IndefinitePathBinding binding : config.getIndefinitePathLookup()) {
+                if (binding.minimumPathDepth <= currentDepth) {
+                    listeners = doMatching(binding, primitiveHolder, listeners);
+                } else {
+                    break;
+                }
+            }
+            Binding[] bindings = config.getDefinitePathBind(currentDepth);
+            if (bindings != null) {
+                for (Binding binding : bindings) {
+                    listeners = doMatching(binding, primitiveHolder, listeners);
+                }
+            }
+
         }
 
         if (listeners != null) {
-            JsonCollector collector = new JsonCollector(listeners.size() == 1 ? Collections.singleton(listeners.getFirst()) : listeners, this, config.getErrorHandlingStrategy());
-            collector.setProvider(config.getJsonProvider());
+            JsonCollector collector = new JsonCollector(listeners.size() == 1 ? Collections.singleton(listeners.getFirst()) : listeners, this, config);
             dispatcher.addReceiver(collector);
         }
+
     }
 
-    private LinkedList<JsonPathListener> doMatching(SurfingConfiguration.Binding binding, PrimitiveHolder primitiveHolder, LinkedList<JsonPathListener> listeners) {
+    private LinkedList<JsonPathListener> doMatchingWithFilter(Binding binding, PrimitiveHolder primitiveHolder, LinkedList<JsonPathListener> listeners) {
         if (binding.jsonPath.match(currentPosition)) {
-            if (primitiveHolder != null) {
-                dispatchPrimitive(binding, primitiveHolder.getValue());
+            if (binding.filter != null) {
+                this.filterVerifierDispatcher.addReceiver(new JsonFilterVerifier(config, binding.filter, (JsonFilterVerifier) this.filterVerifierDispatcher.getLastReceiver()));
             } else {
-                LinkedList<JsonPathListener> listenersToAdd = listeners == null ? new LinkedList<JsonPathListener>() : listeners;
-                if (binding.jsonPath.getJsonPathFilter() != null) {
-                    for (JsonPathListener jsonPathListener : binding.listeners) {
-                        listenersToAdd.add(new FilteredJsonPathListener(binding.jsonPath.getJsonPathFilter(), jsonPathListener, config));
-                    }
+                if (primitiveHolder != null) {
+                    dispatchPrimitiveWithFilter(binding.getListeners(), primitiveHolder.getValue());
                 } else {
-                    Collections.addAll(listenersToAdd, binding.listeners);
+                    return this.addListeners(binding, listeners);
                 }
-                return listenersToAdd;
             }
         }
         return listeners;
     }
 
-    private void dispatchPrimitive(SurfingConfiguration.Binding binding, Object primitive) {
-        for (JsonPathListener listener : binding.listeners) {
-            if (isStopped()) {
-                break;
-            }
-            try {
-                // TODO apply filter?
-                listener.onValue(primitive, this);
-            } catch (Exception e) {
-                config.getErrorHandlingStrategy().handleExceptionFromListener(e, this);
+    private LinkedList<JsonPathListener> doMatching(Binding binding, PrimitiveHolder primitiveHolder, LinkedList<JsonPathListener> listeners) {
+        if (binding.jsonPath.match(currentPosition)) {
+            if (primitiveHolder != null) {
+                dispatchPrimitive(binding.getListeners(), primitiveHolder.getValue());
+            } else {
+                return this.addListeners(binding, listeners);
             }
         }
+        return listeners;
+    }
+
+    private LinkedList<JsonPathListener> addListeners(Binding binding, LinkedList<JsonPathListener> listeners) {
+        LinkedList<JsonPathListener> listenersToAdd = listeners == null ? new LinkedList<JsonPathListener>() : listeners;
+        Collections.addAll(listenersToAdd, binding.getListeners());
+        return listenersToAdd;
+    }
+
+    private void dispatchPrimitiveWithFilter(JsonPathListener[] listeners, Object primitive) {
+        JsonFilterVerifier filterVerifier = (JsonFilterVerifier) this.filterVerifierDispatcher.getLastReceiver();
+        if (filterVerifier != null) {
+            for (JsonPathListener listener : listeners) {
+                JsonPathListener newListener = filterVerifier.addListener(listener);
+                newListener.onValue(primitive, this);
+            }
+        }
+    }
+
+    private void dispatchPrimitive(JsonPathListener[] listeners, Object primitive) {
+        DispatchUtil.dispatchValueToListeners(primitive, listeners, this, config.getErrorHandlingStrategy());
     }
 
     @Override
@@ -143,6 +200,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
                 break;
             case ARRAY:
                 accumulateArrayIndex((ArrayIndex) currentNode);
+//                startArrayElement();
                 doMatching(null);
                 break;
             case ROOT:
@@ -187,6 +245,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
                 break;
             case ARRAY:
                 accumulateArrayIndex((ArrayIndex) currentNode);
+//                startArrayElement();
                 doMatching(null);
                 break;
             case ROOT:
@@ -226,6 +285,7 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
                 break;
             case ARRAY:
                 accumulateArrayIndex((ArrayIndex) currentNode);
+//                startArrayElement();
                 doMatching(primitiveHolder);
                 break;
             case ROOT:
@@ -314,4 +374,5 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     public SurfingConfiguration getConfig() {
         return config;
     }
+
 }

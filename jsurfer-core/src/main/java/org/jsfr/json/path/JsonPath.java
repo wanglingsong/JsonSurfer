@@ -125,8 +125,8 @@ public class JsonPath implements Iterable<PathOperator> {
             return this;
         }
 
-        public Builder withFilter(JsonPathFilter jsonPathFilter) {
-            jsonPath.jsonPathFilter = jsonPathFilter;
+        public Builder arrayFilter(JsonPathFilter jsonPathFilter) {
+            jsonPath.push(new ArrayFilter(jsonPathFilter));
             return this;
         }
 
@@ -134,35 +134,20 @@ public class JsonPath implements Iterable<PathOperator> {
             if (jsonPath.peek().getType() == PathOperator.Type.DEEP_SCAN) {
                 throw new IllegalStateException("deep-scan shouldn't be the last operator.");
             }
-            if (!jsonPath.definite) {
-                // calculate minimum depth
-                for (PathOperator operator : jsonPath) {
-                    if (!(operator.getType() == PathOperator.Type.DEEP_SCAN)) {
-                        jsonPath.minimumDepth++;
-                    }
-                }
-            }
             return this.jsonPath;
         }
 
     }
 
     private boolean definite = true;
-    private int minimumDepth = 0;
 
     protected PathOperator[] operators;
     protected int size;
-
-    private JsonPathFilter jsonPathFilter;
 
     protected JsonPath() {
         operators = new PathOperator[JSON_PATH_INITIAL_CAPACITY];
         operators[0] = Root.instance();
         size = 1;
-    }
-
-    public JsonPathFilter getJsonPathFilter() {
-        return jsonPathFilter;
     }
 
     public Object resolve(Object document, DocumentResolver resolver) {
@@ -182,6 +167,31 @@ public class JsonPath implements Iterable<PathOperator> {
     public boolean match(JsonPath jsonPath) {
         int pointer1 = this.size - 1;
         int pointer2 = jsonPath.size - 1;
+        return matchPartial(jsonPath, pointer1, pointer2);
+    }
+
+    private boolean matchPathBlock(JsonPath path1, int offset1, JsonPath path2, int offset2, int blockSize) {
+        for (int i = 0; i < blockSize; i++) {
+            if (!path1.get(offset1 + i).match(path2.get(offset2 + i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private int indexOfPreviousDeepScanOrRoot(JsonPath path, int from) {
+        int pointer = from - 1;
+        while (pointer > 0) {
+            if (path.get(pointer).getType() == PathOperator.Type.DEEP_SCAN) {
+                return pointer;
+            } else {
+                pointer--;
+            }
+        }
+        return pointer;
+    }
+
+    private boolean matchPartial(JsonPath jsonPath, int pointer1, int pointer2) {
         if (!get(pointer1).match(jsonPath.get(pointer2))) {
             return false;
         }
@@ -194,10 +204,14 @@ public class JsonPath implements Iterable<PathOperator> {
             PathOperator o1 = this.get(pointer1--);
             PathOperator o2 = jsonPath.get(pointer2--);
             if (o1.getType() == PathOperator.Type.DEEP_SCAN) {
-                PathOperator prevScan = this.get(pointer1--);
-                while (!prevScan.match(o2) && pointer2 >= 0) {
-                    o2 = jsonPath.get(pointer2--);
+                int blockHead = indexOfPreviousDeepScanOrRoot(this, pointer1);
+                int blockSize = pointer1 - blockHead;
+                int offset2 = pointer2 - blockSize + 2;
+                while (offset2 > 0 && !matchPathBlock(this, blockHead + 1, jsonPath, offset2, blockSize)) {
+                    offset2--;
                 }
+                pointer1 = blockHead;
+                pointer2 = offset2 - 1;
             } else {
                 if (!o1.match(o2)) {
                     return false;
@@ -207,7 +221,14 @@ public class JsonPath implements Iterable<PathOperator> {
         return !(pointer2 >= 0);
     }
 
-    private PathOperator get(int i) {
+    public JsonPath derivePath(int depth) {
+        JsonPath newPath = new JsonPath();
+        newPath.size = depth;
+        newPath.operators = this.operators;
+        return newPath;
+    }
+
+    public PathOperator get(int i) {
         return operators[i];
     }
 
@@ -240,16 +261,32 @@ public class JsonPath implements Iterable<PathOperator> {
         operators = null;
     }
 
-    public int minimumPathDepth() {
-        if (definite) {
-            return this.pathDepth();
+    public static int minimumPathDepth(JsonPath path) {
+        if (path.definite) {
+            return path.pathDepth();
         } else {
+            int minimumDepth = 0;
+            for (PathOperator operator : path) {
+                if (!(operator.getType() == PathOperator.Type.DEEP_SCAN)) {
+                    minimumDepth++;
+                }
+            }
             return minimumDepth;
         }
     }
 
     public boolean isDefinite() {
         return definite;
+    }
+
+    public boolean checkDefinite() {
+        for (PathOperator operator : this) {
+            if (operator.getType() == PathOperator.Type.DEEP_SCAN) {
+                this.definite = false;
+                return false;
+            }
+        }
+        return true;
     }
 
 
