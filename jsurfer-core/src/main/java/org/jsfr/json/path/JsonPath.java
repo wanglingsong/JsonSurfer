@@ -170,7 +170,28 @@ public class JsonPath implements Iterable<PathOperator> {
         return matchPartial(jsonPath, pointer1, pointer2);
     }
 
-    public boolean matchPartial(JsonPath jsonPath, int pointer1, int pointer2) {
+    private boolean matchPathBlock(JsonPath path1, int offset1, JsonPath path2, int offset2, int blockSize) {
+        for (int i = 0; i < blockSize; i++) {
+            if (!path1.get(offset1 + i).match(path2.get(offset2 + i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private int indexOfPreviousDeepScanOrRoot(JsonPath path, int from) {
+        int pointer = from - 1;
+        while (pointer > 0) {
+            if (path.get(pointer).getType() == PathOperator.Type.DEEP_SCAN) {
+                return pointer;
+            } else {
+                pointer--;
+            }
+        }
+        return pointer;
+    }
+
+    private boolean matchPartial(JsonPath jsonPath, int pointer1, int pointer2) {
         if (!get(pointer1).match(jsonPath.get(pointer2))) {
             return false;
         }
@@ -183,13 +204,14 @@ public class JsonPath implements Iterable<PathOperator> {
             PathOperator o1 = this.get(pointer1--);
             PathOperator o2 = jsonPath.get(pointer2--);
             if (o1.getType() == PathOperator.Type.DEEP_SCAN) {
-                PathOperator prevScan = this.get(pointer1--);
-                // operatorsMatch needed because otherwise array indexes can be matched with the wrong array filters
-                // pointer1 and pointer2 refer to the parents so it essentially compares the parent operators
-                // TODO
-                while (!(prevScan.match(o2) && operatorsMatch(jsonPath, pointer1, pointer2)) && pointer2 >= 0) {
-                    o2 = jsonPath.get(pointer2--);
+                int blockHead = indexOfPreviousDeepScanOrRoot(this, pointer1);
+                int blockSize = pointer1 - blockHead;
+                int offset2 = pointer2 - blockSize + 2;
+                while (offset2 > 0 && !matchPathBlock(this, blockHead + 1, jsonPath, offset2, blockSize)) {
+                    offset2--;
                 }
+                pointer1 = blockHead;
+                pointer2 = offset2 - 1;
             } else {
                 if (!o1.match(o2)) {
                     return false;
@@ -197,10 +219,6 @@ public class JsonPath implements Iterable<PathOperator> {
             }
         }
         return !(pointer2 >= 0);
-    }
-
-    private boolean operatorsMatch(JsonPath jsonPath, int p1, int p2) {
-        return p1 <= 0 || p2 <= 0 || this.get(p1).match(jsonPath.get(p2));
     }
 
     public JsonPath derivePath(int depth) {
