@@ -259,7 +259,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
             String regex = split[1];
             return Pattern.compile(regex);
         } else {
-            throw new InputMismatchException(null);
+            throw new InputMismatchException("Invalid regex pattern");
         }
     }
 
