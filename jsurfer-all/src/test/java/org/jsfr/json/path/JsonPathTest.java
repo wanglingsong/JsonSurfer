@@ -26,7 +26,10 @@ package org.jsfr.json.path;
 
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
+import org.antlr.v4.runtime.InputMismatchException;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.jsfr.json.Book;
+import org.jsfr.json.compiler.JsonPathCompiler;
 import org.jsfr.json.provider.JavaCollectionProvider;
 import org.jsfr.json.resolver.PoJoResolver;
 import org.junit.Test;
@@ -91,6 +94,15 @@ public class JsonPathTest {
         assertTrue(path2.match(position));
         assertFalse(path3.match(position));
         assertFalse(path4.match(position));
+    }
+
+    @Test
+    public void testJsonPathFilterMatchRegexInputMismatch() throws Exception {
+        try {
+            JsonPathCompiler.compile("$.store.book[?(@.author=~ /abc)]"); // not a valid regular expression
+        } catch (ParseCancellationException e) {
+            assertTrue(e.getCause() instanceof InputMismatchException);
+        }
     }
 
 }
