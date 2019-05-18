@@ -480,6 +480,14 @@ public abstract class JsonSurferTest {
     }
 
     @Test
+    public void testJsonPathFilterNotMatch2() throws Exception {
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$.store.book.title[?(@.title=='comic')]", mockListener)
+                .buildAndSurf(read("sample_filter2.json"));
+        verify(mockListener, times(0)).onValue(any(), any(ParsingContext.class));
+    }
+
+    @Test
     public void testJsonPathDoubleFilterThenChildWithDeepscan() throws Exception {
         JsonPathListener mockListener = mock(JsonPathListener.class);
         surfer.configBuilder().bind("$..book[?(@.category=='fiction' && @.volumes[2].year=='1955')]..[?(@.year=='1954')]..title", mockListener)

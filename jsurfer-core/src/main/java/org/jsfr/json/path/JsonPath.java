@@ -76,6 +76,12 @@ public class JsonPath implements Iterable<PathOperator> {
             return builder;
         }
 
+        public static Builder startFilterPath() {
+            Builder builder = new Builder();
+            builder.jsonPath = new JsonPath(true);
+            return builder;
+        }
+
         public Builder child(String key) {
             jsonPath.push(new ChildNode(key));
             return this;
@@ -145,8 +151,16 @@ public class JsonPath implements Iterable<PathOperator> {
     protected int size;
 
     protected JsonPath() {
+        this(false);
+    }
+
+    protected JsonPath(boolean filterPath) {
         operators = new PathOperator[JSON_PATH_INITIAL_CAPACITY];
-        operators[0] = Root.instance();
+        if (filterPath) {
+            operators[0] = FilterRoot.instance();
+        } else {
+            operators[0] = Root.instance();
+        }
         size = 1;
     }
 
@@ -167,7 +181,54 @@ public class JsonPath implements Iterable<PathOperator> {
     public boolean match(JsonPath jsonPath) {
         int pointer1 = this.size - 1;
         int pointer2 = jsonPath.size - 1;
-        return matchPartial(jsonPath, pointer1, pointer2);
+        if (!get(pointer1).match(jsonPath.get(pointer2))) {
+            return false;
+        }
+        pointer1--;
+        pointer2--;
+        while (pointer1 >= 0) {
+            if (!(pointer2 >= 0)) {
+                return false;
+            }
+            PathOperator o1 = this.get(pointer1--);
+            PathOperator o2 = jsonPath.get(pointer2--);
+            if (!o1.match(o2)) {
+                return false;
+            }
+        }
+        return !(pointer2 >= 0);
+    }
+
+    public boolean matchWithDeepScan(JsonPath jsonPath) {
+        int pointer1 = this.size - 1;
+        int pointer2 = jsonPath.size - 1;
+        if (!get(pointer1).match(jsonPath.get(pointer2))) {
+            return false;
+        }
+        pointer1--;
+        pointer2--;
+        while (pointer1 >= 0) {
+            if (!(pointer2 >= 0)) {
+                return false;
+            }
+            PathOperator o1 = this.get(pointer1--);
+            PathOperator o2 = jsonPath.get(pointer2--);
+            if (o1.getType() == PathOperator.Type.DEEP_SCAN) {
+                int blockHead = indexOfPreviousDeepScanOrRoot(this, pointer1);
+                int blockSize = pointer1 - blockHead;
+                int offset2 = pointer2 - blockSize + 2;
+                while (offset2 > 0 && !matchPathBlock(this, blockHead + 1, jsonPath, offset2, blockSize)) {
+                    offset2--;
+                }
+                pointer1 = blockHead;
+                pointer2 = offset2 - 1;
+            } else {
+                if (!o1.match(o2)) {
+                    return false;
+                }
+            }
+        }
+        return !(pointer2 >= 0);
     }
 
     private boolean matchPathBlock(JsonPath path1, int offset1, JsonPath path2, int offset2, int blockSize) {
@@ -191,7 +252,9 @@ public class JsonPath implements Iterable<PathOperator> {
         return pointer;
     }
 
-    private boolean matchPartial(JsonPath jsonPath, int pointer1, int pointer2) {
+    public boolean matchFilterPath(JsonPath jsonPath) {
+        int pointer1 = this.size - 1;
+        int pointer2 = jsonPath.size - 1;
         if (!get(pointer1).match(jsonPath.get(pointer2))) {
             return false;
         }
@@ -203,15 +266,9 @@ public class JsonPath implements Iterable<PathOperator> {
             }
             PathOperator o1 = this.get(pointer1--);
             PathOperator o2 = jsonPath.get(pointer2--);
-            if (o1.getType() == PathOperator.Type.DEEP_SCAN) {
-                int blockHead = indexOfPreviousDeepScanOrRoot(this, pointer1);
-                int blockSize = pointer1 - blockHead;
-                int offset2 = pointer2 - blockSize + 2;
-                while (offset2 > 0 && !matchPathBlock(this, blockHead + 1, jsonPath, offset2, blockSize)) {
-                    offset2--;
-                }
-                pointer1 = blockHead;
-                pointer2 = offset2 - 1;
+            // TODO Allow deep scan in filter path?
+            if (o1.getType() == PathOperator.Type.FILTER_ROOT) {
+                return true;
             } else {
                 if (!o1.match(o2)) {
                     return false;

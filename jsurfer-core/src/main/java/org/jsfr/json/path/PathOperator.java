@@ -34,7 +34,8 @@ public abstract class PathOperator implements Resolvable {
         OBJECT,
         ARRAY,
         WILDCARD,
-        DEEP_SCAN
+        DEEP_SCAN,
+        FILTER_ROOT
     }
 
     abstract public Type getType();
