@@ -10,10 +10,8 @@ import org.jsfr.json.provider.JsonProvider;
 public interface JsonPathFilter {
 
     /**
-     * Returns whether jsonNode satisfies the filter.
+     * Returns whether json position satisfies the filter.
      */
-//    boolean apply(Object jsonNode, JsonProvider jsonProvider);
-
     boolean apply(JsonPath jsonPosition, PrimitiveHolder primitiveHolder, JsonProvider jsonProvider);
 
 }

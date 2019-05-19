@@ -28,10 +28,4 @@ public class EqualityNumPredicate extends AbstractJsonPathFilter {
         }
     }
 
-//    @Override
-//    public boolean apply(Object jsonNode, JsonProvider jsonProvider) {
-//        Object candidate = relativePath.resolve(jsonNode, jsonProvider);
-//        return candidate != null && Objects.equals(candidate, jsonProvider.primitive(value.doubleValue()));
-//    }
-
 }
