@@ -133,12 +133,12 @@ public class SurfingConfiguration {
         public SurfingConfiguration build() {
             if (!indefiniteBindings.isEmpty()) {
                 Collections.sort(indefiniteBindings, INDEFINITE_BINDING_COMPARATOR);
-                configuration.indefinitePathLookup = indefiniteBindings.toArray(new IndefinitePathBinding[indefiniteBindings.size()]);
+                configuration.indefinitePathLookup = indefiniteBindings.toArray(new IndefinitePathBinding[0]);
             }
             if (!definiteBindings.isEmpty()) {
                 configuration.definitePathLookup = new Binding[configuration.maxDepth - configuration.minDepth + 1][];
                 for (Map.Entry<Integer, ArrayList<Binding>> entry : definiteBindings.entrySet()) {
-                    configuration.definitePathLookup[entry.getKey() - configuration.minDepth] = entry.getValue().toArray(new Binding[entry.getValue().size()]);
+                    configuration.definitePathLookup[entry.getKey() - configuration.minDepth] = entry.getValue().toArray(new Binding[0]);
                 }
             }
             configuration.hasFilter = this.hasFilter;
