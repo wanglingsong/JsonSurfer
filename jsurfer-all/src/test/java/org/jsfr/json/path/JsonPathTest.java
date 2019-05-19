@@ -90,10 +90,10 @@ public class JsonPathTest {
         JsonPath path3 = compile("$..store..book.store[?(@.category=='fiction')]..title");
         JsonPath path4 = compile("$..book..book..book..store.book[?(@.category=='fiction')]..title");
         JsonPath position = compile("$.book.store.book.store.book[1].volumes[1].title");
-        assertTrue(path1.match(position));
-        assertTrue(path2.match(position));
-        assertFalse(path3.match(position));
-        assertFalse(path4.match(position));
+        assertTrue(path1.matchWithDeepScan(position));
+        assertTrue(path2.matchWithDeepScan(position));
+        assertFalse(path3.matchWithDeepScan(position));
+        assertFalse(path4.matchWithDeepScan(position));
     }
 
     @Test

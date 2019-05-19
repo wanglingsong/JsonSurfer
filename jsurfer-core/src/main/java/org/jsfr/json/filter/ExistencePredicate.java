@@ -1,22 +1,21 @@
 package org.jsfr.json.filter;
 
+import org.jsfr.json.PrimitiveHolder;
 import org.jsfr.json.path.JsonPath;
 import org.jsfr.json.provider.JsonProvider;
 
 /**
  * Created by Leo on 2017/4/4.
  */
-public class ExistencePredicate implements JsonPathFilter {
-
-    private JsonPath relativePath;
+public class ExistencePredicate extends AbstractJsonPathFilter {
 
     public ExistencePredicate(JsonPath relativePath) {
-        this.relativePath = relativePath;
+        super(relativePath);
     }
 
     @Override
-    public boolean apply(Object jsonNode, JsonProvider jsonProvider) {
-        return relativePath.resolve(jsonNode, jsonProvider) != null;
+    public boolean apply(JsonPath jsonPosition, PrimitiveHolder primitiveHolder, JsonProvider jsonProvider) {
+        return this.getRelativePath().matchFilterPath(jsonPosition) && primitiveHolder.getValue() != null;
     }
 
 }

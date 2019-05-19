@@ -177,10 +177,14 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
         return rst;
     }
 
+    private JsonPath.Builder createFilterPathBuilder() {
+        return JsonPath.Builder.startFilterPath();
+    }
+
     @Override
     public Void visitFilterEqualNum(JsonPathParser.FilterEqualNumContext ctx) {
 //        JsonPath relativePath = JsonPath.Builder.start().child(ctx.KEY().getText()).build();
-        filterPathBuilder = JsonPath.Builder.start();
+        filterPathBuilder = createFilterPathBuilder();
         Void rst = super.visitFilterEqualNum(ctx);
         filterBuilder.append(new EqualityNumPredicate(filterPathBuilder.build(), new BigDecimal(ctx.NUM().getText())));
         filterPathBuilder = null;
@@ -189,7 +193,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
 
     @Override
     public Void visitFilterEqualBool(JsonPathParser.FilterEqualBoolContext ctx) {
-        filterPathBuilder = JsonPath.Builder.start();
+        filterPathBuilder = createFilterPathBuilder();
         Void rst = super.visitFilterEqualBool(ctx);
         filterBuilder.append(new EqualityBoolPredicate(filterPathBuilder.build(), Boolean.parseBoolean(ctx.BOOL().getText())));
         filterPathBuilder = null;
@@ -198,7 +202,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
 
     @Override
     public Void visitFilterExist(JsonPathParser.FilterExistContext ctx) {
-        filterPathBuilder = JsonPath.Builder.start();
+        filterPathBuilder = createFilterPathBuilder();
         Void rst = super.visitFilterExist(ctx);
         filterBuilder.append(new ExistencePredicate(filterPathBuilder.build()));
         filterPathBuilder = null;
@@ -207,7 +211,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
 
     @Override
     public Void visitFilterGtNum(JsonPathParser.FilterGtNumContext ctx) {
-        filterPathBuilder = JsonPath.Builder.start();
+        filterPathBuilder = createFilterPathBuilder();
         Void rst = super.visitFilterGtNum(ctx);
         filterBuilder.append(new GreaterThanNumPredicate(filterPathBuilder.build(), new BigDecimal(ctx.NUM().getText())));
         filterPathBuilder = null;
@@ -216,7 +220,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
 
     @Override
     public Void visitFilterLtNum(JsonPathParser.FilterLtNumContext ctx) {
-        filterPathBuilder = JsonPath.Builder.start();
+        filterPathBuilder = createFilterPathBuilder();
         Void rst = super.visitFilterLtNum(ctx);
         filterBuilder.append(new LessThanNumPredicate(filterPathBuilder.build(), new BigDecimal(ctx.NUM().getText())));
         filterPathBuilder = null;
@@ -225,7 +229,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
 
     @Override
     public Void visitFilterEqualStr(JsonPathParser.FilterEqualStrContext ctx) {
-        filterPathBuilder = JsonPath.Builder.start();
+        filterPathBuilder = createFilterPathBuilder();
         Void rst = super.visitFilterEqualStr(ctx);
         filterBuilder.append(new EqualityStrPredicate(filterPathBuilder.build(), removeQuote(ctx.QUOTED_STRING().getText())));
         filterPathBuilder = null;
@@ -234,7 +238,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
 
     @Override
     public Void visitFilterMatchRegex(JsonPathParser.FilterMatchRegexContext ctx) {
-        filterPathBuilder = JsonPath.Builder.start();
+        filterPathBuilder = createFilterPathBuilder();
         Void rst = super.visitFilterMatchRegex(ctx);
         filterBuilder.append(new MatchRegexPredicate(filterPathBuilder.build(), toPattern(ctx.REGEX().getText())));
         filterPathBuilder = null;
