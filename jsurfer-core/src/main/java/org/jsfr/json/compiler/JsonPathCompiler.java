@@ -246,7 +246,7 @@ public class JsonPathCompiler extends JsonPathBaseVisitor<Void> {
     }
 
     private static Pattern toPattern(String str) {
-        String[] split = str.split("(?<!\\\\)\\/"); // slash not escaped by backslash
+        String[] split = str.split("(?<!\\\\)/"); // slash not escaped by backslash
         if (split.length == 3) { // includes flags
             String regex = split[1];
             String flagsStr = split[2];
