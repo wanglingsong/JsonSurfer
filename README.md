@@ -7,7 +7,6 @@
 
 ## Why JsonSurfer
 
-Jsonsurfer is dedicated in processing **big and complicated json** data with three major features.
 * Streaming
 
     No need to deserialize entire json into memory.
@@ -55,25 +54,25 @@ JsonSurfer has drivers for most of popular json libraries including: Gson, Jacks
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-gson</artifactId>
-    <version>1.4.3</version>
+    <version>1.5.0</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-jackson</artifactId>
-    <version>1.4.3</version>
+    <version>1.5.0</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-fastjson</artifactId>
-    <version>1.4.3</version>
+    <version>1.5.0</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-jsonsimple</artifactId>
-    <version>1.4.3</version>
+    <version>1.5.0</version>
 </dependency>
 
 ```
@@ -173,12 +172,9 @@ JsonPath object is immutable and can be reused safely.
 
 You can use logical operators '&&' and '||' to create more complex filter expression. For example:
 ```
-$.store.book[?(@.price < 10 || @.category && @.isbn && @.price>10)]  // VALID
+$.store.book[?(@.price < 10 || @.category && @.isbn && @.price>10)].volumes[?(@.chapter == 1)]
 ```
-**Limitation:** Any path after the filter clause is not supported.
-```
-$.store.book[?(@.price < 10 || @.category && @.isbn && @.price>10)].price  // INVALID
-```
+
 #### Resolver API:
 * Limitation: **Wildcard** and **Recursive Descent** are **NOT** supported.
 * As of 1.2.6, JsonSurfer provides another way of processing json. You can directly resolve value with JsonPath from a well-built DOM like HashMap or even POJO:
