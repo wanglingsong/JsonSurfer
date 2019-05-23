@@ -369,6 +369,7 @@ Sample Json:
 | ```$..book[0,1]```              | [The first two books](#the-first-two-books)                 |
 | ```$.store.book[?(@.price==8.95)]``` | [Filter all books whose price equals to 8.95](#filter-all-books-whose-price-equals-to-8.95)  |
 | ```$.store.book[?(@.category=='fiction')]```              | [Filter all books which belong to fiction category](#filter-all-books-which-belong-to-fiction-category)                   |
+| ```$.store.book[?(@.author=~/tolkien/i)]```              | [All books matching regex](#all-books-matching-regex)                 |
 
 #### Find the authors of all books: 
 ```javascript
@@ -535,6 +536,25 @@ Output
 {"category":"fiction","author":"Evelyn Waugh","title":"Sword of Honour","price":12.99}
 {"category":"fiction","author":"Herman Melville","title":"Moby Dick","isbn":"0-553-21311-3","price":8.99}
 {"category":"fiction","author":"J. R. R. Tolkien","title":"The Lord of the Rings","isbn":"0-395-19395-8","price":22.99}
+```
+#### All books matching regex
+```javascript
+$.store.book[?(@.author=~/tolkien/i)]
+```
+```java
+        JsonSurfer surfer = JsonSurferGson.INSTANCE;
+        surfer.configBuilder()
+                .bind("$.store.book[?(@.author=~/tolkien/i)]')]", new JsonPathListener() {
+                    @Override
+                    public void onValue(Object value, ParsingContext context) {
+                        System.out.println(value);
+                    }
+                })
+                .buildAndSurf(sample);
+```
+Output
+```
+{"author":"J. R. R. Tolkien","price":22.99,"isbn":"0-395-19395-8","category":"fiction","title":"The Lord of the Rings"}
 ```
 #### Stoppable parsing
 The parsing is stopped when the first book found and printed.
