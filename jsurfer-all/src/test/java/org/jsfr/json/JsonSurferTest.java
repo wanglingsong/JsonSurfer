@@ -892,7 +892,7 @@ public abstract class JsonSurferTest {
     @Test
     public void testJsonPathFilterMatchRegexFlags() throws Exception {
         JsonPathListener mockListener = mock(JsonPathListener.class);
-        surfer.configBuilder().bind("$.store.book[?(@.author =~ /tolkien/i)]", mockListener) // we assume other flags work too
+        surfer.configBuilder().bind("$.store.book[?(@.author=~/tolkien/i)]", mockListener) // we assume other flags work too
                 .buildAndSurf(read("sample_filter.json"));
         verify(mockListener, times(1)).onValue(argThat(new CustomMatcher<Object>("Test filter") {
             @Override
