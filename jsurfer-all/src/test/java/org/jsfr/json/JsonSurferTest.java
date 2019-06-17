@@ -62,7 +62,7 @@ public abstract class JsonSurferTest {
 
     protected JsonSurfer surfer;
     protected JsonProvider provider;
-    private JsonPathListener print = new JsonPathListener() {
+    protected JsonPathListener print = new JsonPathListener() {
         @Override
         public void onValue(Object value, ParsingContext context) {
             LOGGER.debug("Received value: {}", value);
