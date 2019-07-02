@@ -39,7 +39,7 @@ import java.util.Map;
 /**
  * SurfingContext is not thread-safe
  */
-class SurfingContext implements ParsingContext, JsonSaxHandler {
+public class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     private boolean stopped = false;
     private boolean paused = false;
