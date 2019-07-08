@@ -81,6 +81,9 @@ public class JsonFilterVerifier implements JsonSaxHandler {
 
     @Override
     public boolean startObjectEntry(String key) {
+        if (!this.verified && this.jsonPathFilter.apply(this.currentPosition, null, this.config.getJsonProvider())) {
+            this.verified = true;
+        }
         return true;
     }
 

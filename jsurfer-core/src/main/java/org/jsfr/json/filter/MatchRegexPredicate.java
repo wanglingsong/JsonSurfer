@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 /**
  * Created by Leo on 2017/4/4.
  */
-public class MatchRegexPredicate extends AbstractJsonPathFilter {
+public class MatchRegexPredicate extends BasicJsonPathFilter {
 
     private Pattern regex;
 
@@ -44,7 +44,7 @@ public class MatchRegexPredicate extends AbstractJsonPathFilter {
 
     @Override
     public boolean apply(JsonPath jsonPosition, PrimitiveHolder primitiveHolder, JsonProvider jsonProvider) {
-        if (this.getRelativePath().matchFilterPath(jsonPosition)) {
+        if (primitiveHolder != null && this.getRelativePath().matchFilterPath(jsonPosition)) {
             Object candidate = primitiveHolder.getValue();
             String string = (String) jsonProvider.cast(candidate, String.class);
             return regex.matcher(string).find();

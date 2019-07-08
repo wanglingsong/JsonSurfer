@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Created by Leo on 2017/4/5.
  */
-public abstract class AggregatePredicate implements JsonPathFilter {
+public abstract class AggregatePredicate extends CloneableJsonPathFilter {
 
     private List<JsonPathFilter> filters = new ArrayList<JsonPathFilter>();
 
@@ -42,4 +42,14 @@ public abstract class AggregatePredicate implements JsonPathFilter {
         this.filters.add(filter);
     }
 
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        AggregatePredicate cloned = (AggregatePredicate) super.clone();
+        List<JsonPathFilter> newFilters = new ArrayList<>();
+        for (JsonPathFilter filter : this.filters) {
+            newFilters.add((JsonPathFilter) ((CloneableJsonPathFilter) filter).clone());
+        }
+        cloned.filters = newFilters;
+        return cloned;
+    }
 }

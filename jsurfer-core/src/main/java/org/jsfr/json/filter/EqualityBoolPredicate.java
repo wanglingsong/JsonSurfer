@@ -30,7 +30,7 @@ import org.jsfr.json.provider.JsonProvider;
 
 import java.util.Objects;
 
-public class EqualityBoolPredicate extends AbstractJsonPathFilter {
+public class EqualityBoolPredicate extends BasicJsonPathFilter {
 
     private boolean value;
 
@@ -41,7 +41,7 @@ public class EqualityBoolPredicate extends AbstractJsonPathFilter {
 
     @Override
     public boolean apply(JsonPath jsonPosition, PrimitiveHolder primitiveHolder, JsonProvider jsonProvider) {
-        if (this.getRelativePath().matchFilterPath(jsonPosition)) {
+        if (primitiveHolder != null && this.getRelativePath().matchFilterPath(jsonPosition)) {
             Object candidate = primitiveHolder.getValue();
             return candidate != null && Objects.equals(candidate, jsonProvider.primitive(value));
         } else {

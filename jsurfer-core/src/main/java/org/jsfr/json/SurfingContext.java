@@ -26,6 +26,8 @@ package org.jsfr.json;
 
 import org.jsfr.json.SurfingConfiguration.Binding;
 import org.jsfr.json.SurfingConfiguration.IndefinitePathBinding;
+import org.jsfr.json.filter.CloneableJsonPathFilter;
+import org.jsfr.json.filter.JsonPathFilter;
 import org.jsfr.json.path.ArrayIndex;
 import org.jsfr.json.path.ChildNode;
 import org.jsfr.json.path.PathOperator;
@@ -45,14 +47,14 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
     private boolean paused = false;
     private JsonPosition currentPosition;
     private ContentDispatcher dispatcher = new ContentDispatcher();
-    private ContentDispatcher filterVerifierDispatcher;
+    private FilterVerifierDispatcher filterVerifierDispatcher;
     private SurfingConfiguration config;
     private Map<String, Object> transientMap;
 
     SurfingContext(SurfingConfiguration config) {
         this.config = config;
         if (config.hasFilter()) {
-            this.filterVerifierDispatcher = new ContentDispatcher();
+            this.filterVerifierDispatcher = new FilterVerifierDispatcher();
             this.dispatcher.addReceiver(this.filterVerifierDispatcher);
         }
     }
@@ -82,18 +84,18 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
                 }
             }
 
-            if (listeners != null) {
-
-                JsonFilterVerifier filterVerifier = (JsonFilterVerifier) this.filterVerifierDispatcher.getLastReceiver();
-                if (filterVerifier != null) {
-                    LinkedList<JsonPathListener> wrappedListeners = new LinkedList<>();
-                    for (JsonPathListener listener : listeners) {
-                        wrappedListeners.add(filterVerifier.addListener(listener));
-                    }
-                    listeners = wrappedListeners;
-                }
-
-            }
+//            if (listeners != null) {
+//
+//                JsonFilterVerifier filterVerifier = (JsonFilterVerifier) this.filterVerifierDispatcher.getLastReceiver();
+//                if (filterVerifier != null) {
+//                    LinkedList<JsonPathListener> wrappedListeners = new LinkedList<>();
+//                    for (JsonPathListener listener : listeners) {
+//                        wrappedListeners.add(filterVerifier.addListener(listener));
+//                    }
+//                    listeners = wrappedListeners;
+//                }
+//
+//            }
 
         } else {
             // skip matching if "skipOverlappedPath" is enable
@@ -128,12 +130,13 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         boolean matched = definiteBinding ? binding.jsonPath.match(currentPosition) : binding.jsonPath.matchWithDeepScan(currentPosition);
         if (matched) {
             if (binding.filter != null) {
-                this.filterVerifierDispatcher.addReceiver(new JsonFilterVerifier(currentPosition, config, binding.filter, (JsonFilterVerifier) this.filterVerifierDispatcher.getLastReceiver()));
+                // JsonPathFilter is stateful so clone is required
+                this.filterVerifierDispatcher.addVerifier(binding, new JsonFilterVerifier(currentPosition, config, (JsonPathFilter) ((CloneableJsonPathFilter) binding.filter).cloneMe(), this.filterVerifierDispatcher.getVerifier(binding.dependency)));
             } else {
                 if (primitiveHolder != null) {
-                    dispatchPrimitiveWithFilter(binding.getListeners(), primitiveHolder.getValue());
+                    dispatchPrimitiveWithFilter(binding.getListeners(), primitiveHolder.getValue(), this.filterVerifierDispatcher.getVerifier(binding.dependency));
                 } else {
-                    return this.addListeners(binding, listeners);
+                    return this.addListeners(binding, listeners, this.filterVerifierDispatcher.getVerifier(binding.dependency));
                 }
             }
         }
@@ -152,14 +155,28 @@ class SurfingContext implements ParsingContext, JsonSaxHandler {
         return listeners;
     }
 
+    private LinkedList<JsonPathListener> addListeners(Binding binding, LinkedList<JsonPathListener> listeners, JsonFilterVerifier verifier) {
+        LinkedList<JsonPathListener> listenersToAdd = listeners == null ? new LinkedList<JsonPathListener>() : listeners;
+        JsonPathListener[] bindingListeners = binding.getListeners();
+        for (JsonPathListener listener : bindingListeners) {
+            if (verifier != null) {
+                listenersToAdd.add(verifier.addListener(listener));
+            } else {
+                listenersToAdd.add(listener);
+            }
+        }
+//        Collections.addAll(listenersToAdd, binding.getListeners());
+        return listenersToAdd;
+    }
+
     private LinkedList<JsonPathListener> addListeners(Binding binding, LinkedList<JsonPathListener> listeners) {
         LinkedList<JsonPathListener> listenersToAdd = listeners == null ? new LinkedList<JsonPathListener>() : listeners;
         Collections.addAll(listenersToAdd, binding.getListeners());
         return listenersToAdd;
     }
 
-    private void dispatchPrimitiveWithFilter(JsonPathListener[] listeners, Object primitive) {
-        JsonFilterVerifier filterVerifier = (JsonFilterVerifier) this.filterVerifierDispatcher.getLastReceiver();
+    private void dispatchPrimitiveWithFilter(JsonPathListener[] listeners, Object primitive, JsonFilterVerifier filterVerifier) {
+//        JsonFilterVerifier filterVerifier = (JsonFilterVerifier) this.filterVerifierDispatcher.getLastReceiver();
         if (filterVerifier != null) {
             for (JsonPathListener listener : listeners) {
                 JsonPathListener newListener = filterVerifier.addListener(listener);

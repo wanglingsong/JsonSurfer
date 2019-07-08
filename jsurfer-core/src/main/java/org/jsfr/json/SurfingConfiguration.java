@@ -81,6 +81,7 @@ public class SurfingConfiguration {
 
         JsonPath jsonPath;
         JsonPathFilter filter;
+        Binding dependency;
         JsonPathListener[] listeners;
 //        FilteredJsonPathListener[] filteredListeners;
 
@@ -243,33 +244,43 @@ public class SurfingConfiguration {
         }
 
         public Builder bind(JsonPath jsonPath, JsonPathListener... jsonPathListeners) {
-            if (!jsonPath.isDefinite()) {
-                int minimumDepth = JsonPath.minimumPathDepth(jsonPath);
-                indefiniteBindings.add(new IndefinitePathBinding(jsonPath, jsonPathListeners, minimumDepth));
-            } else {
-                int depth = jsonPath.pathDepth();
-                updateMinMaxDepth(depth);
-                ArrayList<Binding> bindings = getDefiniteBindings(depth);
-                bindings.add(new Binding(jsonPath, jsonPathListeners));
-            }
             Collection<FilterConfig> filterConfigs = getFilterConfigs(jsonPath);
             if (!filterConfigs.isEmpty()) {
                 this.hasFilter = true;
             }
 
+            Binding previous = null;
             for (FilterConfig fc : filterConfigs) {
                 if (fc.filterRootPath.checkDefinite()) {
                     ArrayList<Binding> bindings = getDefiniteBindings(fc.filterRootPath.pathDepth());
                     Binding filterBiding = new Binding(fc.filterRootPath, null);
                     filterBiding.filter = fc.filter;
+                    filterBiding.dependency = previous;
                     bindings.add(filterBiding);
                     updateMinMaxDepth(fc.filterRootPath.pathDepth());
+                    previous = filterBiding;
+
                 } else {
                     int minimumDepth = JsonPath.minimumPathDepth(fc.filterRootPath);
                     IndefinitePathBinding filterBiding = new IndefinitePathBinding(fc.filterRootPath, null, minimumDepth);
                     filterBiding.filter = fc.filter;
+                    filterBiding.dependency = previous;
                     indefiniteBindings.add(filterBiding);
+                    previous = filterBiding;
                 }
+            }
+            if (!jsonPath.isDefinite()) {
+                int minimumDepth = JsonPath.minimumPathDepth(jsonPath);
+                IndefinitePathBinding binding = new IndefinitePathBinding(jsonPath, jsonPathListeners, minimumDepth);
+                binding.dependency = previous;
+                indefiniteBindings.add(binding);
+            } else {
+                int depth = jsonPath.pathDepth();
+                updateMinMaxDepth(depth);
+                ArrayList<Binding> bindings = getDefiniteBindings(depth);
+                Binding binding = new Binding(jsonPath, jsonPathListeners);
+                binding.dependency = previous;
+                bindings.add(binding);
             }
             return this;
         }

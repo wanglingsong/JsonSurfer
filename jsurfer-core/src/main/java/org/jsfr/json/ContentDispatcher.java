@@ -155,8 +155,8 @@ class ContentDispatcher implements JsonSaxHandler {
         receiver.addFirst(contentHandler);
     }
 
-    public JsonSaxHandler getLastReceiver() {
-        return this.receiver.isEmpty() ? null : this.receiver.getFirst();
-    }
+//    public JsonSaxHandler getLastReceiver() {
+//        return this.receiver.isEmpty() ? null : this.receiver.getFirst();
+//    }
 
 }

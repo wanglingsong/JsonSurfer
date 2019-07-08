@@ -24,18 +24,30 @@
 
 package org.jsfr.json.filter;
 
+import org.jsfr.json.PrimitiveHolder;
 import org.jsfr.json.path.JsonPath;
+import org.jsfr.json.provider.JsonProvider;
 
-public abstract class AbstractJsonPathFilter implements JsonPathFilter {
+public class CloneableJsonPathFilter implements JsonPathFilter, Cloneable {
 
-    private JsonPath relativePath;
-
-    public AbstractJsonPathFilter(JsonPath relativePath) {
-        this.relativePath = relativePath;
+    @Override
+    public boolean apply(JsonPath jsonPosition, PrimitiveHolder primitiveHolder, JsonProvider jsonProvider) {
+        throw new UnsupportedOperationException("You should implement this method");
     }
 
-    public JsonPath getRelativePath() {
-        return relativePath;
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
+    public Object cloneMe() {
+        try {
+            return this.clone();
+        } catch (CloneNotSupportedException e) {
+            // TODO
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

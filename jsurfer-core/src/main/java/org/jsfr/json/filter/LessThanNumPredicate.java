@@ -33,7 +33,7 @@ import java.math.BigDecimal;
 /**
  * Created by Leo on 2017/4/4.
  */
-public class LessThanNumPredicate extends AbstractJsonPathFilter {
+public class LessThanNumPredicate extends BasicJsonPathFilter {
 
     private BigDecimal value;
 
@@ -44,7 +44,7 @@ public class LessThanNumPredicate extends AbstractJsonPathFilter {
 
     @Override
     public boolean apply(JsonPath jsonPosition, PrimitiveHolder primitiveHolder, JsonProvider jsonProvider) {
-        if (this.getRelativePath().matchFilterPath(jsonPosition)) {
+        if (primitiveHolder != null && this.getRelativePath().matchFilterPath(jsonPosition)) {
             Object candidate = primitiveHolder.getValue();
             return candidate != null && new BigDecimal(candidate.toString()).compareTo(value) < 0;
         } else {

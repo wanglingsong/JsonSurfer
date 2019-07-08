@@ -341,6 +341,22 @@ public abstract class JsonSurferTest {
     }
 
     @Test
+    public void testJsonPathFilterExistence2() throws Exception {
+
+        JsonPathListener mockListener = mock(JsonPathListener.class);
+        surfer.configBuilder().bind("$.store.book[?(@.description)]", mockListener)
+                .buildAndSurf(read("sample_filter.json"));
+
+        verify(mockListener, times(1)).onValue(argThat(new CustomMatcher<Object>("test filter") {
+            @Override
+            public boolean matches(Object o) {
+                return provider.primitive("Sword of Honour").equals(provider.resolve(o, "title"));
+            }
+        }), any(ParsingContext.class));
+
+    }
+
+    @Test
     public void testJsonPathFilterNegation() throws Exception {
 
         JsonPathListener mockListener = mock(JsonPathListener.class);
@@ -900,6 +916,45 @@ public abstract class JsonSurferTest {
                 return provider.primitive("The Lord of the Rings").equals(provider.resolve(o, "title"));
             }
         }), any(ParsingContext.class));
+    }
+
+    @Test
+    public void testJsonPathFilterWithMultipleBinding() throws Exception {
+        JsonPathListener mockListener1 = mock(JsonPathListener.class);
+        JsonPathListener mockListener2 = mock(JsonPathListener.class);
+        JsonPathListener mockListener3 = mock(JsonPathListener.class);
+
+        surfer.configBuilder()
+                .bind("$.store.book[0,1]", mockListener1)
+                .bind("$.store.book[?(@.author=='Herman Melville')]", mockListener2)
+                .bind("$.store.book[?(@.author=='Nigel Rees')]", mockListener3)
+                .buildAndSurf(read("sample_filter.json"));
+
+        verify(mockListener1, times(2)).onValue(any(), any(ParsingContext.class));
+        verify(mockListener2, times(1)).onValue(any(), any(ParsingContext.class));
+        verify(mockListener3, times(1)).onValue(any(), any(ParsingContext.class));
+    }
+
+    @Test
+    public void testJsonPathFilterWithMultipleBindingAndSharedConfig() throws Exception {
+        JsonPathListener mockListener1 = mock(JsonPathListener.class);
+        JsonPathListener mockListener2 = mock(JsonPathListener.class);
+        JsonPathListener mockListener3 = mock(JsonPathListener.class);
+        JsonPathListener mockListener4 = mock(JsonPathListener.class);
+
+        SurfingConfiguration config = surfer.configBuilder()
+                .bind("$.store.book[0,1]", mockListener1)
+                .bind("$.store.book[?(@.author=='Herman Melville')]", mockListener2)
+                .bind("$.store.book[?(@.author=='Nigel Rees')]", mockListener3)
+                .bind("$.store.book[?(@.volumes)]", mockListener4)
+                .build();
+        surfer.surf(read("sample_filter.json"), config);
+        surfer.surf(read("sample_filter2.json"), config);
+
+        verify(mockListener1, times(4)).onValue(any(), any(ParsingContext.class));
+        verify(mockListener2, times(2)).onValue(any(), any(ParsingContext.class));
+        verify(mockListener3, times(3)).onValue(any(), any(ParsingContext.class));
+        verify(mockListener4, times(2)).onValue(any(), any(ParsingContext.class));
     }
 
 }

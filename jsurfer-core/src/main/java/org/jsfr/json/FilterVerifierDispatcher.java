@@ -22,24 +22,22 @@
  * SOFTWARE.
  */
 
-package org.jsfr.json.filter;
+package org.jsfr.json;
 
-import org.jsfr.json.PrimitiveHolder;
-import org.jsfr.json.path.JsonPath;
-import org.jsfr.json.provider.JsonProvider;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * Created by Leo on 2017/4/4.
- */
-public class ExistencePredicate extends BasicJsonPathFilter {
+public class FilterVerifierDispatcher extends ContentDispatcher {
 
-    public ExistencePredicate(JsonPath relativePath) {
-        super(relativePath);
+    private Map<SurfingConfiguration.Binding, JsonFilterVerifier> verifiers = new HashMap<>();
+
+    public void addVerifier(SurfingConfiguration.Binding binding, JsonFilterVerifier verifier) {
+        this.addReceiver(verifier);
+        this.verifiers.put(binding, verifier);
     }
 
-    @Override
-    public boolean apply(JsonPath jsonPosition, PrimitiveHolder primitiveHolder, JsonProvider jsonProvider) {
-        return this.getRelativePath().matchFilterPath(jsonPosition);
+    public JsonFilterVerifier getVerifier(SurfingConfiguration.Binding binding) {
+        return this.verifiers.get(binding);
     }
 
 }

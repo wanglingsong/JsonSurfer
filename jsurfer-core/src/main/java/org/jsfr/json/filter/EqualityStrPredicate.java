@@ -33,7 +33,7 @@ import java.util.Objects;
 /**
  * Created by Leo on 2017/4/4.
  */
-public class EqualityStrPredicate extends AbstractJsonPathFilter {
+public class EqualityStrPredicate extends BasicJsonPathFilter {
 
     private String value;
 
@@ -44,7 +44,7 @@ public class EqualityStrPredicate extends AbstractJsonPathFilter {
 
     @Override
     public boolean apply(JsonPath jsonPosition, PrimitiveHolder primitiveHolder, JsonProvider jsonProvider) {
-        if (this.getRelativePath().matchFilterPath(jsonPosition)) {
+        if (primitiveHolder != null && this.getRelativePath().matchFilterPath(jsonPosition)) {
             Object candidate = primitiveHolder.getValue();
             return candidate != null && Objects.equals(candidate, jsonProvider.primitive(value));
         } else {

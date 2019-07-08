@@ -24,22 +24,25 @@
 
 package org.jsfr.json.filter;
 
-import org.jsfr.json.PrimitiveHolder;
 import org.jsfr.json.path.JsonPath;
-import org.jsfr.json.provider.JsonProvider;
 
-/**
- * Created by Leo on 2017/4/4.
- */
-public class ExistencePredicate extends BasicJsonPathFilter {
+public abstract class BasicJsonPathFilter extends CloneableJsonPathFilter {
 
-    public ExistencePredicate(JsonPath relativePath) {
-        super(relativePath);
+    private JsonPath relativePath;
+
+    public BasicJsonPathFilter(JsonPath relativePath) {
+        this.relativePath = relativePath;
+    }
+
+    public JsonPath getRelativePath() {
+        return relativePath;
     }
 
     @Override
-    public boolean apply(JsonPath jsonPosition, PrimitiveHolder primitiveHolder, JsonProvider jsonProvider) {
-        return this.getRelativePath().matchFilterPath(jsonPosition);
+    protected Object clone() throws CloneNotSupportedException {
+        BasicJsonPathFilter cloned = (BasicJsonPathFilter) super.clone();
+        cloned.relativePath = this.relativePath;
+        return cloned;
     }
 
 }
