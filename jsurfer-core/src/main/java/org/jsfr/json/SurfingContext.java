@@ -134,7 +134,7 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
                 this.filterVerifierDispatcher.addVerifier(binding, new JsonFilterVerifier(currentPosition, config, (JsonPathFilter) ((CloneableJsonPathFilter) binding.filter).cloneMe(), this.filterVerifierDispatcher.getVerifier(binding.dependency)));
             } else {
                 if (primitiveHolder != null) {
-                    dispatchPrimitiveWithFilter(binding.getListeners(), primitiveHolder.getValue(), this.filterVerifierDispatcher.getVerifier(binding.dependency));
+                    dispatchPrimitiveWithFilter(binding.getListeners(), primitiveHolder.getValue(), binding.dependency);
                 } else {
                     return this.addListeners(binding, listeners, this.filterVerifierDispatcher.getVerifier(binding.dependency));
                 }
@@ -175,13 +175,18 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
         return listenersToAdd;
     }
 
-    private void dispatchPrimitiveWithFilter(JsonPathListener[] listeners, Object primitive, JsonFilterVerifier filterVerifier) {
+    private void dispatchPrimitiveWithFilter(JsonPathListener[] listeners, Object primitive, Binding dependency) {
+
+
 //        JsonFilterVerifier filterVerifier = (JsonFilterVerifier) this.filterVerifierDispatcher.getLastReceiver();
-        if (filterVerifier != null) {
+        if (dependency != null) {
+            JsonFilterVerifier filterVerifier = this.filterVerifierDispatcher.getVerifier(dependency);
             for (JsonPathListener listener : listeners) {
                 JsonPathListener newListener = filterVerifier.addListener(listener);
                 newListener.onValue(primitive, this);
             }
+        } else {
+            dispatchPrimitive(listeners, primitive);
         }
     }
 

@@ -957,4 +957,23 @@ public abstract class JsonSurferTest {
         verify(mockListener4, times(2)).onValue(any(), any(ParsingContext.class));
     }
 
+    @Test
+    public void testMultipleBindingWithAndWithoutFilter() throws Exception {
+
+        JsonPathListener mockListener1 = mock(JsonPathListener.class);
+        JsonPathListener mockListener2 = mock(JsonPathListener.class);
+        JsonPathListener mockListener3 = mock(JsonPathListener.class);
+
+        surfer.configBuilder()
+                .bind("$.store.book[?(@.category == 'reference')]", mockListener1)
+                .bind("$.store.bicycle.color", mockListener2)
+                .bind("$.store.bicycle", mockListener3)
+                .buildAndSurf(read("sample.json"));
+
+        verify(mockListener1, times(1)).onValue(any(), any(ParsingContext.class));
+        verify(mockListener2, times(1)).onValue(any(), any(ParsingContext.class));
+        verify(mockListener3, times(1)).onValue(any(), any(ParsingContext.class));
+
+    }
+
 }
