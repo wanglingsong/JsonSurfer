@@ -252,12 +252,34 @@ public class JsonSurfer {
     }
 
     /**
+     * Create collector object
+     *
+     * @param json Json string
+     * @return collector
+     */
+    public Collector collector(String json) {
+        return new Collector(configBuilder(), this.jsonProvider, json, null);
+    }
+
+    /**
+     * Create collector object
+     *
+     * @param json Json InputStream
+     * @return collector
+     */
+    public Collector collector(InputStream json) {
+        return new Collector(configBuilder(), this.jsonProvider, null, json);
+    }
+
+    /**
      * Collect all matched value into a collection
      *
      * @param json  Json string
      * @param paths JsonPath
      * @return collection
+     * @deprecated use {@link #collector(String)} instead
      */
+    @Deprecated
     public Collection<Object> collectAll(String json, String... paths) {
         return collectAll(json, compile(paths));
     }
@@ -268,7 +290,9 @@ public class JsonSurfer {
      * @param json  Json string
      * @param paths JsonPath
      * @return collection
+     * @deprecated use {@link #collector(String)} instead
      */
+    @Deprecated
     public Collection<Object> collectAll(String json, JsonPath... paths) {
         return collectAll(json, Object.class, paths);
     }
@@ -279,7 +303,9 @@ public class JsonSurfer {
      * @param paths  JsonPath
      * @param <T>    target class
      * @return typed value
+     * @deprecated use {@link #collector(String)} instead
      */
+    @Deprecated
     public <T> Collection<T> collectAll(String json, Class<T> tClass, JsonPath... paths) {
         CollectAllListener<T> listener = new CollectAllListener<T>(jsonProvider, tClass);
         SurfingConfiguration.Builder builder = configBuilder();
@@ -296,7 +322,7 @@ public class JsonSurfer {
      * @param reader Json reader
      * @param paths  JsonPath
      * @return values
-     * @deprecated use {@link #collectAll(InputStream, String...)} instead
+     * @deprecated use {@link #collector(String)} instead
      */
     @Deprecated
     public Collection<Object> collectAll(Reader reader, String... paths) {
@@ -309,7 +335,7 @@ public class JsonSurfer {
      * @param reader Json reader
      * @param paths  JsonPath
      * @return All matched value
-     * @deprecated use {@link #collectAll(InputStream, JsonPath...)} instead
+     * @deprecated use {@link #collector(String)} instead
      */
     @Deprecated
     public Collection<Object> collectAll(Reader reader, JsonPath... paths) {
@@ -324,7 +350,7 @@ public class JsonSurfer {
      * @param paths  JsonPath
      * @param <T>    type
      * @return typed value
-     * @deprecated use {@link #collectAll(InputStream, Class, JsonPath...)} instead
+     * @deprecated use {@link #collector(String)} instead
      */
     @Deprecated
     public <T> Collection<T> collectAll(Reader reader, Class<T> tClass, JsonPath... paths) {
@@ -343,7 +369,9 @@ public class JsonSurfer {
      * @param inputStream Json reader
      * @param paths       JsonPath
      * @return values
+     * @deprecated use {@link #collector(InputStream)} instead
      */
+    @Deprecated
     public Collection<Object> collectAll(InputStream inputStream, String... paths) {
         return collectAll(inputStream, compile(paths));
     }
@@ -354,7 +382,9 @@ public class JsonSurfer {
      * @param inputStream Json reader
      * @param paths       JsonPath
      * @return All matched value
+     * @deprecated use {@link #collector(InputStream)} instead
      */
+    @Deprecated
     public Collection<Object> collectAll(InputStream inputStream, JsonPath... paths) {
         return collectAll(inputStream, Object.class, paths);
     }
@@ -367,7 +397,9 @@ public class JsonSurfer {
      * @param paths       JsonPath
      * @param <T>         type
      * @return typed value
+     * @deprecated use {@link #collector(InputStream)} instead
      */
+    @Deprecated
     public <T> Collection<T> collectAll(InputStream inputStream, Class<T> tClass, JsonPath... paths) {
         CollectAllListener<T> listener = new CollectAllListener<T>(jsonProvider, tClass);
         SurfingConfiguration.Builder builder = configBuilder();
@@ -384,7 +416,9 @@ public class JsonSurfer {
      * @param json  json
      * @param paths JsonPath
      * @return value
+     * @deprecated use {@link #collector(String)} instead
      */
+    @Deprecated
     public Object collectOne(String json, String... paths) {
         return collectOne(json, compile(paths));
     }
@@ -395,7 +429,9 @@ public class JsonSurfer {
      * @param json  json
      * @param paths JsonPath
      * @return value
+     * @deprecated use {@link #collector(String)} instead
      */
+    @Deprecated
     public Object collectOne(String json, JsonPath... paths) {
         return collectOne(json, Object.class, paths);
     }
@@ -406,7 +442,9 @@ public class JsonSurfer {
      * @param paths  JsonPath
      * @param <T>    type
      * @return value
+     * @deprecated use {@link #collector(String)} instead
      */
+    @Deprecated
     public <T> T collectOne(String json, Class<T> tClass, JsonPath... paths) {
         CollectOneListener listener = new CollectOneListener(true);
         SurfingConfiguration.Builder builder = configBuilder().skipOverlappedPath();
@@ -424,7 +462,7 @@ public class JsonSurfer {
      * @param reader Json reader
      * @param paths  JsonPath
      * @return Value
-     * @deprecated use {@link #collectOne(InputStream, String...)} instead
+     * @deprecated use {@link #collector(InputStream)} instead
      */
     @Deprecated
     public Object collectOne(Reader reader, String... paths) {
@@ -437,7 +475,7 @@ public class JsonSurfer {
      * @param reader json reader
      * @param paths  JsonPath
      * @return Matched value
-     * @deprecated use {@link #collectOne(InputStream, JsonPath...)} instead
+     * @deprecated use {@link #collector(InputStream)} instead
      */
     @Deprecated
     public Object collectOne(Reader reader, JsonPath... paths) {
@@ -452,7 +490,7 @@ public class JsonSurfer {
      * @param paths  JsonPath
      * @param <T>    type
      * @return typed value
-     * @deprecated use {@link #collectOne(InputStream, Class, JsonPath...)} instead
+     * @deprecated use {@link #collector(InputStream)} instead
      */
     @SuppressWarnings("unchecked")
     @Deprecated
@@ -473,7 +511,9 @@ public class JsonSurfer {
      * @param inputStream Json inpustream
      * @param paths       JsonPath
      * @return Value
+     * @deprecated use {@link #collector(InputStream)} instead
      */
+    @Deprecated
     public Object collectOne(InputStream inputStream, String... paths) {
         return collectOne(inputStream, compile(paths));
     }
@@ -484,7 +524,9 @@ public class JsonSurfer {
      * @param inputStream json inpustream
      * @param paths       JsonPath
      * @return Matched value
+     * @deprecated use {@link #collector(InputStream)} instead
      */
+    @Deprecated
     public Object collectOne(InputStream inputStream, JsonPath... paths) {
         return collectOne(inputStream, Object.class, paths);
     }
@@ -497,8 +539,10 @@ public class JsonSurfer {
      * @param paths       JsonPath
      * @param <T>         type
      * @return typed value
+     * @deprecated use {@link #collector(InputStream)} instead
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     public <T> T collectOne(InputStream inputStream, Class<T> tClass, JsonPath... paths) {
         CollectOneListener listener = new CollectOneListener(true);
         SurfingConfiguration.Builder builder = configBuilder().skipOverlappedPath();

@@ -976,4 +976,19 @@ public abstract class JsonSurferTest {
 
     }
 
+    @Test
+    public void testCollector() throws Exception {
+        Collector collector = surfer.collector(read("sample.json"));
+        ValueBox<String> box1 = collector.collectOne("$.store.book[1].category", String.class);
+        ValueBox<Object> box2 = collector.collectOne("$.store.book[2].isbn");
+        ValueBox<Collection<Object>> box3 = collector.collectAll("$.store.book[*]");
+        assertNull(box1.get());
+        assertNull(box2.get());
+        assertEquals(0, box3.get().size());
+        collector.exec();
+        assertEquals("fiction", box1.get());
+        assertEquals("0-553-21311-3", box2.get());
+        assertEquals(4, box3.get().size());
+    }
+
 }
