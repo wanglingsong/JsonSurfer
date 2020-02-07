@@ -24,7 +24,7 @@
 
 package org.jsfr.json;
 
-public class CollectOneListener implements JsonPathListener {
+class CollectOneListener implements JsonPathListener {
 
     private boolean shallStopImmediately;
 

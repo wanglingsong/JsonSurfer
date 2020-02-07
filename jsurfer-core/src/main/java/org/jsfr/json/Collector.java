@@ -49,6 +49,13 @@ public class Collector {
     }
 
 
+    /**
+     * Collect single value into box
+     *
+     * @param jsonPath JsonPath
+     * @param <T>      target class
+     * @return value box
+     */
     public <T> ValueBox<T> collectOne(JsonPath jsonPath, final Class<T> tClass) {
         final CollectOneListener listener = new CollectOneListener();
         this.builder.bind(jsonPath, listener);
@@ -60,14 +67,34 @@ public class Collector {
         };
     }
 
+    /**
+     * Collect single value into box
+     *
+     * @param jsonPath JsonPath
+     * @param <T>      target class
+     * @return value box
+     */
     public <T> ValueBox<T> collectOne(String jsonPath, final Class<T> tClass) {
         return this.collectOne(JsonPathCompiler.compile(jsonPath), tClass);
     }
 
+    /**
+     * Collect single value into box
+     *
+     * @param jsonPath JsonPath
+     * @return value box
+     */
     public ValueBox<Object> collectOne(String jsonPath) {
         return this.collectOne(jsonPath, Object.class);
     }
 
+    /**
+     * Collect multiple value into box
+     *
+     * @param jsonPath JsonPath
+     * @param <T>      target class
+     * @return value box
+     */
     public <T> ValueBox<Collection<T>> collectAll(JsonPath jsonPath, final Class<T> tClass) {
         final CollectAllListener<T> listener = new CollectAllListener<>(this.jsonProvider, tClass);
         this.builder.bind(jsonPath, listener);
@@ -79,14 +106,30 @@ public class Collector {
         };
     }
 
+    /**
+     * Collect multiple value into box
+     *
+     * @param jsonPath JsonPath
+     * @param <T>      target class
+     * @return value box
+     */
     public <T> ValueBox<Collection<T>> collectAll(String jsonPath, final Class<T> tClass) {
         return this.collectAll(JsonPathCompiler.compile(jsonPath), tClass);
     }
 
+    /**
+     * Collect multiple value into box
+     *
+     * @param jsonPath JsonPath
+     * @return value box
+     */
     public ValueBox<Collection<Object>> collectAll(String jsonPath) {
         return this.collectAll(jsonPath, Object.class);
     }
 
+    /**
+     * Collector can only be executed once
+     */
     public void exec() {
         if (this.jsonString != null) {
             this.builder.buildAndSurf(this.jsonString);
