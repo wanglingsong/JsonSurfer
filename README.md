@@ -54,25 +54,25 @@ JsonSurfer has drivers for most of popular json libraries including: Gson, Jacks
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-gson</artifactId>
-    <version>1.5.1</version>
+    <version>1.6.0</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-jackson</artifactId>
-    <version>1.5.1</version>
+    <version>1.6.0</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-fastjson</artifactId>
-    <version>1.5.1</version>
+    <version>1.6.0</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-jsonsimple</artifactId>
-    <version>1.5.1</version>
+    <version>1.6.0</version>
 </dependency>
 
 ```
@@ -116,6 +116,27 @@ or
 ```java
         JsonSurfer surfer = JsonSurferFastJson.INSTANCE;
 ```
+#### Collect value by JsonPath
+```java
+        Collector collector = surfer.collector(sample);
+        ValueBox<String> box1 = collector.collectOne("$.store.book[1].category", String.class);
+        ValueBox<Object> box2 = collector.collectOne("$.store.book[2].isbn");
+        ValueBox<Collection<Object>> box3 = collector.collectAll("$.store.book[*]");
+        collector.exec(); // make sure exec() invoked before getting value from boxes
+        box1.get();
+        box2.get();
+        box3.get();
+```
+#### 【DEPRECATED】 Collect the first matched value and stop immediately
+```java
+        JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
+        Object singleResult = jsonSurfer.collectOne(sample, "$.store.book[0]");
+```
+#### 【DEPRECATED】 Colllect every matched value into a collection
+```java
+        JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
+        Collection<Object> multipleResults = jsonSurfer.collectAll(sample, "$.store.book[*]");
+```
 #### "Surfing" in Json and collecting matched value in the listeners
 ```java
         JsonSurfer surfer = JsonSurferGson.INSTANCE;
@@ -150,16 +171,6 @@ JsonPath object is immutable and can be reused safely.
 ```java
         JsonPath compiledPath = JsonPathCompiler.compile("$..book[1,3]['author','title']");
         String value = surfer.collectOne(read("sample.json"), String.class, compiledPath);
-```
-#### Collect the first matched value and stop immediately
-```java
-        JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
-        Object singleResult = jsonSurfer.collectOne(sample, "$.store.book[0]");
-```
-#### Colllect every matched value into a collection
-```java
-        JsonSurfer jsonSurfer = JsonSurferGson.INSTANCE;
-        Collection<Object> multipleResults = jsonSurfer.collectAll(sample, "$.store.book[*]");
 ```
 #### JsonPath Filters
 * Filter operators
