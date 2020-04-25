@@ -131,6 +131,7 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
         if (matched) {
             if (binding.filter != null) {
                 // JsonPathFilter is stateful so clone is required
+                // TODO not clone for stateless filter
                 this.filterVerifierDispatcher.addVerifier(binding, new JsonFilterVerifier(currentPosition, config, (JsonPathFilter) ((CloneableJsonPathFilter) binding.filter).cloneMe(), this.filterVerifierDispatcher.getVerifier(binding.dependency)));
             } else {
                 if (primitiveHolder != null) {
