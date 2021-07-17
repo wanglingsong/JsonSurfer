@@ -56,7 +56,7 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.8.7</version>
+            <version>${gson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.jsurfer</groupId>
