@@ -144,6 +144,11 @@ public class FastJsonParser implements JsonParserAdapter {
                 if (tempString != null) {
                     context.primitive(staticPrimitiveHolder.withValue(tempString));
                 }
+
+                if (context.isStopped()) {
+                    lexer.close();
+                }
+
             } catch (Exception e) {
                 context.getConfig().getErrorHandlingStrategy().handleParsingException(e);
             }
