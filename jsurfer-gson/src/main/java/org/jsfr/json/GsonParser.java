@@ -124,7 +124,7 @@ public class GsonParser implements JsonParserAdapter {
                             break;
                     }
                 }
-                if (context.isStopped()) {
+                if (context.getConfig().isCloseParserOnStop() && context.isStopped()) {
                     jsonReader.close();
                 }
             } catch (Exception e) {

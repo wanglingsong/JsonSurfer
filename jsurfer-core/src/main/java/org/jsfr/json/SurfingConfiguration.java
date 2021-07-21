@@ -314,6 +314,7 @@ public class SurfingConfiguration {
     private int maxDepth = -1;
     private boolean skipOverlappedPath = false;
     private boolean hasFilter = false;
+    private boolean closeParserOnStop = true;
 
     private Binding[][] definitePathLookup;
 
@@ -385,6 +386,14 @@ public class SurfingConfiguration {
 
     public boolean hasFilter() {
         return hasFilter;
+    }
+
+    public void setCloseParserOnStop(boolean closeParserOnStop) {
+        this.closeParserOnStop = closeParserOnStop;
+    }
+
+    public boolean isCloseParserOnStop() {
+        return closeParserOnStop;
     }
 
 }

@@ -200,7 +200,7 @@ public class JacksonParser implements JsonParserAdapter {
                         throw new IllegalStateException("Unexpected token");
                 }
             }
-            if (context.isStopped()) {
+            if (context.getConfig().isCloseParserOnStop() && context.isStopped()) {
                 this.jsonParser.close();
             }
         }

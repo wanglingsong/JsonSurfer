@@ -145,7 +145,7 @@ public class FastJsonParser implements JsonParserAdapter {
                     context.primitive(staticPrimitiveHolder.withValue(tempString));
                 }
 
-                if (context.isStopped()) {
+                if (context.getConfig().isCloseParserOnStop() && context.isStopped()) {
                     lexer.close();
                 }
 
