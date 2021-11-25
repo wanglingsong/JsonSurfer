@@ -28,6 +28,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import java.math.BigInteger;
+
 /**
  * Created by Leo on 2017/4/1.
  */
@@ -74,6 +76,11 @@ public class FastJsonProvider implements JsonProvider<JSONObject, JSONArray, Obj
 
     @Override
     public Object primitive(int value) {
+        return value;
+    }
+
+    @Override
+    public Object primitive(BigInteger value) {
         return value;
     }
 

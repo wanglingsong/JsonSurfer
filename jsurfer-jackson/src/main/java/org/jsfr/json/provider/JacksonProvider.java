@@ -32,6 +32,8 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jsfr.json.exception.JsonSurfingException;
 
+import java.math.BigInteger;
+
 public class JacksonProvider implements JsonProvider<ObjectNode, ArrayNode, JsonNode> {
 
     public static final JacksonProvider INSTANCE = new JacksonProvider();
@@ -86,6 +88,11 @@ public class JacksonProvider implements JsonProvider<ObjectNode, ArrayNode, Json
 
     @Override
     public JsonNode primitive(int value) {
+        return factory.numberNode(value);
+    }
+
+    @Override
+    public JsonNode primitive(BigInteger value) {
         return factory.numberNode(value);
     }
 

@@ -27,6 +27,8 @@ package org.jsfr.json.provider;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.math.BigInteger;
+
 public class JsonSimpleProvider implements JsonProvider<JSONObject, JSONArray, Object> {
 
     public static final JsonSimpleProvider INSTANCE = new JsonSimpleProvider();
@@ -70,6 +72,11 @@ public class JsonSimpleProvider implements JsonProvider<JSONObject, JSONArray, O
 
     @Override
     public Object primitive(int value) {
+        return value;
+    }
+
+    @Override
+    public Object primitive(BigInteger value) {
         return value;
     }
 
