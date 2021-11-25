@@ -39,11 +39,15 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
+import java.math.BigInteger;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * Created by Leo on 2015/3/30.
@@ -133,6 +137,15 @@ public class JacksonParserTest extends JsonSurferTest {
         SurfingConfiguration config = avroSurfer.configBuilder().bind("$.name", mockListener).build();
         avroSurfer.surf(new ByteArrayInputStream(avroData), config);
         verify(mockListener).onValue(eq(provider.primitive("foo")), any(ParsingContext.class));
+    }
+
+    @Test
+    public void testParsingLongIntegers() throws Exception {
+        Collector collector = surfer.collector(read("sample_big_integer.json"));
+        ValueBox<Object> box = collector.collectOne("$.value");
+        collector.exec();
+        BigInteger expected = new BigInteger("3452453534534534534543534543545");
+        assertEquals(expected, box.get());
     }
 
 }
