@@ -54,25 +54,25 @@ JsonSurfer has drivers for most of popular json libraries including: Gson, Jacks
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-gson</artifactId>
-    <version>1.6.2</version>
+    <version>1.6.3</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-jackson</artifactId>
-    <version>1.6.2</version>
+    <version>1.6.3</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-fastjson</artifactId>
-    <version>1.6.2</version>
+    <version>1.6.3</version>
 </dependency>
 
 <dependency>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer-jsonsimple</artifactId>
-    <version>1.6.2</version>
+    <version>1.6.3</version>
 </dependency>
 
 ```
