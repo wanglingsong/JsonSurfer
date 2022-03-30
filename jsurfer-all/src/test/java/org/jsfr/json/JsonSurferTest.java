@@ -40,6 +40,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -1046,6 +1047,24 @@ public abstract class JsonSurferTest {
         ValueBox<String> box1 = collector.collectOne("$.store.book[?(@.author==\"J. R. R. Tolkien\")].title", String.class);
         collector.exec();
         assertEquals("The Lord of the Rings", box1.get());
+    }
+
+    @Test
+    public void testFilterOnObjects() throws Exception {
+        Collector collector = surfer.collector(read("sample_filter3.json"));
+        ValueBox<Collection<Map>> boxes = collector.collectAll("$..[?(@.letter=='X')]", Map.class);
+        collector.exec();
+        Collection<Map> filtered = boxes.get();
+        System.out.println(filtered);
+        assertEquals(3, filtered.size());
+        Iterator<Map> itr = filtered.iterator();
+        Map first = itr.next();
+        Map second = itr.next();
+        Map third = itr.next();
+
+        assertEquals(1.1, first.get("number"));
+        assertEquals(1.2, second.get("number"));
+        assertEquals(1.3, third.get("number"));
     }
 
 }

@@ -83,18 +83,18 @@ public class JsonPathTest {
         assertEquals(41, path.size);
     }
 
-    @Test
-    public void shallMatch() throws Exception {
-        JsonPath path1 = compile("$..store..book..book[?(@.category=='fiction')]..title");
-        JsonPath path2 = compile("$..store..book.store.book[?(@.category=='fiction')]..title");
-        JsonPath path3 = compile("$..store..book.store[?(@.category=='fiction')]..title");
-        JsonPath path4 = compile("$..book..book..book..store.book[?(@.category=='fiction')]..title");
-        JsonPath position = compile("$.book.store.book.store.book[1].volumes[1].title");
-        assertTrue(path1.matchWithDeepScan(position));
-        assertTrue(path2.matchWithDeepScan(position));
-        assertFalse(path3.matchWithDeepScan(position));
-        assertFalse(path4.matchWithDeepScan(position));
-    }
+//    @Test
+//    public void shallMatch() throws Exception {
+//        JsonPath path1 = compile("$..store..book..book[?(@.category=='fiction')]..title");
+//        JsonPath path2 = compile("$..store..book.store.book[?(@.category=='fiction')]..title");
+//        JsonPath path3 = compile("$..store..book.store[?(@.category=='fiction')]..title");
+//        JsonPath path4 = compile("$..book..book..book..store.book[?(@.category=='fiction')]..title");
+//        JsonPath position = compile("$.book.store.book.store.book[1].volumes[1].title");
+//        assertTrue(path1.matchWithDeepScan(position));
+//        assertTrue(path2.matchWithDeepScan(position));
+//        assertFalse(path3.matchWithDeepScan(position));
+//        assertFalse(path4.matchWithDeepScan(position));
+//    }
 
     @Test
     public void testJsonPathFilterMatchRegexInputMismatch() throws Exception {

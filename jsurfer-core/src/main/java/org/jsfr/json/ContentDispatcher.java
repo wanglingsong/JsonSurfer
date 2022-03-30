@@ -39,6 +39,10 @@ class ContentDispatcher implements JsonSaxHandler {
         return this.receiver.size();
     }
 
+    protected void onRemove(JsonSaxHandler item) {
+
+    }
+
     @Override
     public boolean startJSON() {
         if (receiver.isEmpty()) {
@@ -71,6 +75,7 @@ class ContentDispatcher implements JsonSaxHandler {
             JsonSaxHandler observer = itr.next();
             if (!observer.startObject()) {
                 itr.remove();
+                onRemove(observer);
             }
         }
         return true;
@@ -86,6 +91,7 @@ class ContentDispatcher implements JsonSaxHandler {
             JsonSaxHandler observer = itr.next();
             if (!observer.endObject()) {
                 itr.remove();
+                onRemove(observer);
             }
         }
         return true;
@@ -101,6 +107,7 @@ class ContentDispatcher implements JsonSaxHandler {
             JsonSaxHandler observer = itr.next();
             if (!observer.startObjectEntry(key)) {
                 itr.remove();
+                onRemove(observer);
             }
         }
         return true;
@@ -116,6 +123,7 @@ class ContentDispatcher implements JsonSaxHandler {
             JsonSaxHandler observer = itr.next();
             if (!observer.startArray()) {
                 itr.remove();
+                onRemove(observer);
             }
         }
         return true;
@@ -131,6 +139,7 @@ class ContentDispatcher implements JsonSaxHandler {
             JsonSaxHandler observer = itr.next();
             if (!observer.endArray()) {
                 itr.remove();
+                onRemove(observer);
             }
         }
         return true;
@@ -146,6 +155,7 @@ class ContentDispatcher implements JsonSaxHandler {
             JsonSaxHandler observer = itr.next();
             if (!observer.primitive(primitiveHolder)) {
                 itr.remove();
+                onRemove(observer);
             }
         }
         return true;

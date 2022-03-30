@@ -26,17 +26,12 @@ package org.jsfr.json;
 
 import org.jsfr.json.SurfingConfiguration.Binding;
 import org.jsfr.json.SurfingConfiguration.IndefinitePathBinding;
-import org.jsfr.json.filter.CloneableJsonPathFilter;
-import org.jsfr.json.filter.JsonPathFilter;
 import org.jsfr.json.path.ArrayIndex;
 import org.jsfr.json.path.ChildNode;
 import org.jsfr.json.path.PathOperator;
 import org.jsfr.json.path.PathOperator.Type;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 /**
  * SurfingContext is not thread-safe
@@ -53,36 +48,41 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     SurfingContext(SurfingConfiguration config) {
         this.config = config;
-        if (config.hasFilter()) {
-            this.filterVerifierDispatcher = new FilterVerifierDispatcher();
-            this.dispatcher.addReceiver(this.filterVerifierDispatcher);
-        }
+//        if (config.hasFilter()) {
+        this.filterVerifierDispatcher = new FilterVerifierDispatcher();
+//            this.dispatcher.addReceiver(this.filterVerifierDispatcher);
+//        }
     }
 
     private void doMatching(PrimitiveHolder primitiveHolder) {
 
+        // skip matching if "skipOverlappedPath" is enable
+        if (!config.hasFilter() && config.isSkipOverlappedPath() && !dispatcher.isEmpty()) {
+            return;
+        }
+
         LinkedList<JsonPathListener> listeners = null;
         int currentDepth = currentPosition.pathDepth();
 
-        if (config.hasFilter()) {
-
-            // skip matching if "skipOverlappedPath" is enable
-            if (config.isSkipOverlappedPath() && dispatcher.size() > 1) {
-                return;
-            }
-            for (IndefinitePathBinding binding : config.getIndefinitePathLookup()) {
-                if (binding.minimumPathDepth <= currentDepth) {
-                    listeners = doMatchingWithFilter(binding, primitiveHolder, listeners, false);
-                } else {
-                    break;
-                }
-            }
-            Binding[] bindings = config.getDefinitePathBind(currentDepth);
-            if (bindings != null) {
-                for (Binding binding : bindings) {
-                    listeners = doMatchingWithFilter(binding, primitiveHolder, listeners, true);
-                }
-            }
+//        if (config.hasFilter()) {
+//
+//            // skip matching if "skipOverlappedPath" is enable
+////            if (config.isSkipOverlappedPath() && dispatcher.size() > 1) {
+////                return;
+////            }
+//            for (IndefinitePathBinding binding : config.getIndefinitePathLookup()) {
+//                if (binding.minimumPathDepth <= currentDepth) {
+//                    listeners = doMatchingWithFilter(binding, primitiveHolder, listeners, false);
+//                } else {
+//                    break;
+//                }
+//            }
+//            Binding[] bindings = config.getDefinitePathBind(currentDepth);
+//            if (bindings != null) {
+//                for (Binding binding : bindings) {
+//                    listeners = doMatchingWithFilter(binding, primitiveHolder, listeners, true);
+//                }
+//            }
 
 //            if (listeners != null) {
 //
@@ -97,27 +97,23 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
 //
 //            }
 
-        } else {
-            // skip matching if "skipOverlappedPath" is enable
-            if (config.isSkipOverlappedPath() && !dispatcher.isEmpty()) {
-                return;
-            }
+//        } else {
 
-            for (IndefinitePathBinding binding : config.getIndefinitePathLookup()) {
-                if (binding.minimumPathDepth <= currentDepth) {
-                    listeners = doMatching(binding, primitiveHolder, listeners, false);
-                } else {
-                    break;
-                }
+        for (IndefinitePathBinding binding : config.getIndefinitePathLookup()) {
+            if (binding.minimumPathDepth <= currentDepth) {
+                listeners = doMatching(binding, primitiveHolder, listeners, false);
+            } else {
+                break;
             }
-            Binding[] bindings = config.getDefinitePathBind(currentDepth);
-            if (bindings != null) {
-                for (Binding binding : bindings) {
-                    listeners = doMatching(binding, primitiveHolder, listeners, true);
-                }
-            }
-
         }
+        Binding[] bindings = config.getDefinitePathBind(currentDepth);
+        if (bindings != null) {
+            for (Binding binding : bindings) {
+                listeners = doMatching(binding, primitiveHolder, listeners, true);
+            }
+        }
+
+//        }
 
         if (listeners != null) {
             JsonCollector collector = new JsonCollector(listeners.size() == 1 ? Collections.singleton(listeners.getFirst()) : listeners, this, config);
@@ -126,46 +122,68 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
 
     }
 
-    private LinkedList<JsonPathListener> doMatchingWithFilter(Binding binding, PrimitiveHolder primitiveHolder, LinkedList<JsonPathListener> listeners, boolean definiteBinding) {
-        boolean matched = definiteBinding ? binding.jsonPath.match(currentPosition) : binding.jsonPath.matchWithDeepScan(currentPosition);
-        if (matched) {
-            if (binding.filter != null) {
+    private void doMatchingWithFilter(Binding binding, boolean definiteBinding) {
+        if (binding.filter != null) {
+            boolean matched = definiteBinding ? binding.jsonPath.match(currentPosition) : binding.jsonPath.matchWithDeepScan(currentPosition);
+            if (matched) {
+//            if (binding.filter != null) {
                 // JsonPathFilter is stateful so clone is required
                 // TODO not clone for stateless filter
-                this.filterVerifierDispatcher.addVerifier(binding, new JsonFilterVerifier(currentPosition, config, (JsonPathFilter) ((CloneableJsonPathFilter) binding.filter).cloneMe(), this.filterVerifierDispatcher.getVerifier(binding.dependency)));
+                this.filterVerifierDispatcher.addVerifier(binding, new JsonFilterVerifier(currentPosition, config, binding));
+//            } else {
+//                if (primitiveHolder != null) {
+//                    dispatchPrimitiveWithFilter(binding.getListeners(), primitiveHolder.getValue(), binding.dependency);
+//                } else {
+//                    return this.addListeners(binding, listeners, binding.dependency);
+//                }
+//            }
+            }
+        }
+//        return listeners;
+    }
+
+    private LinkedList<JsonPathListener> doMatching(Binding binding, PrimitiveHolder primitiveHolder, LinkedList<JsonPathListener> listeners, boolean definiteBinding) {
+        if (binding.filter != null) {
+            return listeners;
+        }
+
+        if (binding.dependency != null) {
+            if (primitiveHolder != null) {
+                dispatchPrimitiveWithFilter(primitiveHolder.getValue(), binding);
             } else {
+                return this.addListenersWithFilter(binding, listeners);
+            }
+        } else {
+            boolean matched = definiteBinding ? binding.jsonPath.match(currentPosition) : binding.jsonPath.matchWithDeepScan(currentPosition);
+            if (matched) {
                 if (primitiveHolder != null) {
-                    dispatchPrimitiveWithFilter(binding.getListeners(), primitiveHolder.getValue(), binding.dependency);
+                    dispatchPrimitive(binding.getListeners(), primitiveHolder.getValue());
                 } else {
-                    return this.addListeners(binding, listeners, this.filterVerifierDispatcher.getVerifier(binding.dependency));
+                    return this.addListeners(binding, listeners);
                 }
             }
         }
         return listeners;
+
     }
 
-    private LinkedList<JsonPathListener> doMatching(Binding binding, PrimitiveHolder primitiveHolder, LinkedList<JsonPathListener> listeners, boolean definiteBinding) {
-        boolean matched = definiteBinding ? binding.jsonPath.match(currentPosition) : binding.jsonPath.matchWithDeepScan(currentPosition);
-        if (matched) {
-            if (primitiveHolder != null) {
-                dispatchPrimitive(binding.getListeners(), primitiveHolder.getValue());
-            } else {
-                return this.addListeners(binding, listeners);
-            }
-        }
-        return listeners;
-    }
-
-    private LinkedList<JsonPathListener> addListeners(Binding binding, LinkedList<JsonPathListener> listeners, JsonFilterVerifier verifier) {
+    private LinkedList<JsonPathListener> addListenersWithFilter(Binding binding, LinkedList<JsonPathListener> listeners) {
         LinkedList<JsonPathListener> listenersToAdd = listeners == null ? new LinkedList<JsonPathListener>() : listeners;
-        JsonPathListener[] bindingListeners = binding.getListeners();
-        for (JsonPathListener listener : bindingListeners) {
-            if (verifier != null) {
-                listenersToAdd.add(verifier.addListener(listener));
-            } else {
-                listenersToAdd.add(listener);
-            }
-        }
+//        JsonPathListener[] bindingListeners = binding.getListeners();
+//        Binding dependency = binding.dependency;
+//        if (dependency != null) {
+        List<JsonPathListener> buffered = filterVerifierDispatcher.dispatch(this.currentPosition, binding);
+        listenersToAdd.addAll(buffered);
+//        }
+//        else {
+//            for (JsonPathListener listener : bindingListeners) {
+////            if (verifier != null) {
+////                listenersToAdd.add(verifier.addListener(listener));
+////            } else {
+//                listenersToAdd.add(listener);
+////            }
+//            }
+//        }
 //        Collections.addAll(listenersToAdd, binding.getListeners());
         return listenersToAdd;
     }
@@ -176,19 +194,21 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
         return listenersToAdd;
     }
 
-    private void dispatchPrimitiveWithFilter(JsonPathListener[] listeners, Object primitive, Binding dependency) {
+    private void dispatchPrimitiveWithFilter(Object primitive, Binding binding) {
 
+//        Binding dependency = binding.dependency;
 
-//        JsonFilterVerifier filterVerifier = (JsonFilterVerifier) this.filterVerifierDispatcher.getLastReceiver();
-        if (dependency != null) {
-            JsonFilterVerifier filterVerifier = this.filterVerifierDispatcher.getVerifier(dependency);
-            for (JsonPathListener listener : listeners) {
-                JsonPathListener newListener = filterVerifier.addListener(listener);
-                newListener.onValue(primitive, this);
-            }
-        } else {
-            dispatchPrimitive(listeners, primitive);
+        //        JsonFilterVerifier filterVerifier = (JsonFilterVerifier) this.filterVerifierDispatcher.getLastReceiver();
+//        if (dependency != null) {
+        List<JsonPathListener> buffered = this.filterVerifierDispatcher.dispatch(this.currentPosition, binding);
+//            JsonFilterVerifier filterVerifier = this.filterVerifierDispatcher.getVerifier(dependency);
+        for (JsonPathListener listener : buffered) {
+//                JsonPathListener newListener = filterVerifier.addListener(listener);
+            listener.onValue(primitive, this);
         }
+//        } else {
+//            dispatchPrimitive(listeners, primitive);
+//        }
     }
 
     private void dispatchPrimitive(JsonPathListener[] listeners, Object primitive) {
@@ -200,12 +220,14 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
         currentPosition = JsonPosition.start();
         doMatching(null);
         dispatcher.startJSON();
+        filterVerifierDispatcher.startJSON();
         return true;
     }
 
     @Override
     public boolean endJSON() {
         dispatcher.endJSON();
+        filterVerifierDispatcher.endJSON();
         // clear resources
         currentPosition.clear();
         currentPosition = null;
@@ -221,11 +243,13 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
         PathOperator currentNode = currentPosition.peek();
         switch (currentNode.getType()) {
             case OBJECT:
+                matchFilter();
                 doMatching(null);
                 break;
             case ARRAY:
                 accumulateArrayIndex((ArrayIndex) currentNode);
 //                startArrayElement();
+                matchFilter();
                 doMatching(null);
                 break;
             case ROOT:
@@ -235,7 +259,28 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
         }
         currentPosition.stepIntoObject();
         dispatcher.startObject();
+        filterVerifierDispatcher.startObject();
         return true;
+    }
+
+    private void matchFilter() {
+        if (this.config.hasFilter()) {
+            int currentDepth = currentPosition.pathDepth();
+
+            for (IndefinitePathBinding binding : config.getIndefinitePathLookup()) {
+                if (binding.minimumPathDepth <= currentDepth) {
+                    doMatchingWithFilter(binding, false);
+                } else {
+                    break;
+                }
+            }
+            Binding[] bindings = config.getDefinitePathBind(currentDepth);
+            if (bindings != null) {
+                for (Binding binding : bindings) {
+                    doMatchingWithFilter(binding, true);
+                }
+            }
+        }
     }
 
     @Override
@@ -245,6 +290,7 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
         }
         currentPosition.stepOutObject();
         dispatcher.endObject();
+        filterVerifierDispatcher.endObject();
         return true;
     }
 
@@ -255,6 +301,7 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
         }
         currentPosition.updateObjectEntry(key);
         dispatcher.startObjectEntry(key);
+        filterVerifierDispatcher.startObjectEntry(key);
         return true;
     }
 
@@ -266,11 +313,13 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
         PathOperator currentNode = currentPosition.peek();
         switch (currentNode.getType()) {
             case OBJECT:
+                matchFilter();
                 doMatching(null);
                 break;
             case ARRAY:
                 accumulateArrayIndex((ArrayIndex) currentNode);
 //                startArrayElement();
+                matchFilter();
                 doMatching(null);
                 break;
             case ROOT:
@@ -281,6 +330,7 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
 
         currentPosition.stepIntoArray();
         dispatcher.startArray();
+        filterVerifierDispatcher.startArray();
         return true;
     }
 
@@ -295,6 +345,7 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
         }
         currentPosition.stepOutArray();
         dispatcher.endArray();
+        filterVerifierDispatcher.endArray();
         return true;
     }
 
@@ -320,6 +371,7 @@ public class SurfingContext implements ParsingContext, JsonSaxHandler {
         }
 
         dispatcher.primitive(primitiveHolder);
+        filterVerifierDispatcher.primitive(primitiveHolder);
         return true;
     }
 

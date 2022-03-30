@@ -24,6 +24,7 @@
 
 package org.jsfr.json;
 
+import org.jsfr.json.filter.CloneableJsonPathFilter;
 import org.jsfr.json.filter.JsonPathFilter;
 
 import java.util.ArrayList;
@@ -31,20 +32,32 @@ import java.util.Collection;
 
 public class JsonFilterVerifier implements JsonSaxHandler {
 
+    private final int startDepth;
     private SurfingConfiguration config;
+    private SurfingConfiguration.Binding binding;
     private JsonPathFilter jsonPathFilter;
     private Collection<BufferedListener> bufferedListeners;
-    private JsonFilterVerifier dependency;
+    private Collection<JsonFilterVerifier> dependencies;
     private JsonPosition currentPosition;
     private boolean verified = false;
     private int stackDepth = 0;
 
-    public JsonFilterVerifier(JsonPosition currentPosition, SurfingConfiguration config, JsonPathFilter jsonPathFilter, JsonFilterVerifier dependency) {
+    public JsonFilterVerifier(JsonPosition currentPosition, SurfingConfiguration config, SurfingConfiguration.Binding binding) {
         this.currentPosition = currentPosition;
+        this.startDepth = currentPosition.pathDepth();
         this.config = config;
-        this.jsonPathFilter = jsonPathFilter;
-        this.dependency = dependency;
+        this.binding = binding;
+        this.jsonPathFilter = (JsonPathFilter) ((CloneableJsonPathFilter) binding.filter).cloneMe();
+//        this.dependency = dependency;
         this.bufferedListeners = new ArrayList<>();
+    }
+
+    public int getStartDepth() {
+        return startDepth;
+    }
+
+    public void setDependencies(Collection<JsonFilterVerifier> dependencies) {
+        this.dependencies = dependencies;
     }
 
     public JsonPathListener addListener(JsonPathListener listener) {
@@ -54,8 +67,10 @@ public class JsonFilterVerifier implements JsonSaxHandler {
     }
 
     private void invokeBuffer() {
-        if (dependency != null) {
-            dependency.bufferedListeners.addAll(this.bufferedListeners);
+        if (dependencies != null) {
+            for (JsonFilterVerifier dependency : dependencies) {
+                dependency.bufferedListeners.addAll(this.bufferedListeners);
+            }
         } else {
             for (BufferedListener buffer : this.bufferedListeners) {
                 buffer.invokeBufferedValue();
@@ -81,7 +96,7 @@ public class JsonFilterVerifier implements JsonSaxHandler {
 
     @Override
     public boolean startObjectEntry(String key) {
-        if (!this.verified && this.jsonPathFilter.apply(this.currentPosition, null, this.config.getJsonProvider())) {
+        if (!this.verified && this.jsonPathFilter.apply(this.currentPosition, this.startDepth, null, this.config.getJsonProvider())) {
             this.verified = true;
         }
         return true;
@@ -116,7 +131,7 @@ public class JsonFilterVerifier implements JsonSaxHandler {
 
     @Override
     public boolean primitive(PrimitiveHolder primitiveHolder) {
-        if (!this.verified && this.jsonPathFilter.apply(this.currentPosition, primitiveHolder, this.config.getJsonProvider())) {
+        if (!this.verified && this.jsonPathFilter.apply(this.currentPosition, this.startDepth, primitiveHolder, this.config.getJsonProvider())) {
             this.verified = true;
         }
         return true;

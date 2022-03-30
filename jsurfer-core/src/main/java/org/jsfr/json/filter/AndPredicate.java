@@ -38,11 +38,11 @@ public class AndPredicate extends AggregatePredicate {
     // AndPredicate becomes stateful
 
     @Override
-    public boolean apply(JsonPath jsonPosition, PrimitiveHolder primitiveHolder, JsonProvider jsonProvider) {
+    public boolean apply(JsonPath jsonPosition, int startDepth, PrimitiveHolder primitiveHolder, JsonProvider jsonProvider) {
         Iterator<JsonPathFilter> itr = this.getFilters().iterator();
         while (itr.hasNext()) {
             JsonPathFilter filter = itr.next();
-            if (filter.apply(jsonPosition, primitiveHolder, jsonProvider)) {
+            if (filter.apply(jsonPosition, startDepth, primitiveHolder, jsonProvider)) {
                 itr.remove();
             }
         }

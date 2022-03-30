@@ -36,6 +36,6 @@ public interface JsonPathFilter {
     /**
      * Returns whether json position satisfies the filter.
      */
-    boolean apply(JsonPath jsonPosition, PrimitiveHolder primitiveHolder, JsonProvider jsonProvider);
+    boolean apply(JsonPath jsonPosition, int startDepth, PrimitiveHolder primitiveHolder, JsonProvider jsonProvider);
 
 }

@@ -24,20 +24,67 @@
 
 package org.jsfr.json;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class FilterVerifierDispatcher extends ContentDispatcher {
 
-    private Map<SurfingConfiguration.Binding, JsonFilterVerifier> verifiers = new HashMap<>();
+    private final Map<SurfingConfiguration.Binding, List<JsonFilterVerifier>> verifiers = new HashMap<>();
 
     public void addVerifier(SurfingConfiguration.Binding binding, JsonFilterVerifier verifier) {
         this.addReceiver(verifier);
-        this.verifiers.put(binding, verifier);
+        if (binding.dependency != null) {
+            List<JsonFilterVerifier> dependencies = this.verifiers.get(binding.dependency);
+            if (dependencies != null) {
+                List<JsonFilterVerifier> filtered = dependencies.stream().filter(d -> d.getStartDepth() < verifier.getStartDepth()).collect(Collectors.toList());
+                verifier.setDependencies(filtered);
+            }
+        }
+        this.verifiers.compute(binding, (binding1, prev) -> {
+            List<JsonFilterVerifier> verifiers;
+            if (prev == null) {
+                verifiers = new ArrayList<>();
+            } else {
+                verifiers = prev;
+            }
+            verifiers.add(verifier);
+            return verifiers;
+        });
+//        this.verifiers.put(binding, verifier);
     }
 
-    public JsonFilterVerifier getVerifier(SurfingConfiguration.Binding binding) {
-        return this.verifiers.get(binding);
+    public List<JsonPathListener> dispatch(JsonPosition jsonPosition, SurfingConfiguration.Binding binding) {
+        int pathDepth = jsonPosition.pathDepth();
+        SurfingConfiguration.Binding dependency = binding.dependency;
+        JsonPathListener[] listeners = binding.getListeners();
+        // TODO match relative path after dependency according to dependency start path and dispatch
+        List<JsonPathListener> rst = new ArrayList<>();
+        List<JsonFilterVerifier> dependencies = this.verifiers.get(dependency);
+        if (dependencies != null) {
+            for (JsonFilterVerifier verifier : dependencies) {
+                if (binding.jsonPath.matchFilterPathUntilDepth(jsonPosition, verifier.getStartDepth())) {
+                    if (verifier.getStartDepth() <= pathDepth) {
+                        for (JsonPathListener listener : listeners) {
+                            rst.add(verifier.addListener(listener));
+                        }
+                    }
+                }
+            }
+        }
+        return rst;
     }
+
+    @Override
+    protected void onRemove(JsonSaxHandler item) {
+        for (Map.Entry<SurfingConfiguration.Binding, List<JsonFilterVerifier>> entry : this.verifiers.entrySet()) {
+            entry.getValue().remove(item);
+        }
+    }
+//    public JsonFilterVerifier getVerifier(SurfingConfiguration.Binding binding) {
+//        return this.verifiers.get(binding);
+//    }
 
 }
