@@ -39,13 +39,18 @@ public class ArrayFilter extends PathOperator {
 //        return pathOperator instanceof ArrayIndex; // match any array element, filtering is done in the JsonFilterVerifier
 //    }
 
+    @Override
+    public boolean match(PathOperator pathOperator) {
+        return true;
+    }
+
     public JsonPathFilter getJsonPathFilter() {
         return jsonPathFilter;
     }
 
     @Override
     public Type getType() {
-        return Type.ARRAY;
+        return Type.WILDCARD;
     }
 
     @Override

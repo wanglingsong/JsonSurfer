@@ -43,8 +43,8 @@ public class EqualityStrPredicate extends BasicJsonPathFilter {
     }
 
     @Override
-    public boolean apply(JsonPath jsonPosition, PrimitiveHolder primitiveHolder, JsonProvider jsonProvider) {
-        if (primitiveHolder != null && this.getRelativePath().matchFilterPath(jsonPosition)) {
+    public boolean apply(JsonPath jsonPosition, int startDepth, PrimitiveHolder primitiveHolder, JsonProvider jsonProvider) {
+        if (primitiveHolder != null && this.getRelativePath().matchFilterPath(jsonPosition, startDepth)) {
             Object candidate = primitiveHolder.getValue();
             return candidate != null && Objects.equals(candidate, jsonProvider.primitive(value));
         } else {
