@@ -26,14 +26,11 @@ package org.jsfr.json;
 
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.parser.JSONLexerBase;
-import com.alibaba.fastjson.parser.JSONReaderScanner;
 import com.alibaba.fastjson.parser.JSONScanner;
-import org.jsfr.json.exception.JsonSurfingException;
+import com.alibaba.fastjson2.JSONReader;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 
 import static com.alibaba.fastjson.parser.JSONToken.*;
 
@@ -81,8 +78,12 @@ public class FastJsonParser implements JsonParserAdapter {
                 String tempString = null;
 
                 while (!lexer.isEOF() && !context.shouldBreak()) {
+                    if (lexer.getCurrent() == ',') { //fixme
+                        lexer.getReader().next();
+                        continue;
+                    };
                     lexer.nextToken();
-                    int token = lexer.token();
+                    int token = ((JSONScanner) lexer).token();
                     //System.out.println("token: " + token);
                     if (tempString != null) {
                         if (token == COLON) {
@@ -116,7 +117,7 @@ public class FastJsonParser implements JsonParserAdapter {
                             break;
                         case LITERAL_FLOAT:
                             // Number value = lexer.decimalValue(lexer.isEnabled(Feature.UseBigDecimal));
-                            context.primitive(staticPrimitiveHolder.withValue(lexer.doubleValue()));
+                            context.primitive(staticPrimitiveHolder.withValue(lexer.decimalValue().doubleValue()));
                             break;
                         case IDENTIFIER:
                         case LITERAL_STRING:
@@ -137,7 +138,7 @@ public class FastJsonParser implements JsonParserAdapter {
                             break;
                         case ERROR:
                         default:
-                            throw new JSONException("syntax error, " + lexer.info());
+                            throw new JSONException("syntax error, " + lexer.getReader().info());
                     }
                 }
 
@@ -146,7 +147,7 @@ public class FastJsonParser implements JsonParserAdapter {
                 }
 
                 if (context.getConfig().isCloseParserOnStop() && context.isStopped()) {
-                    lexer.close();
+                    lexer.getReader().close();
                 }
 
             } catch (Exception e) {
@@ -178,7 +179,7 @@ public class FastJsonParser implements JsonParserAdapter {
 
     @Override
     public ResumableParser createResumableParser(Reader reader, SurfingContext context) {
-        return new FastJsonResumableParser(new JSONReaderScanner(reader), context, new StaticPrimitiveHolder());
+        return new FastJsonResumableParser(new JSONScanner(JSONReader.of(reader)), context, new StaticPrimitiveHolder());
     }
 
     @Override
@@ -188,7 +189,7 @@ public class FastJsonParser implements JsonParserAdapter {
 
     @Override
     public ResumableParser createResumableParser(InputStream json, SurfingContext context) {
-        return new FastJsonResumableParser(new JSONReaderScanner(new InputStreamReader(json, context.getConfig().getParserCharset())), context, new StaticPrimitiveHolder());
+        return new FastJsonResumableParser(new JSONScanner(JSONReader.of(json, context.getConfig().getParserCharset())), context, new StaticPrimitiveHolder());
     }
 
     @Override
