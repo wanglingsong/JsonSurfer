@@ -1,7 +1,8 @@
 # JsonSurfer - Let's surf on Json!
 
 [![Join the chat at https://gitter.im/jsurfer/JsonSurfer](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jsurfer/JsonSurfer?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-![](https://travis-ci.org/jsurfer/JsonSurfer.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/jsurfer/JsonSurfer/badge.svg)](https://coveralls.io/r/jsurfer/JsonSurfer) 
+[![build](https://github.com/wanglingsong/JsonSurfer/actions/workflows/build.yml/badge.svg)](https://github.com/wanglingsong/JsonSurfer/actions/workflows/build.yml)
+[![Coverage Status](https://coveralls.io/repos/jsurfer/JsonSurfer/badge.svg)](https://coveralls.io/r/jsurfer/JsonSurfer) 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.jsurfer/jsurfer/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/com.github.jsurfer/jsurfer)
 
 
