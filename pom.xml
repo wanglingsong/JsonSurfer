@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.jsurfer</groupId>
     <artifactId>jsurfer</artifactId>
-    <version>1.6.4</version>
+    <version>1.6.5</version>
     <packaging>pom</packaging>
     <name>JsonSurfer</name>
     <description>Let's surf on json</description>
@@ -74,7 +74,7 @@
                                         <goal>sign</goal>
                                     </goals>
                                     <configuration>
-                                        <keyname>126EF388FA305DC8</keyname>
+                                        <keyname>08E6F84D3315003C</keyname>
                                     </configuration>
                                 </execution>
                             </executions>
